@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -48,14 +47,37 @@ void Puffer::release()
     }
 }
 
-void Puffer::update(glm::vec2 mouse_motion, float elapsed)
+void Puffer::update(glm::vec2 mouse_motion, float elapsed,float l_downs, float r_downs)
 {
     assert(transform);
     rotate_from_mouse(mouse_motion);
 
     {// handle movement
+
+        // constexpr float PlayerSpeed = 30.0f;
+		glm::vec3 move = glm::vec3(0.0f);
+		if (l_downs == 1 && cooldown == 0.0f){
+			move = get_forward() + get_right();
+            move = move * 5.0f;
+            cooldown = 50.0f;
+		} 
+		else if (r_downs==1 && cooldown == 0.0f){
+			move = get_forward() - get_right();
+            move = move * 5.0f;
+            cooldown = 50.0f;
+		} else if (cooldown > 0.0f) {
+            cooldown-=1.0f;
+        }
+
+        
+
+
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
+        
         velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+        if(!building_up){
+            velocity += move/10.0f;
+        }
         transform->position += velocity;
         if (building_up) {
             build_up_time += elapsed * 0.5f;
@@ -143,6 +165,11 @@ glm::vec3 Puffer::get_forward()
 {
     // in blender camera faces y+, probably should fix this
     return transform->rotation * glm::vec3(0,1,0);
+}
+
+glm::vec3 Puffer::get_right()
+{
+    return transform->rotation * glm::vec3(1,0,0);
 }
 
 Puffer::Puffer(Scene::Transform *transform_, Scene::Transform *camera_, Scene::Transform *mesh_)
