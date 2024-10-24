@@ -9,6 +9,7 @@ struct Puffer {
     float build_up_time = 0.0f;
     float current_scale = 1.0f;
     float overshoot_target = 0.5f;
+    float swim_cooldown = 1.0f;
 
     Scene::Transform* camera = nullptr;
     Scene::Transform* mesh = nullptr;
@@ -29,8 +30,8 @@ struct Puffer {
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();
     void release();
-    void update(glm::vec2 mouse_motion, float dt);
-    void swim(bool left);
+    void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
+    void swim(int8_t swim_direction);
 
 
     glm::vec3 calculate_jitter(float elapsed);

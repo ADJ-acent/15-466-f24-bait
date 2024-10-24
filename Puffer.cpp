@@ -48,10 +48,25 @@ void Puffer::release()
     }
 }
 
-void Puffer::update(glm::vec2 mouse_motion, float elapsed)
+void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
     assert(transform);
     rotate_from_mouse(mouse_motion);
+
+    constexpr float swim_cooldown_threshold = 0.6f;
+
+    if (swim_cooldown == 0.0f) {
+        if (swim_direction != 0) {
+            swim(swim_direction);
+            swim_cooldown = 0.001f; // increment slightly to start the timer
+        }
+    }
+    else {
+        swim_cooldown += elapsed;
+        if (swim_cooldown > swim_cooldown_threshold) {
+            swim_cooldown = 0.0f;
+        }
+    }
 
     {// handle movement
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
@@ -103,8 +118,12 @@ void Puffer::update(glm::vec2 mouse_motion, float elapsed)
     mesh->scale = original_mesh_scale * current_scale;
 }
 
-void Puffer::swim(bool left)
+void Puffer::swim(int8_t swim_direction)
 {
+    float build_up_penaulty = 1.0f / current_scale;
+
+    velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.03f * build_up_penaulty) * get_right();
+
 }
 
 glm::vec3 Puffer::calculate_jitter(float elapsed)

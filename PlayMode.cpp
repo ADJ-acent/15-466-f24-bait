@@ -122,9 +122,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
-
-	puffer.update(mouse_motion, elapsed);
-
+	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
+	puffer.update(mouse_motion, swim_direction, elapsed);
 	//reset button press counters:
 	left.downs = 0;
 	right.downs = 0;
