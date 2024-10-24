@@ -103,6 +103,10 @@ void Puffer::update(glm::vec2 mouse_motion, float elapsed)
     mesh->scale = original_mesh_scale * current_scale;
 }
 
+void Puffer::swim(bool left)
+{
+}
+
 glm::vec3 Puffer::calculate_jitter(float elapsed)
 {
     static float time = 0.0f;
@@ -143,6 +147,11 @@ glm::vec3 Puffer::get_forward()
 {
     // in blender camera faces y+, probably should fix this
     return transform->rotation * glm::vec3(0,1,0);
+}
+
+glm::vec3 Puffer::get_right()
+{
+    return transform->rotation * glm::vec3(1,0,0);
 }
 
 Puffer::Puffer(Scene::Transform *transform_, Scene::Transform *camera_, Scene::Transform *mesh_)

@@ -30,9 +30,13 @@ struct Puffer {
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, float dt);
+    void swim(bool left);
+
+
     glm::vec3 calculate_jitter(float elapsed);
 
     glm::vec3 get_forward();
+    glm::vec3 get_right();
 
     Puffer() = default;
     Puffer(Scene::Transform* transform_, Scene::Transform* camera_, Scene::Transform* mesh_);
