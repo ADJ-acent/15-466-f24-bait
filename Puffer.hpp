@@ -23,7 +23,7 @@ struct Puffer {
 
     inline static constexpr float puffer_scale_decay_halflife = .02f;
     inline static constexpr float puffer_scale_recover_halflife = .1f;
-    inline static constexpr float puffer_velocity_halflife = .1f;
+    inline static constexpr float puffer_velocity_halflife = .3f;
     inline static constexpr float speed = .5f;
 
     void rotate_from_mouse(glm::vec2 mouse_motion);
