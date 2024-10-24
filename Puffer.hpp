@@ -30,6 +30,7 @@ struct Puffer {
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, float dt);
+    glm::vec3 calculate_jitter(float elapsed);
 
     glm::vec3 get_forward();
 

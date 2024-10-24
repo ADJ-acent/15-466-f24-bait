@@ -1,3 +1,4 @@
+#pragma once
 #include <cmath>
 
 inline float cubic_bezier(float P0, float P1, float P2, float P3, float t) {

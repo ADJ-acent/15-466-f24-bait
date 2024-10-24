@@ -1,8 +1,8 @@
 #include "Puffer.hpp"
-#include "bezier.hpp"
+#include "math_helpers.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/random.hpp>
+#include <glm/gtc/noise.hpp>
 #include <glm/gtx/string_cast.hpp>
 
 #include <algorithm>
@@ -63,24 +63,12 @@ void Puffer::update(glm::vec2 mouse_motion, float elapsed)
             if (build_up_time <= 1.0f) {
                 // std::cout<<(1.0f+cubic_bezier(0.0f,0.5f, 0.34f, 1.0f, build_up_time))<<std::endl;
                 current_scale = 1.0f + cubic_bezier(0.0f,0.8f, 0.9f, 1.0f, build_up_time);
-                float shake_intensity = build_up_time*3.0f;
-                glm::vec3 shake = {
-                    glm::linearRand(-shake_intensity, shake_intensity),
-                    glm::linearRand(-shake_intensity, shake_intensity),
-                    glm::linearRand(-shake_intensity, shake_intensity)
-                };
-                mesh->position = original_mesh_position + shake;
+                mesh->position = original_mesh_position + calculate_jitter(elapsed);
             }
             // stay at peak for 1.5 seconds
             else if (build_up_time <= 1.5f) {
                 // just shake
-                constexpr float shake_intensity = 3.0f;
-                glm::vec3 shake = {
-                    glm::linearRand(-shake_intensity, shake_intensity),
-                    glm::linearRand(-shake_intensity, shake_intensity),
-                    glm::linearRand(-shake_intensity, shake_intensity)
-                };
-                mesh->position = original_mesh_position + shake;
+                mesh->position = original_mesh_position + calculate_jitter(elapsed);
             }
             // shrink
             else {
@@ -113,6 +101,42 @@ void Puffer::update(glm::vec2 mouse_motion, float elapsed)
         }
     }
     mesh->scale = original_mesh_scale * current_scale;
+}
+
+glm::vec3 Puffer::calculate_jitter(float elapsed)
+{
+    static float time = 0.0f;
+    time += elapsed;
+    time = fmodf(time, 10.0f);
+    constexpr float total_amplitude = 4.0f;
+    float shake_intensity;
+    if (build_up_time < 1.0f) {
+        shake_intensity = build_up_time * total_amplitude;
+    }
+    else {
+        shake_intensity = total_amplitude;
+    }
+    // Generate Perlin noise for each axis, adding multiple frequencies
+    glm::vec3 shake = glm::vec3(0.0f);
+    float frequency = 10.0f;
+    float amplitude = 20.0f;
+
+    float shake_1 = glm::perlin(glm::vec3(time) * frequency * amplitude);
+    shake += glm::vec3(-shake_1, shake_1, shake_1);
+
+    amplitude *= 0.5f;
+    frequency *= 2.0f;
+    float shake_2 = glm::perlin(glm::vec3(time+10.0f) * frequency * amplitude);
+    shake += glm::vec3(shake_2, -shake_2, -shake_2);
+
+    amplitude *= 0.5f;
+    frequency *= 2.0f;
+    float shake_3 = glm::perlin(glm::vec3(time+20.0f) * frequency * amplitude);
+    shake += glm::vec3(-shake_3, shake_3, -shake_3);
+
+    // Normalize the shake so it doesn't exceed the expected intensity
+    shake *= shake_intensity;  // Apply the shake intensity
+    return shake;
 }
 
 glm::vec3 Puffer::get_forward()
