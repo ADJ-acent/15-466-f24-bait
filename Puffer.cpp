@@ -108,7 +108,7 @@ glm::vec3 Puffer::calculate_jitter(float elapsed)
     static float time = 0.0f;
     time += elapsed;
     time = fmodf(time, 10.0f);
-    constexpr float total_amplitude = 4.0f;
+    constexpr float total_amplitude = 2.0f;
     float shake_intensity;
     if (build_up_time < 1.0f) {
         shake_intensity = build_up_time * total_amplitude;
