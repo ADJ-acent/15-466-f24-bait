@@ -3,6 +3,7 @@
 #include "Scene.hpp"
 #include "Sound.hpp"
 #include "Collide.hpp"
+#include "QTE.hpp"
 
 #include <glm/glm.hpp>
 
@@ -24,12 +25,11 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up;
+	} left, right, down, up, eat;
 
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 
-	
 	Scene::Transform *fish = nullptr;
 	Scene::Transform *rope = nullptr;
 	Scene::Transform *bait = nullptr;
@@ -40,6 +40,9 @@ struct PlayMode : Mode {
 
 	bool collide_with_bait;
 
+	bool qte_active;
+
+	QTE eat_bait_QTE;
 	
 	// glm::quat hip_base_rotation;
 	// glm::quat upper_leg_base_rotation;
