@@ -150,4 +150,6 @@ struct Scene {
 	Scene &operator=(Scene const &); //...as scene = scene
 	//... as a set() function that optionally returns the transform->transform mapping:
 	void set(Scene const &, std::unordered_map< Transform const *, Transform * > *transform_map = nullptr);
+
+	void add(Scene const &); // add another scene to the current one
 };

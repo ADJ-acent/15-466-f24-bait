@@ -10,11 +10,11 @@
 
 void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
 {
-    assert(transform);
+    assert(main_transform);
     constexpr float sensitivity = 30.0f;
 
     float yaw_delta = -mouse_motion.x * sensitivity;
-    float pitch_delta = -mouse_motion.y * sensitivity;
+    float pitch_delta = mouse_motion.y * sensitivity;
 
     // clamp the pitch and recalculate delta
     current_yaw = fmod(current_yaw + yaw_delta, 360.0f);
@@ -23,14 +23,12 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
     glm::quat yaw_rotation = glm::angleAxis(glm::radians(current_yaw), glm::vec3(0.0f, 0.0f, 1.0f));
     glm::quat pitch_rotation = glm::angleAxis(glm::radians(current_pitch), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    transform->rotation = yaw_rotation * pitch_rotation * original_rotation;
-
-    transform->rotation = glm::normalize(transform->rotation);
+    main_transform->rotation =  glm::normalize(yaw_rotation * pitch_rotation * original_rotation);
 }
 
 void Puffer::start_build_up()
 {
-    assert(transform);
+    assert(main_transform);
     if (build_up_time == 0.0f && recovered) {
         building_up = true;
         recovered = false;
@@ -39,7 +37,7 @@ void Puffer::start_build_up()
 
 void Puffer::release()
 {
-    assert(transform);
+    assert(main_transform);
     if (building_up) {
         building_up = false;
         overshoot = true;
@@ -50,7 +48,7 @@ void Puffer::release()
 
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
-    assert(transform);
+    assert(main_transform);
     rotate_from_mouse(mouse_motion);
 
     constexpr float swim_cooldown_threshold = 0.6f;
@@ -71,7 +69,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     {// handle movement
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
         velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
-        transform->position += velocity;
+        main_transform->position += velocity;
         if (building_up) {
             build_up_time += elapsed * 0.5f;
             // grow
@@ -164,19 +162,18 @@ glm::vec3 Puffer::calculate_jitter(float elapsed)
 
 glm::vec3 Puffer::get_forward()
 {
-    // in blender camera faces y+, probably should fix this
-    return transform->rotation * glm::vec3(0,1,0);
+    return main_transform->rotation * glm::vec3(0,0,1);
 }
 
 glm::vec3 Puffer::get_right()
 {
-    return transform->rotation * glm::vec3(1,0,0);
+    return main_transform->rotation * glm::vec3(-1,0,0);
 }
 
 Puffer::Puffer(Scene::Transform *transform_, Scene::Transform *camera_, Scene::Transform *mesh_)
- : transform(transform_), camera(camera_), mesh(mesh_)
+ : main_transform(transform_), camera(camera_), mesh(mesh_)
 {
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
-    original_rotation = transform->rotation;
+    original_rotation = main_transform->rotation;
 }

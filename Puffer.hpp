@@ -3,7 +3,7 @@
 #include "Scene.hpp"
 
 struct Puffer {
-    Scene::Transform* transform = nullptr;
+    Scene::Transform* main_transform = nullptr;
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
     float build_up_time = 0.0f;
