@@ -4,6 +4,21 @@
 
 struct Puffer {
     Scene::Transform* main_transform = nullptr;
+    Scene::Transform* camera = nullptr;
+    Scene::Transform* mesh = nullptr;
+    struct {
+        Scene::Transform* puff_body;
+        Scene::Transform* puff_l_blush;
+        Scene::Transform* puff_l_eye;
+        Scene::Transform* puff_l_fin;
+        Scene::Transform* puff_mouth;
+        Scene::Transform* puff_r_blush;
+        Scene::Transform* puff_r_eye;
+        Scene::Transform* puff_r_fin;
+        Scene::Transform* puff_spikes;
+        Scene::Transform* puff_tail;
+    } mesh_parts;
+
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
     float build_up_time = 0.0f;
@@ -11,8 +26,6 @@ struct Puffer {
     float overshoot_target = 0.5f;
     float swim_cooldown = 1.0f;
 
-    Scene::Transform* camera = nullptr;
-    Scene::Transform* mesh = nullptr;
     bool building_up = false;
     bool recovered = true;
     bool overshoot = false;
@@ -27,6 +40,7 @@ struct Puffer {
     inline static constexpr float puffer_velocity_halflife = .3f;
     inline static constexpr float speed = .5f;
 
+    void init();
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();
     void release();
@@ -39,6 +53,4 @@ struct Puffer {
     glm::vec3 get_forward();
     glm::vec3 get_right();
 
-    Puffer() = default;
-    Puffer(Scene::Transform* transform_, Scene::Transform* camera_, Scene::Transform* mesh_);
 };

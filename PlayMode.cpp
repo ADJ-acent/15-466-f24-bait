@@ -61,29 +61,14 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 PlayMode::PlayMode() : scene(*main_scene) {
-	scene.add(*puffer_scene);
-	Scene::Transform *puffer_xf = nullptr;
-	Scene::Transform *puffer_cam = nullptr;
-	Scene::Transform *puffer_mesh = nullptr;
-	std::cout<<"debug2\n";
-	for (auto &transform : scene.transforms) {
-		if (transform.name == "PuffMain") {
-			puffer_xf = &transform;
-			std::cout<<"puffer"<<std::endl;
-		}
-		else if (transform.name == "PuffBody") puffer_mesh = &transform;
-	}
-	std::cout<<"debug1\n";
-	
+	puffer = scene.add_puffer(*puffer_scene);
+	puffer.init();
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
-		if (cam.transform->name == "PufferCam") {
-			puffer_cam = cam.transform;
+		if (cam.transform->name == "PuffCam") {
 			camera = &cam;
 		}
 	}
-	puffer = Puffer(puffer_xf, puffer_cam, puffer_mesh);
-	std::cout<<"debug\n";
 }
 
 PlayMode::~PlayMode() {

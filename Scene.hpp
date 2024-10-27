@@ -22,6 +22,8 @@
 #include <vector>
 #include <unordered_map>
 
+struct Puffer;
+
 struct Scene {
 	struct Transform {
 		//Transform names are useful for debugging and looking up locations in a loaded scene:
@@ -152,4 +154,6 @@ struct Scene {
 	void set(Scene const &, std::unordered_map< Transform const *, Transform * > *transform_map = nullptr);
 
 	void add(Scene const &); // add another scene to the current one
+
+	Puffer add_puffer(Scene const &); // add another scene to the current one
 };

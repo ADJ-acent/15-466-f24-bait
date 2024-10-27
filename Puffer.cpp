@@ -8,6 +8,13 @@
 #include <algorithm>
 #include <iostream>
 
+void Puffer::init()
+{
+    original_mesh_scale = mesh->scale;
+    original_mesh_position = mesh->position;
+    original_rotation = main_transform->rotation;
+}
+
 void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
 {
     assert(main_transform);
@@ -43,6 +50,7 @@ void Puffer::release()
         overshoot = true;
         overshoot_target = 1.0f - (current_scale - 1.0f)/2.0f;
         velocity = get_forward() * speed * build_up_time;
+        mesh->position = original_mesh_position;
     }
 }
 
@@ -143,7 +151,7 @@ glm::vec3 Puffer::calculate_jitter(float elapsed)
     float amplitude = 20.0f;
 
     float shake_1 = glm::perlin(glm::vec3(time) * frequency * amplitude);
-    shake += glm::vec3(-shake_1, shake_1, shake_1);
+    shake += glm::vec3(-shake_1, -shake_1, shake_1);
 
     amplitude *= 0.5f;
     frequency *= 2.0f;
@@ -168,12 +176,4 @@ glm::vec3 Puffer::get_forward()
 glm::vec3 Puffer::get_right()
 {
     return main_transform->rotation * glm::vec3(-1,0,0);
-}
-
-Puffer::Puffer(Scene::Transform *transform_, Scene::Transform *camera_, Scene::Transform *mesh_)
- : main_transform(transform_), camera(camera_), mesh(mesh_)
-{
-    original_mesh_scale = mesh->scale;
-    original_mesh_position = mesh->position;
-    original_rotation = main_transform->rotation;
 }
