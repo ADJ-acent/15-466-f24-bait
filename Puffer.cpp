@@ -160,25 +160,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// handle movement
-
-        // constexpr float PlayerSpeed = 30.0f;
-		glm::vec3 move = glm::vec3(0.0f);
-		if (l_downs == 1 && cooldown == 0.0f){
-			move = get_forward() + get_right();
-            move = move * 5.0f;
-            cooldown = 50.0f;
-		} 
-		else if (r_downs==1 && cooldown == 0.0f){
-			move = get_forward() - get_right();
-            move = move * 5.0f;
-            cooldown = 50.0f;
-		} else if (cooldown > 0.0f) {
-            cooldown-=1.0f;
-        }
-
-
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
-        
         velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
         main_transform->position += velocity;
         if (building_up) {
