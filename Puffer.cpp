@@ -110,7 +110,7 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
 
     // keep mesh stationary in world position
     base_rotation*= new_to_old;
-
+    mesh->rotation = base_rotation;
 }
 
 void Puffer::start_build_up()
@@ -223,6 +223,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
             mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
+            base_rotation = mesh->rotation;
         }
     }
 
