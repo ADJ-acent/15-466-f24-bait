@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
-#include <glm/gtx/string_cast.hpp>
 #include <algorithm>
 #include <iostream>
 
@@ -110,7 +109,9 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
 
     // keep mesh stationary in world position
     base_rotation*= new_to_old;
-    mesh->rotation = base_rotation;
+    if (!building_up) { // when building up, orient the fish tail to the screen
+        mesh->rotation = base_rotation;
+    }
 }
 
 void Puffer::start_build_up()
@@ -132,6 +133,7 @@ void Puffer::release()
         velocity = get_forward() * speed * build_up_time;
         mesh->position = original_mesh_position;
         release_rotate_angle = 20.0f * build_up_time;
+        total_release_angle = 0.0f;
         release_rotate_axis = glm::normalize(glm::linearRand(glm::vec3(-1.0f), glm::vec3(1.0f)));
     }
 }
@@ -212,11 +214,16 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        if (release_rotate_angle > 0.5f) {
+        if (release_rotate_angle > 1.0f) {
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
-            total_release_angle += elapsed * release_rotate_angle;
-            mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
-            release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+            if (building_up) { // experimental...conflicted on how this feels
+                mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
+            }
+            else {
+                total_release_angle += elapsed * release_rotate_angle;
+                mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
+                release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+            }
         }
         else {//only return to tail view when we aren't rolling
             // update mesh rotation to return to normal (if we rotated camera recently)

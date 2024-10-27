@@ -48,7 +48,7 @@ struct Puffer {
     inline static constexpr float puffer_scale_recover_halflife = .1f;
     inline static constexpr float puffer_velocity_halflife = .3f;
     inline static constexpr float puffer_rotation_return_halflife = 0.1f;
-    inline static constexpr float puffer_rotation_release_halflife = .5f;
+    inline static constexpr float puffer_rotation_release_halflife = .3f;
     inline static constexpr float speed = .5f;
 
     void init();
