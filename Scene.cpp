@@ -2,6 +2,7 @@
 
 #include "gl_errors.hpp"
 #include "read_write_chunk.hpp"
+#include "Puffer.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -374,4 +375,161 @@ void Scene::set(Scene const &other, std::unordered_map< Transform const *, Trans
 	for (auto &l : lights) {
 		l.transform = transform_to_transform.at(l.transform);
 	}
+}
+
+
+void Scene::add(Scene const &other) {
+
+	std::unordered_map< Transform const *, Transform * > t2t_temp;
+	std::unordered_map< Transform const *, Transform * > &transform_to_transform = t2t_temp;
+
+	transform_to_transform.clear();
+
+	//null transform maps to itself:
+	transform_to_transform.insert(std::make_pair(nullptr, nullptr));
+	
+	//Copy transforms and store mapping:
+	for (auto const &t : other.transforms) {
+		transforms.emplace_back();
+		transforms.back().name = t.name;
+		transforms.back().position = t.position;
+		transforms.back().rotation = t.rotation;
+		transforms.back().scale = t.scale;
+		transforms.back().parent = t.parent; //will update later
+
+		//store mapping between transforms old and new:
+		auto ret = transform_to_transform.insert(std::make_pair(&t, &transforms.back()));
+		assert(ret.second);
+	}
+
+	//update transform parents:
+	for (auto &t : transforms) {
+		if (transform_to_transform.find(t.parent) != transform_to_transform.end()){
+			t.parent = transform_to_transform.at(t.parent);
+		};
+	}
+
+	//copy other's drawables, updating transform pointers:
+	std::list<Scene::Drawable> tmp_drawables = other.drawables;
+	for (auto &d : tmp_drawables) {
+		d.transform = transform_to_transform.at(d.transform);
+	}
+	drawables.insert(drawables.end(), tmp_drawables.begin(), tmp_drawables.end());
+
+	//copy other's cameras, updating transform pointers:
+	std::list<Scene::Camera> tmp_cameras  = other.cameras;
+	for (auto &c : tmp_cameras) {
+		if (transform_to_transform.find(c.transform) != transform_to_transform.end()){
+			c.transform = transform_to_transform.at(c.transform);
+		}
+	}
+	cameras.insert(cameras.end(), tmp_cameras.begin(), tmp_cameras.end());
+
+	//copy other's lights, updating transform pointers:
+	std::list<Scene::Light> tmp_lights  = other.lights;
+	for (auto &l : tmp_lights) {
+		if (transform_to_transform.find(l.transform) != transform_to_transform.end()){
+			l.transform = transform_to_transform.at(l.transform);
+		}
+	}
+	lights.insert(lights.end(), tmp_lights.begin(), tmp_lights.end());
+}
+
+Puffer Scene::add_puffer(Scene const &other) {
+	Puffer puffer;
+
+	std::unordered_map< Transform const *, Transform * > t2t_temp;
+	std::unordered_map< Transform const *, Transform * > &transform_to_transform = t2t_temp;
+
+	transform_to_transform.clear();
+
+	//null transform maps to itself:
+	transform_to_transform.insert(std::make_pair(nullptr, nullptr));
+	
+	//Copy transforms and store mapping:
+	for (auto const &t : other.transforms) {
+		transforms.emplace_back();
+		transforms.back().name = t.name;
+		transforms.back().position = t.position;
+		transforms.back().rotation = t.rotation;
+		transforms.back().scale = t.scale;
+		transforms.back().parent = t.parent; //will update later
+		if (t.name == "PuffMain") {
+			puffer.main_transform = &transforms.back();
+		}
+		else if (t.name == "PuffMesh") {
+			puffer.mesh = &transforms.back();
+		}
+		else if (t.name == "PuffCam") {
+			puffer.camera = &transforms.back();
+		}
+		else if (t.name == "PuffBody") {
+			puffer.mesh_parts.puff_body = &transforms.back();
+		}
+		else if (t.name == "PuffLBlush") {
+			puffer.mesh_parts.puff_l_blush = &transforms.back();
+		}
+		else if (t.name == "PuffLEye") {
+			puffer.mesh_parts.puff_l_eye = &transforms.back();
+		}
+		else if (t.name == "PuffLFin") {
+			puffer.mesh_parts.puff_l_fin = &transforms.back();
+		}
+		else if (t.name == "PuffMouth") {
+			puffer.mesh_parts.puff_mouth = &transforms.back();
+		}
+		else if (t.name == "PuffRBlush") {
+			puffer.mesh_parts.puff_r_blush = &transforms.back();
+		}
+		else if (t.name == "PuffREye") {
+			puffer.mesh_parts.puff_r_eye = &transforms.back();
+		}
+		else if (t.name == "PuffRFin") {
+			puffer.mesh_parts.puff_r_fin = &transforms.back();
+		}
+		else if (t.name == "PuffSpikes") {
+			puffer.mesh_parts.puff_spikes = &transforms.back();
+		}
+		else if (t.name == "PuffTail") {
+			puffer.mesh_parts.puff_tail = &transforms.back();
+		}
+
+		//store mapping between transforms old and new:
+		auto ret = transform_to_transform.insert(std::make_pair(&t, &transforms.back()));
+		assert(ret.second);
+	}
+
+	//update transform parents:
+	for (auto &t : transforms) {
+		if (transform_to_transform.find(t.parent) != transform_to_transform.end()){
+			t.parent = transform_to_transform.at(t.parent);
+		};
+	}
+
+	//copy other's drawables, updating transform pointers:
+	std::list<Scene::Drawable> tmp_drawables = other.drawables;
+	for (auto &d : tmp_drawables) {
+		d.transform = transform_to_transform.at(d.transform);
+	}
+	drawables.insert(drawables.end(), tmp_drawables.begin(), tmp_drawables.end());
+
+	//copy other's cameras, updating transform pointers:
+	std::list<Scene::Camera> tmp_cameras  = other.cameras;
+	for (auto &c : tmp_cameras) {
+		if (transform_to_transform.find(c.transform) != transform_to_transform.end()){
+			c.transform = transform_to_transform.at(c.transform);
+		}
+	}
+	cameras.insert(cameras.end(), tmp_cameras.begin(), tmp_cameras.end());
+
+	//copy other's lights, updating transform pointers:
+	std::list<Scene::Light> tmp_lights  = other.lights;
+	for (auto &l : tmp_lights) {
+		if (transform_to_transform.find(l.transform) != transform_to_transform.end()){
+			l.transform = transform_to_transform.at(l.transform);
+		}
+	}
+	lights.insert(lights.end(), tmp_lights.begin(), tmp_lights.end());
+
+	return puffer;
 }

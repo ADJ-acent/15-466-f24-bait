@@ -13,9 +13,16 @@
 #include <random>
 
 GLuint main_scene_for_lit_color_texture_program = 0;
+GLuint puffer_scene_for_lit_color_texture_program = 0;
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/andy-dev.pnct"));
 	main_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
+	puffer_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -36,23 +43,32 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/pufferfish.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = pufferfish_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = puffer_scene_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
+});
+
 PlayMode::PlayMode() : scene(*main_scene) {
-	//get pointers to leg for convenience:
-	Scene::Transform *puffer_xf = nullptr;
-	Scene::Transform *puffer_cam = nullptr;
-	Scene::Transform *puffer_mesh = nullptr;
-	for (auto &transform : scene.transforms) {
-		if (transform.name == "Puffer") puffer_xf = &transform;
-		else if (transform.name == "PufferCam") puffer_cam = &transform;
-		else if (transform.name == "PufferMesh") puffer_mesh = &transform;
-	}
-	puffer = Puffer(puffer_xf, puffer_cam, puffer_mesh);
-	if (puffer.transform == nullptr) throw std::runtime_error("Puffer not found.");
-
+	puffer = scene.add_puffer(*puffer_scene);
+	puffer.init();
 	//get pointer to camera for convenience:
-	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
-	camera = &scene.cameras.front();
-
+	for (auto& cam : scene.cameras) {
+		if (cam.transform->name == "PuffCam") {
+			camera = &cam;
+		}
+	}
 }
 
 PlayMode::~PlayMode() {
@@ -81,9 +97,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
-			if (puffer.transform) {
-				puffer.start_build_up();
-			}
+			puffer.start_build_up();
 		}
 	} else if (evt.type == SDL_KEYUP) {
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -99,9 +113,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
-			if (puffer.transform) {
-				puffer.release();
-			}
+			puffer.release();
 		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
@@ -122,9 +134,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
-
-	puffer.update(mouse_motion, elapsed,left.downs,right.downs);
-
+	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
+	puffer.update(mouse_motion, swim_direction, elapsed);
 	//reset button press counters:
 	left.downs = 0;
 	right.downs = 0;
