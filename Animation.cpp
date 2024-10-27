@@ -1,6 +1,6 @@
 #include "Animation.hpp"
 
-glm::vec3 LinearAnimation::get_value(float t)
+void LinearAnimation::update(float t) // set animation to current time
 {
     auto it = std::lower_bound(frames.begin(), frames.end(), t,
         [](const LinearFrame& frame, float t) {
@@ -8,14 +8,16 @@ glm::vec3 LinearAnimation::get_value(float t)
     });
 
     if (it == frames.begin()) {
-        return it->value;
+        *target = it->value;
+        return;
     } else if (it == frames.end()) {
-        return (it - 1)->value;
+        *target = (it - 1)->value;
+        return;
     }
     auto& frame1 = *(it - 1);
     auto& frame2 = *it;
 
     float factor = (t - frame1.time) / (frame2.time - frame1.time);
 
-    return glm::mix(frame1.value, frame2.value, factor);
+    *target = glm::mix(frame1.value, frame2.value, factor);
 }

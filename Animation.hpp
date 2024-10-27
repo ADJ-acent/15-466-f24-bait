@@ -10,7 +10,10 @@ struct LinearFrame { // only translation and scale
 
 struct LinearAnimation {
     std::vector<LinearFrame> frames;
-    glm::vec3 get_value(float t);
+    glm::vec3 *target;
 
-    LinearAnimation(std::vector<LinearFrame> frames_) : frames(frames_){};
+    void update(float t);
+
+    LinearAnimation(std::vector<LinearFrame> frames_, glm::vec3 *target_) : frames(frames_), target(target_){};
+    LinearAnimation() = delete;
 };
