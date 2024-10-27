@@ -30,6 +30,7 @@ struct Puffer {
     float overshoot_target = 0.5f;
     float swim_cooldown = 1.0f;
     float release_rotate_angle = 0.0f;
+    float total_release_angle = 0.0f;
 
     bool building_up = false;
     bool recovered = true;
@@ -39,6 +40,7 @@ struct Puffer {
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
     glm::quat original_mesh_rotation = glm::quat();
     glm::quat original_rotation = glm::quat();
+    glm::quat base_rotation = glm::quat();
     glm::vec3 velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
 

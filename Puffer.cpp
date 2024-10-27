@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
-
+#include <glm/gtx/string_cast.hpp>
 #include <algorithm>
 #include <iostream>
 
@@ -13,6 +13,7 @@ void Puffer::init()
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
     original_mesh_rotation = mesh->rotation;
+    base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
 
     { //set up build up animations
@@ -108,8 +109,8 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
     glm::quat new_to_old = glm::inverse(main_transform->rotation) * old_rotation;
 
     // keep mesh stationary in world position
-    mesh->rotation *= new_to_old;
-    
+    base_rotation*= new_to_old;
+
 }
 
 void Puffer::start_build_up()
@@ -138,19 +139,7 @@ void Puffer::release()
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
     assert(main_transform);
-    {// mesh rotation
-        if (release_rotate_angle > 0.5f) {
-            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
-            mesh->rotation *=  glm::angleAxis(elapsed *release_rotate_angle, release_rotate_axis);
-            release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
-        }
-        else {//only return to tail view when we aren't rolling
-            // update mesh rotation to return to normal (if we rotated camera recently)
-            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
-            
-        }
-    }
+
     rotate_from_mouse(mouse_motion);
 
     constexpr float swim_cooldown_threshold = 0.6f;
@@ -219,6 +208,21 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         update_build_up_animations(current_scale-1.0f);
         if (current_scale < 1.0f) {
             mesh->scale = original_mesh_scale * current_scale;
+        }
+    }
+
+    {// mesh rotation
+        if (release_rotate_angle > 0.5f) {
+            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
+            total_release_angle += elapsed * release_rotate_angle;
+            mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
+            release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+        }
+        else {//only return to tail view when we aren't rolling
+            // update mesh rotation to return to normal (if we rotated camera recently)
+            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
+            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
+            total_release_angle = 0.0f;
         }
     }
 
