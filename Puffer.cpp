@@ -69,8 +69,6 @@ void Puffer::update(glm::vec2 mouse_motion, float elapsed,float l_downs, float r
             cooldown-=1.0f;
         }
 
-        
-
 
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
         
