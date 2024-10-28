@@ -22,7 +22,13 @@
 #include <vector>
 #include <unordered_map>
 
+// #include "Spawner.hpp"
+
 struct Puffer;
+
+enum type_of_spawn {FISH,PUFFER,BAIT};
+// std::vector<std::string> puffer_transform_names =  { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush"
+// , "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
 
 struct Scene {
 	struct Transform {
@@ -156,4 +162,7 @@ struct Scene {
 	void add(Scene const &); // add another scene to the current one
 
 	Puffer add_puffer(Scene const &); // add another scene to the current one
+
+	std::vector< Scene::Transform * > spawn(Scene const &other_scene, type_of_spawn type_of_spawn);
+
 };

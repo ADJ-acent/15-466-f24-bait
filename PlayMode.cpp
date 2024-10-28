@@ -5,6 +5,8 @@
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
 #include "Load.hpp"
+// #include "Spawner.hpp"
+// #include "Scene.hpp"
 #include "gl_errors.hpp"
 #include "data_path.hpp"
 
@@ -61,8 +63,10 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 PlayMode::PlayMode() : scene(*main_scene) {
-	puffer = scene.add_puffer(*puffer_scene);
-	puffer.init();
+	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
+	puffer.init(puffer_transforms);
+	// puffer = scene.add_puffer(*puffer_scene);
+	// puffer.init();
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
 		if (cam.transform->name == "PuffCam") {

@@ -7,14 +7,19 @@
 #include <algorithm>
 #include <iostream>
 
-void Puffer::init()
+void Puffer::init(std::vector< Scene::Transform * > transform_vector)
 {
+    
+    assign_mesh_parts(transform_vector);
+
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
     original_mesh_rotation = mesh->rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
 
+    
+    
     { //set up build up animations
         build_up_animations.reserve(10);
         build_up_animations.push_back(LinearAnimation({
@@ -140,6 +145,7 @@ void Puffer::release()
 
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
+    std::cout<< "DEBUG" << main_transform;
     assert(main_transform);
 
     rotate_from_mouse(mouse_motion);
@@ -249,6 +255,54 @@ void Puffer::swim(int8_t swim_direction)
 
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.03f * build_up_penaulty) * get_right();
 
+}
+
+void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)
+{
+    for (auto t : transform_vector){
+        // transform_vector.back()
+        if (t->name == "PuffMain") {
+            main_transform = t;
+        }
+        else if (t->name == "PuffMesh") {
+            mesh = t;
+        }
+        else if (t->name == "PuffCam") {
+            camera = t;
+        }
+        else if (t->name == "PuffBody") {
+            mesh_parts.puff_body = t;
+        }
+        else if (t->name == "PuffLBlush") {
+            mesh_parts.puff_l_blush = t;
+        }
+        else if (t->name == "PuffLEye") {
+            mesh_parts.puff_l_eye = t;
+        }
+        else if (t->name == "PuffLFin") {
+            mesh_parts.puff_l_fin = t;
+        }
+        else if (t->name == "PuffMouth") {
+            mesh_parts.puff_mouth = t;
+        }
+        else if (t->name == "PuffRBlush") {
+            mesh_parts.puff_r_blush = t;
+        }
+        else if (t->name == "PuffREye") {
+            mesh_parts.puff_r_eye = t;
+        }
+        else if (t->name == "PuffRFin") {
+            mesh_parts.puff_r_fin = t;
+        }
+        else if (t->name == "PuffSpikes") {
+            mesh_parts.puff_spikes = t;
+        }
+        else if (t->name == "PuffTail") {
+            mesh_parts.puff_tail = t;
+        }
+
+    }
+    
 }
 
 glm::vec3 Puffer::calculate_jitter(float elapsed)
