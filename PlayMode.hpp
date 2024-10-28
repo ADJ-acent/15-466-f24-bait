@@ -37,6 +37,8 @@ struct PlayMode : Mode {
 
 	Puffer puffer = Puffer();
 	Bait bait = Bait();
+	Bait bait2 = Bait();
+	Bait bait3 = Bait();
 	
 	//camera:
 	Scene::Camera *camera = nullptr;

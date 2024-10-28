@@ -16,4 +16,5 @@ struct Bait {
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
     
+    void update(float elapsed);
 };
