@@ -29,6 +29,7 @@ struct QTE {
     float timer;         
     float time_limit = 3.0f;    
     float input_delay;
+    int success_count, success_count_goal;
     SDL_Keycode required_key;   
 
     // Possible keys for the QTE
@@ -39,6 +40,7 @@ struct QTE {
 
     void start(); 
     void update(float elapsed); 
+    void reset();
     void end();
 
     // Draw the QTE text

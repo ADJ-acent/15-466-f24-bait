@@ -5,6 +5,8 @@ void QTE::start() {
     success = false;
     timer = time_limit;
     input_delay = 2.0f;
+    success_count = 0;
+    success_count_goal = 3;
 
     std::srand(std::time(0));
     int random_index = std::rand() % possible_keys.size();
@@ -25,18 +27,23 @@ void QTE::update(float elapsed) {
     const Uint8 *state = SDL_GetKeyboardState(NULL);
     
     if (state[SDL_GetScancodeFromKey(required_key)]) {
-        success = true;
-        std::cout << "QTE Success!" << std::endl;
-        end();
+        success_count++;
+        if(success_count == success_count_goal){
+            success = true;
+            end();
+        }
+
+        reset();
+        std::cout << success_count << std::endl;
+        
         return;
     }
     
     for (int i = 0; i < SDL_NUM_SCANCODES; ++i) {
         if (state[i] && SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(i)) != required_key) {
-            // A key is pressed and it's not the required key
             std::cout << "QTE Failed! Wrong Key Pressed!" << std::endl;
             end();
-            return;  // End the QTE if failure
+            return;
         }
     }
 
@@ -47,6 +54,14 @@ void QTE::update(float elapsed) {
     }
 }
 
+void QTE::reset(){
+    input_delay = 2.0f;
+    timer = time_limit;
+    std::srand(std::time(0));
+    int random_index = std::rand() % possible_keys.size();
+    required_key = possible_keys[random_index];
+}
+
 void QTE::end(){
-        active = false;
+    active = false;
 }
