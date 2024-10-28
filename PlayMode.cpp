@@ -90,23 +90,26 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	active_bait = {};
 	Bait bait_1 = Bait();
-	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*puffer_scene,CIRCLE_BAIT);
+	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
 	bait_1.init(bait_1_transforms,0);
 
 	active_bait.emplace_back(bait_1);
 
 
-	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
+	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
 
-	// for(Bait b : active_bait){
-	// 	std::cout << b.type_of_bait;
-    // 	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
-	// 	if(b.type_of_bait==0){
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
-	// 	} else {
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
-	// 	}
-	// }
+	for(Bait b : active_bait){
+		std::cout << b.type_of_bait;
+    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+		if(b.type_of_bait==0){
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+		} else {
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+		}
+		eat_bait_QTE = new QTE(puffer.main_transform,b.mesh_parts.bait_string,b.mesh_parts.bait_base);
+
+	}
+
 
 
 	// puffer = scene.add_puffer(*puffer_scene);
@@ -198,15 +201,15 @@ void PlayMode::update(float elapsed) {
 		
 		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
 
-		// for(Bait b : active_bait){
-		// 	std::cout << b.type_of_bait;
-		// 	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
-		// 	if(b.type_of_bait==0){
-		// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
-		// 	} else {
-		// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
-		// 	}
-		// }
+		for(Bait b : active_bait){
+			std::cout << b.type_of_bait;
+			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+			if(b.type_of_bait==0){
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+			} else {
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+			}
+		}
 
 		if(fish_collider.collides(bait_collider)){
 			collide_with_bait = true;
@@ -217,11 +220,11 @@ void PlayMode::update(float elapsed) {
 	}
 
 	{
-		if((collide_with_bait && eat.pressed) && !eat_bait_QTE.active){
-			eat_bait_QTE.start();
+		if((collide_with_bait && eat.pressed) && !eat_bait_QTE->active){
+			eat_bait_QTE->start(3);
 		}
 
-		eat_bait_QTE.update(elapsed);
+		eat_bait_QTE->update(elapsed);
 	}
 
 	//reset button press counters:
@@ -266,13 +269,13 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.3f;
 
-		if(eat_bait_QTE.active && eat_bait_QTE.input_delay <= 0){
-			lines.draw_text(eat_bait_QTE.get_prompt(),
+		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0){
+			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text(eat_bait_QTE.get_prompt(),
+			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
@@ -288,6 +291,15 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		} 
+		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
+			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+		float ofs = 2.0f / drawable_size.y;
+        lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+            glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
+            glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+            glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 	}
 	GL_ERRORS();
 }

@@ -49,7 +49,7 @@ struct PlayMode : Mode {
 
 	bool qte_active;
 
-	QTE eat_bait_QTE;
+	QTE *eat_bait_QTE = nullptr;
 	
 	std::vector< Bait > active_bait;
 
