@@ -88,9 +88,26 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
-	fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
-    rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
-    bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
+	active_bait = {};
+	Bait bait_1 = Bait();
+	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*puffer_scene,CIRCLE_BAIT);
+	bait_1.init(bait_1_transforms,0);
+
+	active_bait.emplace_back(bait_1);
+
+
+	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
+
+	for(Bait b : active_bait){
+		std::cout << b.type_of_bait;
+    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+		if(b.type_of_bait==0){
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+		} else {
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+		}
+	}
+
 
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
@@ -176,10 +193,19 @@ void PlayMode::update(float elapsed) {
 	puffer.update(mouse_motion, swim_direction, elapsed);
 
 	//collision check:
-	{
-		fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
-		rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
-		bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
+	{		
+		
+		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
+
+		for(Bait b : active_bait){
+			std::cout << b.type_of_bait;
+			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+			if(b.type_of_bait==0){
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+			} else {
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+			}
+		}
 
 		if(fish_collider.collides(bait_collider)){
 			collide_with_bait = true;

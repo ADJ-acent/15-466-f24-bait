@@ -2,7 +2,6 @@
 
 #include "Scene.hpp"
 #include "Sound.hpp"
-#include "Collide.hpp"
 #include "QTE.hpp"
 
 #include <glm/glm.hpp>
@@ -43,7 +42,7 @@ struct PlayMode : Mode {
 	Scene::Transform *bait = nullptr;
 
 	Collider fish_collider;
-	Collider rope_collider;
+	Collider string_collider;
 	Collider bait_collider;
 
 	bool collide_with_bait;
@@ -52,6 +51,7 @@ struct PlayMode : Mode {
 
 	QTE eat_bait_QTE;
 	
+	std::vector< Bait > active_bait;
 
 
 
