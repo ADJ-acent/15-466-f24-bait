@@ -88,6 +88,10 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
+	fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
+    rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
+    bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
+
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
 	//get pointer to camera for convenience:
@@ -125,6 +129,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.start_build_up();
+		} else if (evt.key.keysym.sym == SDLK_e) {
+			eat.downs += 1;
+			eat.pressed = true;
+			return true;
 		}
 	} else if (evt.type == SDL_KEYUP) {
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -138,6 +146,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_e) {
+			eat.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.release();
@@ -164,12 +175,35 @@ void PlayMode::update(float elapsed) {
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
 
+	//collision check:
+	{
+		fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
+		rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
+		bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
+
+		if(fish_collider.collides(bait_collider)){
+			collide_with_bait = true;
+		}
+		else{
+			collide_with_bait = false;
+		}
+	}
+
+	{
+		if((collide_with_bait && eat.pressed) && !eat_bait_QTE.active){
+			eat_bait_QTE.start();
+		}
+
+		eat_bait_QTE.update(elapsed);
+	}
+
 	//reset button press counters:
 	left.downs = 0;
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
 	mouse_motion = glm::vec2(0);
+	eat.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -203,16 +237,30 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			0.0f, 0.0f, 0.0f, 1.0f
 		));
 
-		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		constexpr float H = 0.3f;
+
+		if(eat_bait_QTE.active && eat_bait_QTE.input_delay <= 0){
+			lines.draw_text(eat_bait_QTE.get_prompt(),
+				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text(eat_bait_QTE.get_prompt(),
+				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		}
+		else if(collide_with_bait){
+			lines.draw_text("Press E to eat the bait",
+				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text("Press E to eat the bait",
+				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		} 
 	}
 	GL_ERRORS();
 }

@@ -2,6 +2,8 @@
 
 #include "Scene.hpp"
 #include "Sound.hpp"
+#include "Collide.hpp"
+#include "QTE.hpp"
 
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
@@ -25,7 +27,7 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up;
+	} left, right, down, up, eat;
 
 	glm::vec2 mouse_motion = glm::vec2(0);
 
@@ -35,6 +37,24 @@ struct PlayMode : Mode {
 	Scene scene;
 
 	Puffer puffer = Puffer();
+
+	Scene::Transform *fish = nullptr;
+	Scene::Transform *rope = nullptr;
+	Scene::Transform *bait = nullptr;
+
+	Collider fish_collider;
+	Collider rope_collider;
+	Collider bait_collider;
+
+	bool collide_with_bait;
+
+	bool qte_active;
+
+	QTE eat_bait_QTE;
+	
+
+
+
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
