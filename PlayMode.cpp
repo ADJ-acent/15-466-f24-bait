@@ -55,6 +55,8 @@ PlayMode::PlayMode() : scene(*fish_behavior_scene) {
     rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
     bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
 
+	eat_bait_QTE = new QTE(fish, rope, bait);
+
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
 	camera = &scene.cameras.front();
@@ -162,7 +164,7 @@ void PlayMode::update(float elapsed) {
 		rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
 		bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
 
-		if(fish_collider.collides(bait_collider)){
+		if(fish_collider.collides(bait_collider) && bait->scale != glm::vec3(0.0f, 0.0f, 0.0f)){
 			collide_with_bait = true;
 		}
 		else{
@@ -171,11 +173,10 @@ void PlayMode::update(float elapsed) {
 	}
 
 	{
-		if((collide_with_bait && eat.pressed) && !eat_bait_QTE.active){
-			eat_bait_QTE.start();
+		if((collide_with_bait && eat.pressed) && !eat_bait_QTE->active){
+			eat_bait_QTE->start(5);
 		}
-
-		eat_bait_QTE.update(elapsed);
+		eat_bait_QTE->update(elapsed);
 	}
 
 	{ //update listener to camera position:
@@ -226,28 +227,38 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.3f;
 
-		if(eat_bait_QTE.active && eat_bait_QTE.input_delay <= 0){
-			lines.draw_text(eat_bait_QTE.get_prompt(),
-				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0){
+			lines.draw_text(eat_bait_QTE->get_prompt(),
+				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text(eat_bait_QTE.get_prompt(),
-				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+			lines.draw_text(eat_bait_QTE->get_prompt(),
+				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		}
-		else if(collide_with_bait && !eat_bait_QTE.active){
+		else if(collide_with_bait && !eat_bait_QTE->active){
 			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 			float ofs = 2.0f / drawable_size.y;
 			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
-		} 
+		}
+
+		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
+			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+		float ofs = 2.0f / drawable_size.y;
+		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
+			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 	}
 	GL_ERRORS();
 }
