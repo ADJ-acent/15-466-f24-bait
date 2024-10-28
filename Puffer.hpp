@@ -22,6 +22,7 @@ struct Puffer {
     } mesh_parts;
 
     std::vector<LinearAnimation> build_up_animations;
+    std::vector<SlerpAnimation> swim_animation;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
@@ -31,6 +32,7 @@ struct Puffer {
     float swim_cooldown = 1.0f;
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
+    uint8_t swimming_side = 0; // 0 is left, 1 is right
 
     bool building_up = false;
     bool recovered = true;
