@@ -18,6 +18,7 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
     original_swim_rotation = original_mesh_rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
+    mesh->rotation = original_swim_rotation;
     
     { //set up build up animations
         build_up_animations.reserve(10);
@@ -171,7 +172,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     constexpr float swim_cooldown_threshold = 0.8f;
 
     if (swim_cooldown == 0.0f) {
-        if (swim_direction != 0) {
+        if (swim_direction != 0 && !building_up) { //disable swimming when charging up
             swim(swim_direction);
             swim_cooldown = 0.001f; // increment slightly to start the timer
         }
