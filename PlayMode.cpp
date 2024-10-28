@@ -5,8 +5,6 @@
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
 #include "Load.hpp"
-// #include "Spawner.hpp"
-// #include "Scene.hpp"
 #include "gl_errors.hpp"
 #include "data_path.hpp"
 
@@ -89,13 +87,27 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
-	
-	std::vector<Scene::Transform *> bait_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
-	bait.init(bait_transforms);
-	std::vector<Scene::Transform *> bait_transforms_2 = scene.spawn(*bait_scene,SQUARE_BAIT);
-	bait2.init(bait_transforms_2);
-	std::vector<Scene::Transform *> bait_transforms_3 = scene.spawn(*bait_scene,SQUARE_BAIT);
-	bait3.init(bait_transforms_3);
+
+	active_bait = {};
+	Bait bait_1 = Bait();
+	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
+	bait_1.init(bait_1_transforms,0);
+
+	active_bait.emplace_back(bait_1);
+
+	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
+
+	for(Bait b : active_bait){
+    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+		if(b.type_of_bait==0){
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+		} else {
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+		}
+	}
+
+	eat_bait_QTE = new QTE();
+
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
 	//get pointer to camera for convenience:
@@ -133,6 +145,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.start_build_up();
+		} else if (evt.key.keysym.sym == SDLK_e) {
+			eat.downs += 1;
+			eat.pressed = true;
+			return true;
 		}
 	} else if (evt.type == SDL_KEYUP) {
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -146,6 +162,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_e) {
+			eat.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.release();
@@ -171,13 +190,53 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 void PlayMode::update(float elapsed) {
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
-	bait2.update(elapsed);
+
+	//collision check:
+	//if fish collided with bait and eat button pressed
+	//new QTE initialized
+	{		
+		
+		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
+
+		for(Bait b : active_bait){
+			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+			if(b.type_of_bait==0){
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+			} else {
+				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+			}
+
+			if(fish_collider.collides(b.bait_collider)){
+				collide_with_bait = true;
+			}
+			else{
+				collide_with_bait = false;
+			}
+
+			if((collide_with_bait && eat.pressed) && !qte_active){
+				std::cout << "new QTE created" << std::endl;
+				qte_active = true;
+				eat_bait_QTE = new QTE(puffer.main_transform,b.mesh_parts.bait_string,b.mesh_parts.bait_base);
+				eat_bait_QTE->start(3);
+			}
+		}
+	}
+
+	{
+		eat_bait_QTE->update(elapsed);
+
+		if(!eat_bait_QTE->active){
+			qte_active = false;
+		}
+	}
+
 	//reset button press counters:
 	left.downs = 0;
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
 	mouse_motion = glm::vec2(0);
+	eat.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -211,16 +270,40 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			0.0f, 0.0f, 0.0f, 1.0f
 		));
 
-		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+		constexpr float H = 0.3f;
+
+		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0){
+			lines.draw_text(eat_bait_QTE->get_prompt(),
+				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text(eat_bait_QTE->get_prompt(),
+				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		}
+		else if(collide_with_bait && !qte_active){
+			lines.draw_text("Press E to eat the bait",
+				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text("Press E to eat the bait",
+				glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		} 
+
+		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+        lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+            glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
+            glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+            glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 	}
 	GL_ERRORS();
 }

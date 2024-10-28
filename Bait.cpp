@@ -1,9 +1,10 @@
 #include "Bait.hpp"
 #include <iostream>
 
-void Bait::init(std::vector<Scene::Transform *> transform_vector)
+void Bait::init(std::vector<Scene::Transform *> transform_vector, int tob)
 {
     assign_mesh_parts(transform_vector);
+    type_of_bait = tob;
 }
 
 void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
