@@ -16,8 +16,8 @@ struct QTE {
     int success_count, success_count_goal, score = 0;
 
     Scene::Transform *fish = nullptr;
-Scene::Transform *rope = nullptr;
-Scene::Transform *bait = nullptr;
+    Scene::Transform *rope = nullptr;
+    Scene::Transform *bait = nullptr;
 
     SDL_Keycode required_key;   
 
@@ -30,6 +30,8 @@ Scene::Transform *bait = nullptr;
         this->rope = rope;
         this->bait = bait;
     }
+    
+    QTE(){}
 
     void start(int goal); 
     void update(float elapsed); 

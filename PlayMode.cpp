@@ -95,29 +95,24 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	active_bait.emplace_back(bait_1);
 
-
 	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
 
 	for(Bait b : active_bait){
-		std::cout << b.type_of_bait;
     	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
 		if(b.type_of_bait==0){
 			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
 		} else {
 			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
 		}
-		eat_bait_QTE = new QTE(puffer.main_transform,b.mesh_parts.bait_string,b.mesh_parts.bait_base);
-
 	}
 
-
+	eat_bait_QTE = new QTE();
 
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
 		if (cam.transform->name == "PuffCam") {
-			std::cout << cam.transform->name;
 			camera = &cam;
 		}
 	}
@@ -197,34 +192,42 @@ void PlayMode::update(float elapsed) {
 	puffer.update(mouse_motion, swim_direction, elapsed);
 
 	//collision check:
+	//if fish collided with bait and eat button pressed
+	//new QTE initialized
 	{		
 		
-		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
+		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
 
 		for(Bait b : active_bait){
-			std::cout << b.type_of_bait;
 			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
 			if(b.type_of_bait==0){
 				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
 			} else {
 				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
 			}
-		}
 
-		if(fish_collider.collides(bait_collider)){
-			collide_with_bait = true;
-		}
-		else{
-			collide_with_bait = false;
+			if(fish_collider.collides(b.bait_collider)){
+				collide_with_bait = true;
+			}
+			else{
+				collide_with_bait = false;
+			}
+
+			if((collide_with_bait && eat.pressed) && !qte_active){
+				std::cout << "new QTE created" << std::endl;
+				qte_active = true;
+				eat_bait_QTE = new QTE(puffer.main_transform,b.mesh_parts.bait_string,b.mesh_parts.bait_base);
+				eat_bait_QTE->start(3);
+			}
 		}
 	}
 
 	{
-		if((collide_with_bait && eat.pressed) && !eat_bait_QTE->active){
-			eat_bait_QTE->start(3);
-		}
-
 		eat_bait_QTE->update(elapsed);
+
+		if(!eat_bait_QTE->active){
+			qte_active = false;
+		}
 	}
 
 	//reset button press counters:
@@ -280,7 +283,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		}
-		else if(collide_with_bait){
+		else if(collide_with_bait && !qte_active){
 			lines.draw_text("Press E to eat the bait",
 				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
@@ -291,6 +294,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		} 
+
 		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
 			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),

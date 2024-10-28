@@ -47,15 +47,12 @@ struct PlayMode : Mode {
 
 	bool collide_with_bait;
 
-	bool qte_active;
+	bool qte_active = false;
 
 	QTE *eat_bait_QTE = nullptr;
 	
 	std::vector< Bait > active_bait;
 
-
-
-	
 	//camera:
 	Scene::Camera *camera = nullptr;
 

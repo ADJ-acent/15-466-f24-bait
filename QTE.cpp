@@ -2,6 +2,7 @@
 
 void QTE::start(int goal) {
     active = true;
+    std::cout << "QTE is active now" << std::endl;
     success = false;
     failure = false;
     timer = time_limit;
