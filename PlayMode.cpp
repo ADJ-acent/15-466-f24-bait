@@ -145,6 +145,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.start_build_up();
+			return true;
 		} else if (evt.key.keysym.sym == SDLK_e) {
 			eat.downs += 1;
 			eat.pressed = true;

@@ -10,7 +10,7 @@ void QTE::start(int goal) {
     success_count = 0;
     success_count_goal = goal;
 
-    std::srand(std::time(0));
+    std::srand(uint32_t(std::time(0)));
     int random_index = std::rand() % possible_keys.size();
     required_key = possible_keys[random_index];
 }
@@ -68,7 +68,7 @@ void QTE::update(float elapsed) {
 void QTE::reset(){
     input_delay = 2.0f;
     timer = time_limit;
-    std::srand(std::time(0));
+    std::srand(uint32_t(std::time(0)));
     int random_index = std::rand() % possible_keys.size();
     required_key = possible_keys[random_index];
 }
