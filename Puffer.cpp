@@ -145,7 +145,6 @@ void Puffer::release()
 
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
-    std::cout<< "DEBUG" << main_transform;
     assert(main_transform);
 
     rotate_from_mouse(mouse_motion);

@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
+#include "Bait.hpp"
 // #include "Spawner.hpp"
 
 #include <vector>
@@ -35,6 +36,7 @@ struct PlayMode : Mode {
 	Scene scene;
 
 	Puffer puffer = Puffer();
+	Bait bait = Bait();
 	
 	//camera:
 	Scene::Camera *camera = nullptr;

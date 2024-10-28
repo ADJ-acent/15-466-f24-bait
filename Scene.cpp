@@ -549,7 +549,9 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
     //TODO: add other types
     if(type_of_spawn==PUFFER){
         transform_names = { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
-    }
+    } else if (type_of_spawn == BAIT){
+		transform_names = { "circlebait_main", "circlebait_string", "circlebait_base"};
+	}
 
     std::vector< Scene::Transform * > transforms_vector;
  
@@ -559,6 +561,7 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
         //Copy transforms and store mapping:
         for (auto const &t : other.transforms) {
             if(t.name == name){
+
                 transforms.emplace_back();
                 transforms.back().name = t.name;
                 transforms.back().position = t.position;
@@ -584,10 +587,22 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
 
 	//copy other's drawables, updating transform pointers:
 	std::list<Scene::Drawable> tmp_drawables = other.drawables;
-	for (auto &d : tmp_drawables) {
-		d.transform = transform_to_transform.at(d.transform);
-	}
+	// for (auto &d : tmp_drawables) {
+	// 	d.transform = transform_to_transform.at(d.transform);
+	// }
+	// drawables.insert( drawables.end(), tmp_drawables.begin(), tmp_drawables.end());
+
+	//TODO: optimize this
+    for (std::string const & name : transform_names){ //loop over names in given set of names
+        //Copy transforms and store mapping:
+        for (auto &d : tmp_drawables) {
+            if(d.transform->name == name){
+                d.transform = transform_to_transform.at(d.transform);
+            }
+        }
+    }
 	drawables.insert( drawables.end(), tmp_drawables.begin(), tmp_drawables.end());
+
 
 	//copy other's cameras, updating transform pointers:
 	std::list<Scene::Camera> tmp_cameras  = other.cameras;

@@ -16,6 +16,7 @@
 
 GLuint main_scene_for_lit_color_texture_program = 0;
 GLuint puffer_scene_for_lit_color_texture_program = 0;
+GLuint bait_scene_for_lit_color_texture_program = 0;
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/andy-dev.pnct"));
 	main_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
@@ -25,6 +26,12 @@ Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
 	puffer_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
+	bait_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -62,9 +69,28 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = bait_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = bait_scene_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
+});
+
 PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
+	std::vector<Scene::Transform *> bait_transforms = scene.spawn(*bait_scene,BAIT);
+	bait.init(bait_transforms);
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
 	//get pointer to camera for convenience:
