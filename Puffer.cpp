@@ -252,6 +252,9 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 total_release_angle += elapsed * release_rotate_angle;
                 mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
                 release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+                if (release_rotate_angle <= 1.0f) {
+                    base_rotation = mesh->rotation;
+                }
             }
         }
         else {//only return to tail view when we aren't rolling
