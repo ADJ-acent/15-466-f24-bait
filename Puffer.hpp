@@ -51,13 +51,16 @@ struct Puffer {
     inline static constexpr float puffer_rotation_release_halflife = .3f;
     inline static constexpr float speed = .5f;
 
-    void init();
+    void init(std::vector<Scene::Transform * > transform_vector);
+    // void init();
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
+
+    void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
 
     glm::vec3 calculate_jitter(float elapsed);
