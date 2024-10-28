@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
-// #include "Spawner.hpp"
 
 #include <vector>
 #include <deque>
