@@ -43,6 +43,7 @@ struct Puffer {
     glm::quat original_mesh_rotation = glm::quat();
     glm::quat original_rotation = glm::quat();
     glm::quat base_rotation = glm::quat();
+    glm::quat original_swim_rotation = glm::quat(); //original rotation for swimming with flippers
     glm::vec3 velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
 
