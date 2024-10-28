@@ -98,15 +98,15 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
 
-	for(Bait b : active_bait){
-		std::cout << b.type_of_bait;
-    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
-		if(b.type_of_bait==0){
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
-		} else {
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
-		}
-	}
+	// for(Bait b : active_bait){
+	// 	std::cout << b.type_of_bait;
+    // 	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+	// 	if(b.type_of_bait==0){
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+	// 	} else {
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+	// 	}
+	// }
 
 
 	// puffer = scene.add_puffer(*puffer_scene);
@@ -114,6 +114,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
 		if (cam.transform->name == "PuffCam") {
+			std::cout << cam.transform->name;
 			camera = &cam;
 		}
 	}
@@ -197,15 +198,15 @@ void PlayMode::update(float elapsed) {
 		
 		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffMouth"));
 
-		for(Bait b : active_bait){
-			std::cout << b.type_of_bait;
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
-			if(b.type_of_bait==0){
-				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
-			} else {
-				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
-			}
-		}
+		// for(Bait b : active_bait){
+		// 	std::cout << b.type_of_bait;
+		// 	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+		// 	if(b.type_of_bait==0){
+		// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+		// 	} else {
+		// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+		// 	}
+		// }
 
 		if(fish_collider.collides(bait_collider)){
 			collide_with_bait = true;
