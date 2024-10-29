@@ -16,7 +16,7 @@ GLuint main_scene_for_lit_color_texture_program = 0;
 GLuint puffer_scene_for_lit_color_texture_program = 0;
 GLuint bait_scene_for_lit_color_texture_program = 0;
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/andy-dev.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
 	main_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
@@ -34,7 +34,7 @@ Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 });
 
 Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("scenes/andy-dev.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+	return new Scene(data_path("scenes/ocean_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
