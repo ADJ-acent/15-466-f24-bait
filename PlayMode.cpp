@@ -88,16 +88,18 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
-	active_bait = {};
+	eat_bait_QTE = new QTE();
+
+
 	Bait bait_1 = Bait();
 	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
 	bait_1.init(bait_1_transforms,0);
 
-	active_bait.emplace_back(bait_1);
+	QTE::active_baits.emplace_back(bait_1);
 
 	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
 
-	for(Bait b : active_bait){
+	for(Bait b : QTE::active_baits){
     	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
 		if(b.type_of_bait==0){
 			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
@@ -105,8 +107,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
 		}
 	}
-
-	eat_bait_QTE = new QTE();
 
 	// puffer = scene.add_puffer(*puffer_scene);
 	// puffer.init();
@@ -204,7 +204,7 @@ void PlayMode::update(float elapsed) {
 		Bait* best_bait = nullptr;
 		float closest_in_view_bait = 1000.0f;
 		bait_in_eating_range = false;
-		for(Bait b : active_bait){
+		for(Bait b : QTE::active_baits){
 			glm::vec3 bait_position = b.get_position();
 			glm::vec3 puff_to_bait = bait_position - puffer_position;
 			float distance_squared = glm::dot(puff_to_bait, puff_to_bait);
@@ -245,6 +245,8 @@ void PlayMode::update(float elapsed) {
 			Bait new_bait = Bait();
 			std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
 			new_bait.init(new_bait_transforms, 0);
+			QTE::active_baits.pop_back();
+			QTE::active_baits.push_back(new_bait);
 			new_bait.random_respawn_location();
 			eat_bait_QTE->respawn_new_bait = false;
 		}

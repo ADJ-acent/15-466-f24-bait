@@ -48,8 +48,6 @@ struct PlayMode : Mode {
 
 	QTE *eat_bait_QTE = nullptr;
 	
-	std::vector< Bait > active_bait;
-
 	//camera:
 	Scene::Camera *camera = nullptr;
 

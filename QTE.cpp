@@ -1,7 +1,7 @@
 #include "QTE.hpp"
-#include "Bait.hpp"
 
 int QTE::score = 0;
+std::vector< Bait > QTE::active_baits = {};
 
 void QTE::start(int goal) {
     active = true;

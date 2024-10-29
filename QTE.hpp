@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include "Scene.hpp"
+#include "Bait.hpp"
 
 #include <vector>
 #include <string>
@@ -7,12 +8,15 @@
 #include <cstdlib> // For rand()
 
 struct QTE {
+    static int score;
+    static std::vector< Bait > active_baits;
+
     bool active = false, success = false, failure = false, respawn_new_bait = false;            
     float timer, hook_up_timer;         
     float time_limit = 3.0f;    
     float input_delay;
     int success_count, success_count_goal;
-    static int score;
+    
 
     Scene::Transform *fish = nullptr;
     Scene::Transform *string = nullptr;
