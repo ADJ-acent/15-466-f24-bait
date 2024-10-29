@@ -10,6 +10,7 @@ void QTE::start(int goal) {
     failure = false;
     respawn_new_bait = false;
     timer = time_limit;
+    red_text_percentage = 0.0f;
     input_delay = 2.0f;
     success_count = 0;
     success_count_goal = goal;
@@ -36,6 +37,7 @@ void QTE::update(float elapsed) {
 
     std::cout << get_prompt() << std::endl;
     timer -= elapsed;
+    red_text_percentage += elapsed;
 
     const Uint8 *state = SDL_GetKeyboardState(NULL);
     
@@ -73,6 +75,7 @@ void QTE::update(float elapsed) {
 void QTE::reset(){
     input_delay = 2.0f;
     timer = time_limit;
+    red_text_percentage = 0.0f;
     std::srand(uint32_t(std::time(0)));
     int random_index = std::rand() % possible_keys.size();
     required_key = possible_keys[random_index];

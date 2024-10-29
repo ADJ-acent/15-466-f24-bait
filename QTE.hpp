@@ -12,7 +12,7 @@ struct QTE {
     static std::vector< Bait > active_baits;
 
     bool active = false, success = false, failure = false, respawn_new_bait = false;            
-    float timer, hook_up_timer;         
+    float timer, hook_up_timer, red_text_percentage = 0;         
     float time_limit = 3.0f;    
     float input_delay;
     int success_count, success_count_goal;

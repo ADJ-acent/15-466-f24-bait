@@ -303,7 +303,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+				glm::u8vec4(0xff * (eat_bait_QTE->red_text_percentage / eat_bait_QTE->time_limit), 
+							0x00, 
+							0x00, 0x00));
 		}
 		else if(bait_in_eating_range && !qte_active){
 			lines.draw_text("Press E to eat the bait",
