@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
-#include <glm/gtx/string_cast.hpp>
+// #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <iostream>
@@ -24,8 +24,8 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     original_rotation = main_transform->rotation;
     original_swim_rotation = original_mesh_rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
 
-    std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
-    std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
+    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
+    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
     
     
     { //set up build up animations
