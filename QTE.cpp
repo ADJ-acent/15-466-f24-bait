@@ -84,7 +84,7 @@ void QTE::reset(){
 void QTE::bait_hook_up(float elapsed){
     glm::vec3 move_up_speed = glm::vec3(0.0f, 0.0f, 10.0f);
     if(hook_up_timer < 3.0f) {
-        puffer->main_transform->position += move_up_speed * elapsed;
+        puffer->main_transform->position = bait->make_local_to_world() * glm::vec4(bait->position,1.0f);
         string->position += move_up_speed * elapsed;
         hook_up_timer += elapsed;
     }
