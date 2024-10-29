@@ -85,6 +85,7 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 PlayMode::PlayMode() : scene(*main_scene) {
+
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
@@ -248,6 +249,7 @@ void PlayMode::update(float elapsed) {
 		if(eat_bait_QTE->respawn_new_bait == true){
 			Bait new_bait = Bait();
 			//pick either square or circle
+			std::srand(static_cast<unsigned int>(std::time(nullptr)));
 			auto circle_or_square = rand() % 2; // 0 or 1
 			std::vector<Scene::Transform *> new_bait_transforms;
 			if(circle_or_square==0){
