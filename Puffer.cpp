@@ -301,6 +301,14 @@ void Puffer::swim(int8_t swim_direction)
     
 }
 
+void Puffer::enter_QTE(glm::vec3 position)
+{
+    glm::vec3 direction = glm::normalize(main_transform->position - position);
+
+    // Create a quaternion that rotates the source object to look at the target
+    main_transform->rotation = glm::quatLookAt(direction, glm::vec3(0,0,1));
+}
+
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)
 {
     for (auto t : transform_vector){

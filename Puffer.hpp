@@ -60,7 +60,8 @@ struct Puffer {
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
-    void lookAt(glm::vec3 position);
+    void enter_QTE(glm::vec3 position);
+    void end_QTE();
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
