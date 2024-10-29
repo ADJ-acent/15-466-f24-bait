@@ -45,9 +45,8 @@ struct PlayMode : Mode {
 	Collider string_collider;
 	Collider bait_collider;
 
-	bool collide_with_bait;
-
 	bool qte_active = false;
+	bool bait_in_eating_range = false;
 
 	QTE *eat_bait_QTE = nullptr;
 	

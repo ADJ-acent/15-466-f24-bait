@@ -147,6 +147,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			puffer.start_build_up();
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_e) {
+			//TODO, disable eating pressed being registered when qte is active
 			eat.downs += 1;
 			eat.pressed = true;
 			return true;
@@ -197,29 +198,38 @@ void PlayMode::update(float elapsed) {
 	//new QTE initialized
 	{		
 		
-		fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
+		glm::vec3 puffer_position = puffer.get_position();
+		glm::vec3 puffer_view = puffer.get_forward();
 
+		Bait* best_bait = nullptr;
+		float closest_in_view_bait = 1000.0f;
+		bait_in_eating_range = false;
 		for(Bait b : active_bait){
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
-			if(b.type_of_bait==0){
-				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
-			} else {
-				b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
-			}
+			glm::vec3 bait_position = b.get_position();
+			glm::vec3 puff_to_bait = bait_position - puffer_position;
+			float distance_squared = glm::dot(puff_to_bait,puff_to_bait);
 
-			if(fish_collider.collides(b.bait_collider)){
-				collide_with_bait = true;
-			}
-			else{
-				collide_with_bait = false;
-			}
+			float cosine_angle = glm::dot(puffer_view, puff_to_bait) / glm::length(puffer_view) * glm::length(puff_to_bait);
 
-			if((collide_with_bait && eat.pressed) && !qte_active){
-				std::cout << "new QTE created" << std::endl;
-				qte_active = true;
-				eat_bait_QTE = new QTE(puffer.main_transform,b.mesh_parts.bait_string,b.mesh_parts.bait_base);
-				eat_bait_QTE->start(3);
+			// bait must be in front of camera
+			bool bait_in_view = puff_to_bait == glm::vec3(0) || cosine_angle > 0.707f;//0.707f is cos45, probably should store inside bait
+
+			if(distance_squared <= Bait::eat_distance_threshold_squared && bait_in_view &&
+				!qte_active){
+				if (eat.pressed && distance_squared < closest_in_view_bait) {
+					best_bait = &b;
+					closest_in_view_bait = distance_squared;
+				}
+				else {
+					bait_in_eating_range = true;
+				}
 			}
+		}
+		if (best_bait != nullptr) {
+			std::cout << "new QTE created" << std::endl;
+			qte_active = true;
+			eat_bait_QTE = new QTE(puffer.main_transform,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
+			eat_bait_QTE->start(3);
 		}
 	}
 
@@ -284,7 +294,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		}
-		else if(collide_with_bait && !qte_active){
+		else if(bait_in_eating_range && !qte_active){
 			lines.draw_text("Press E to eat the bait",
 				glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),

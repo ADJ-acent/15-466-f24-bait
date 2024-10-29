@@ -69,5 +69,6 @@ struct Puffer {
 
     glm::vec3 get_forward();
     glm::vec3 get_right();
+    glm::vec3 get_position();
 
 };

@@ -17,9 +17,13 @@ struct Bait {
         Scene::Transform* bait_string;
     } mesh_parts;
 
+    static constexpr float eat_distance_threshold_squared = 625.0f; //25.0f
+
     void init(std::vector<Scene::Transform * > transform_vector, int type_of_bait);
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
     
     void update(float elapsed);
+
+    glm::vec3 get_position();
 };

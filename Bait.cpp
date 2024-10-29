@@ -32,3 +32,8 @@ void Bait::update(float elapsed)
     float velocity_amt = 1.0f;
     main_transform->position += velocity_amt*elapsed;
 }
+
+glm::vec3 Bait::get_position()
+{
+    return main_transform->position;
+}
