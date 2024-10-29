@@ -22,6 +22,7 @@ struct Puffer {
     } mesh_parts;
 
     std::vector<LinearAnimation> build_up_animations;
+    std::vector<SlerpAnimation> swim_animation;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
@@ -31,6 +32,7 @@ struct Puffer {
     float swim_cooldown = 1.0f;
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
+    uint8_t swimming_side = 0; // 0 is left, 1 is right
 
     bool building_up = false;
     bool recovered = true;
@@ -50,16 +52,17 @@ struct Puffer {
     inline static constexpr float puffer_velocity_halflife = .3f;
     inline static constexpr float puffer_rotation_return_halflife = 0.1f;
     inline static constexpr float puffer_rotation_release_halflife = .3f;
-    inline static constexpr float speed = .5f;
+    inline static constexpr float speed = 1.0f;
 
     void init(std::vector<Scene::Transform * > transform_vector);
-    // void init();
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
+    void enter_QTE(glm::vec3 position);
+    void end_QTE();
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
@@ -68,5 +71,6 @@ struct Puffer {
 
     glm::vec3 get_forward();
     glm::vec3 get_right();
+    glm::vec3 get_position();
 
 };

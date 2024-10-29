@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
-#include <glm/gtx/string_cast.hpp>
+// #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <iostream>
@@ -19,13 +19,13 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
 
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
-    original_mesh_rotation = mesh->rotation;
+    original_mesh_rotation = mesh->rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
+    mesh->rotation = original_mesh_rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
-    original_swim_rotation = original_mesh_rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
 
-    std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
-    std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
+    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
+    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
     
     
     { //set up build up animations
@@ -97,6 +97,25 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
             &mesh_parts.puff_tail->position)
         );
     }
+
+    {// set up swim animation
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, -0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, 0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_l_fin->rotation)
+        );
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, 0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, -0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_r_fin->rotation)
+        );
+    }
 }
 
 void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
@@ -122,7 +141,7 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
 
     // keep mesh stationary in world position
     base_rotation*= new_to_old;
-    if (!building_up) { // when building up, orient the fish tail to the screen
+    if (!building_up && swim_cooldown == 0.0f) { // when building up, orient the fish tail to the screen
         mesh->rotation = base_rotation;
     }
 }
@@ -148,6 +167,7 @@ void Puffer::release()
         release_rotate_angle = 20.0f * build_up_time;
         total_release_angle = 0.0f;
         release_rotate_axis = glm::normalize(glm::linearRand(glm::vec3(-1.0f), glm::vec3(1.0f)));
+        base_rotation = mesh->rotation;
     }
 }
 
@@ -157,7 +177,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     rotate_from_mouse(mouse_motion);
 
-    constexpr float swim_cooldown_threshold = 0.6f;
+    constexpr float swim_cooldown_threshold = 0.8f;
 
     //EXPERIMENTING!! -- hello Taylor here ^^
     //I thought it might look cooler and would make more sense if you see the pufferfish's face
@@ -172,8 +192,12 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
     else {
         swim_cooldown += elapsed;
+        swim_animation[swimming_side].update(swim_cooldown);
         if (swim_cooldown > swim_cooldown_threshold) {
             swim_cooldown = 0.0f;
+        }
+        else if (swim_cooldown < 0.2f) {
+            mesh->rotation = base_rotation * glm::angleAxis((float(swimming_side) - 0.5f) * 20.0f * swim_cooldown * swim_cooldown , glm::vec3(0.0f,1.0f, 0.0f));
         }
     }
 
@@ -241,15 +265,20 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 total_release_angle += elapsed * release_rotate_angle;
                 mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
                 release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+                if (release_rotate_angle <= 1.0f) {
+                    base_rotation = mesh->rotation;
+                }
             }
         }
         else {//only return to tail view when we aren't rolling
             // update mesh rotation to return to normal (if we rotated camera recently)
             
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_swim_rotation, rotation_amt);
+            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
-            base_rotation = mesh->rotation;
+            if (swim_cooldown == 0.0f) {
+                base_rotation = mesh->rotation;
+            }
         }
     }
 
@@ -262,13 +291,22 @@ void Puffer::update_build_up_animations(float t)
     }
 }
 
+//swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
-    
     float build_up_penaulty = 1.0f / current_scale;
+    swimming_side = (-swim_direction + 1) / 2;
+    velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
+    base_rotation = mesh->rotation;
+    
+}
 
-    velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.03f * build_up_penaulty) * get_right();
+void Puffer::enter_QTE(glm::vec3 position)
+{
+    glm::vec3 direction = glm::normalize(main_transform->position - position);
 
+    // Create a quaternion that rotates the source object to look at the target
+    main_transform->rotation = glm::quatLookAt(direction, glm::vec3(0,0,1));
 }
 
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)
@@ -363,4 +401,9 @@ glm::vec3 Puffer::get_forward()
 glm::vec3 Puffer::get_right()
 {
     return main_transform->rotation * glm::vec3(-1,0,0);
+}
+
+glm::vec3 Puffer::get_position()
+{
+    return main_transform->position;
 }

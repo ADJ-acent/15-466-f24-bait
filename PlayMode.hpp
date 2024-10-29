@@ -2,6 +2,7 @@
 
 #include "Scene.hpp"
 #include "Sound.hpp"
+#include "QTE.hpp"
 
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
@@ -25,16 +26,27 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up;
+	} left, right, down, up, eat;
 
 	glm::vec2 mouse_motion = glm::vec2(0);
-
-	
 
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 
 	Puffer puffer = Puffer();
+
+	Scene::Transform *fish = nullptr;
+	Scene::Transform *string = nullptr;
+	Scene::Transform *bait = nullptr;
+
+	Collider fish_collider;
+	Collider string_collider;
+	Collider bait_collider;
+
+	bool qte_active = false;
+	bool bait_in_eating_range = false;
+
+	QTE *eat_bait_QTE = nullptr;
 	
 	//camera:
 	Scene::Camera *camera = nullptr;

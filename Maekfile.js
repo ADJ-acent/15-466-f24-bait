@@ -124,6 +124,7 @@ const game_names = [
 	maek.CPP('load_opus.cpp'),
 	maek.CPP('Puffer.cpp'),
 	maek.CPP('Bait.cpp'),
+
 	// maek.CPP('Spawner.cpp'),
 	maek.CPP("Animation.cpp")
 ];
@@ -140,31 +141,33 @@ const common_names = [
 	maek.CPP('gl_compile_program.cpp'),
 	maek.CPP('Mode.cpp'),
 	maek.CPP('GL.cpp'),
-	maek.CPP('Load.cpp')
+	maek.CPP('Load.cpp'),
+	maek.CPP('Collide.cpp'),
+	maek.CPP('QTE.cpp')
 ];
 
-const show_meshes_names = [
-	maek.CPP('show-meshes.cpp'),
-	maek.CPP('ShowMeshesProgram.cpp'),
-	maek.CPP('ShowMeshesMode.cpp')
-];
+// const show_meshes_names = [
+// 	maek.CPP('show-meshes.cpp'),
+// 	maek.CPP('ShowMeshesProgram.cpp'),
+// 	maek.CPP('ShowMeshesMode.cpp')
+// ];
 
-const show_scene_names = [
-	maek.CPP('show-scene.cpp'),
-	maek.CPP('ShowSceneProgram.cpp'),
-	maek.CPP('ShowSceneMode.cpp')
-];
+// const show_scene_names = [
+// 	maek.CPP('show-scene.cpp'),
+// 	maek.CPP('ShowSceneProgram.cpp'),
+// 	maek.CPP('ShowSceneMode.cpp')
+// ];
 
 //the '[exeFile =] LINK(objFiles, exeFileBase, [, options])' links an array of objects into an executable:
 // objFiles: array of objects to link
 // exeFileBase: name of executable file to produce
 //returns exeFile: exeFileBase + a platform-dependant suffix (e.g., '.exe' on windows)
 const game_exe = maek.LINK([...game_names, ...common_names], 'dist/game');
-const show_meshes_exe = maek.LINK([...show_meshes_names, ...common_names], 'scenes/show-meshes');
-const show_scene_exe = maek.LINK([...show_scene_names, ...common_names], 'scenes/show-scene');
+// const show_meshes_exe = maek.LINK([...show_meshes_names, ...common_names], 'scenes/show-meshes');
+// const show_scene_exe = maek.LINK([...show_scene_names, ...common_names], 'scenes/show-scene');
 
 //set the default target to the game (and copy the readme files):
-maek.TARGETS = [game_exe, show_meshes_exe, show_scene_exe, ...copies];
+maek.TARGETS = [game_exe, ...copies]; //,show_meshes_exe, show_scene_exe
 
 //Note that tasks that produce ':abstract targets' are never cached.
 // This is similar to how .PHONY targets behave in make.

@@ -1,0 +1,53 @@
+#include <SDL.h>
+#include "Scene.hpp"
+#include "Bait.hpp"
+#include "Puffer.hpp"
+
+#include <vector>
+#include <string>
+#include <iostream>
+#include <cstdlib> // For rand()
+
+struct QTE {
+    static int score;
+    static std::vector< Bait > active_baits;
+
+    bool active = false, success = false, failure = false, respawn_new_bait = false;            
+    float timer, hook_up_timer, red_text_percentage = 0;         
+    float time_limit = 3.0f;    
+    float input_delay;
+    int success_count, success_count_goal;
+    
+
+    Puffer *puffer = nullptr;
+    Scene::Transform *string = nullptr;
+    Scene::Transform *bait = nullptr;
+
+    SDL_Keycode required_key;   
+
+    // Possible keys for the QTE
+    std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
+
+    QTE(Puffer *puffer_, Scene::Transform *string_, Scene::Transform *bait_): puffer(puffer_), string(string_), bait(bait_) {};
+    QTE() = default;
+
+    void start(int goal); 
+    void update(float elapsed); 
+    void reset();
+    void bait_hook_up(float elapsed);
+    void bait_eaten();
+    void end();
+
+    std::string get_prompt() {
+        if (active) {
+            return "Press '" + std::string(SDL_GetKeyName(required_key)) + "'! Time left: " + std::to_string(static_cast<int>(timer));
+        }
+        else if(success){
+            return "QTE Success";
+        }
+        else if(failure){
+            return "QTE Failed";
+        }
+        return "";
+    }
+};
