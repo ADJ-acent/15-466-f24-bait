@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include "Scene.hpp"
 #include "Bait.hpp"
+#include "Puffer.hpp"
 
 #include <vector>
 #include <string>
@@ -18,7 +19,7 @@ struct QTE {
     int success_count, success_count_goal;
     
 
-    Scene::Transform *fish = nullptr;
+    Puffer *puffer = nullptr;
     Scene::Transform *string = nullptr;
     Scene::Transform *bait = nullptr;
 
@@ -27,15 +28,8 @@ struct QTE {
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
 
-    // Constructor with arguments
-    QTE(Scene::Transform *fish, Scene::Transform *string, Scene::Transform *bait){
-        this->fish = fish;
-        this->string = string;
-        this->bait = bait;
-    }
-    
-    // Constructor without argument
-    QTE(){}
+    QTE(Puffer *puffer_, Scene::Transform *string_, Scene::Transform *bait_): puffer(puffer_), string(string_), bait(bait_) {};
+    QTE() = default;
 
     void start(int goal); 
     void update(float elapsed); 

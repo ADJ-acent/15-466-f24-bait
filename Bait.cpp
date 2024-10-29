@@ -5,6 +5,7 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, int tob)
 {
     assign_mesh_parts(transform_vector);
     type_of_bait = tob;
+    main_transform->scale = glm::vec3(3.0f);
 }
 
 void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)

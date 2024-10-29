@@ -228,7 +228,7 @@ void PlayMode::update(float elapsed) {
 
 		if (best_bait != nullptr) {
 			qte_active = true;
-			eat_bait_QTE = new QTE(puffer.main_transform,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
+			eat_bait_QTE = new QTE(&puffer,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
 			eat_bait_QTE->start(3);
 		}
 	}
