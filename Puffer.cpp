@@ -24,8 +24,6 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
 
-    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
-    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
     
     
     { //set up build up animations
@@ -185,7 +183,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     //he moves in the direction of the "slingshot"
 
     if (swim_cooldown == 0.0f) {
-        if (swim_direction != 0) {
+        if (swim_direction != 0 && !building_up) { //disable swimming when charging up
             swim(swim_direction);
             swim_cooldown = 0.001f; // increment slightly to start the timer
         }
@@ -256,7 +254,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        if (release_rotate_angle > 1.0f || building_up) {
+        if (release_rotate_angle > 1.0f) {
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
             if (building_up) { // experimental...conflicted on how this feels
                 mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
@@ -274,7 +272,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             // update mesh rotation to return to normal (if we rotated camera recently)
             
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
+            mesh->rotation = glm::slerp(mesh->rotation, original_swim_rotation, rotation_amt);
             total_release_angle = 0.0f;
             if (swim_cooldown == 0.0f) {
                 base_rotation = mesh->rotation;
