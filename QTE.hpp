@@ -11,7 +11,8 @@ struct QTE {
     float timer, hook_up_timer;         
     float time_limit = 3.0f;    
     float input_delay;
-    int success_count, success_count_goal, score = 0;
+    int success_count, success_count_goal;
+    static int score;
 
     Scene::Transform *fish = nullptr;
     Scene::Transform *string = nullptr;
@@ -22,13 +23,14 @@ struct QTE {
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
 
-    // Constructor
+    // Constructor with arguments
     QTE(Scene::Transform *fish, Scene::Transform *string, Scene::Transform *bait){
         this->fish = fish;
         this->string = string;
         this->bait = bait;
     }
     
+    // Constructor without argument
     QTE(){}
 
     void start(int goal); 

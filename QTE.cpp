@@ -1,6 +1,8 @@
 #include "QTE.hpp"
 #include "Bait.hpp"
 
+int QTE::score = 0;
+
 void QTE::start(int goal) {
     active = true;
     std::cout << "QTE is active now" << std::endl;
@@ -40,7 +42,7 @@ void QTE::update(float elapsed) {
     if (state[SDL_GetScancodeFromKey(required_key)]) {
 
         success_count++;
-        score++;
+        QTE::score++;
         bait->scale *= 0.8; // scale down the bait whenever a QTE succeeds
 
         if(success_count == success_count_goal){
