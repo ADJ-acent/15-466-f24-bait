@@ -22,6 +22,14 @@
 #include <vector>
 #include <unordered_map>
 
+// #include "Spawner.hpp"
+
+struct Puffer;
+
+enum type_of_spawn {FISH,PUFFER,CIRCLE_BAIT,SQUARE_BAIT};
+// std::vector<std::string> puffer_transform_names =  { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush"
+// , "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
+
 struct Scene {
 	struct Transform {
 		//Transform names are useful for debugging and looking up locations in a loaded scene:
@@ -150,4 +158,11 @@ struct Scene {
 	Scene &operator=(Scene const &); //...as scene = scene
 	//... as a set() function that optionally returns the transform->transform mapping:
 	void set(Scene const &, std::unordered_map< Transform const *, Transform * > *transform_map = nullptr);
+
+	void add(Scene const &); // add another scene to the current one
+
+	Puffer add_puffer(Scene const &); // add another scene to the current one
+
+	std::vector< Scene::Transform * > spawn(Scene const &other_scene, type_of_spawn type_of_spawn);
+
 };

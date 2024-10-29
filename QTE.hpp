@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include "Scene.hpp"
+#include "Bait.hpp"
 
 #include <vector>
 #include <string>
@@ -7,35 +8,40 @@
 #include <cstdlib> // For rand()
 
 struct QTE {
-    bool active = false;        
-    bool success = false;
-    bool failure = false;       
-    float timer, hook_up_timer;         
+    static int score;
+    static std::vector< Bait > active_baits;
+
+    bool active = false, success = false, failure = false, respawn_new_bait = false;            
+    float timer, hook_up_timer, red_text_percentage = 0;         
     float time_limit = 3.0f;    
     float input_delay;
-    int success_count, success_count_goal, score = 0;
+    int success_count, success_count_goal;
+    
 
     Scene::Transform *fish = nullptr;
-	Scene::Transform *rope = nullptr;
-	Scene::Transform *bait = nullptr;
+    Scene::Transform *string = nullptr;
+    Scene::Transform *bait = nullptr;
 
     SDL_Keycode required_key;   
 
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
 
-    // Constructor
-    QTE(Scene::Transform *fish, Scene::Transform *rope, Scene::Transform *bait){
+    // Constructor with arguments
+    QTE(Scene::Transform *fish, Scene::Transform *string, Scene::Transform *bait){
         this->fish = fish;
-        this->rope = rope;
+        this->string = string;
         this->bait = bait;
     }
+    
+    // Constructor without argument
+    QTE(){}
 
     void start(int goal); 
     void update(float elapsed); 
     void reset();
     void bait_hook_up(float elapsed);
-    void bait_eatten();
+    void bait_eaten();
     void end();
 
     std::string get_prompt() {

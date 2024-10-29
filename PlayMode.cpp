@@ -12,23 +12,37 @@
 
 #include <random>
 
-GLuint fish_meshes_for_lit_color_texture_program = 0;
-Load< MeshBuffer > fish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("fish-behavior.pnct"));
-	fish_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+GLuint main_scene_for_lit_color_texture_program = 0;
+GLuint puffer_scene_for_lit_color_texture_program = 0;
+GLuint bait_scene_for_lit_color_texture_program = 0;
+Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/andy-dev.pnct"));
+	main_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
-Load< Scene > fish_behavior_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("fish-behavior.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
-		Mesh const &mesh = fish_meshes->lookup(mesh_name);
+Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
+	puffer_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
+	bait_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/andy-dev.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
-		drawable.pipeline.vao = fish_meshes_for_lit_color_texture_program;
+		drawable.pipeline.vao = main_scene_for_lit_color_texture_program;
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
@@ -36,34 +50,72 @@ Load< Scene > fish_behavior_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
-Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("dusty-floor.opus"));
+Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/pufferfish.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = pufferfish_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = puffer_scene_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
 });
 
-PlayMode::PlayMode() : scene(*fish_behavior_scene) {
-	//get pointers to leg for convenience:
-	for (auto &transform : scene.transforms) {
-		if (transform.name == "Fish") fish = &transform;
-		else if (transform.name == "Rope") rope = &transform;
-		else if (transform.name == "Bait") bait = &transform;
+Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = bait_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = bait_scene_for_lit_color_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
+});
+
+PlayMode::PlayMode() : scene(*main_scene) {
+	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
+	puffer.init(puffer_transforms);
+
+	eat_bait_QTE = new QTE();
+
+
+	Bait bait_1 = Bait();
+	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
+	bait_1.init(bait_1_transforms,0);
+
+	QTE::active_baits.emplace_back(bait_1);
+
+	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
+
+	for(Bait b : QTE::active_baits){
+    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+		if(b.type_of_bait==0){
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+		} else {
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+		}
 	}
-	if (fish == nullptr) throw std::runtime_error("Fish not found.");
-	if (rope == nullptr) throw std::runtime_error("Rope leg not found.");
-	if (bait == nullptr) throw std::runtime_error("Bait leg not found.");
 
-	fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
-    rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
-    bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
-
-	eat_bait_QTE = new QTE(fish, rope, bait);
-
+	// puffer = scene.add_puffer(*puffer_scene);
+	// puffer.init();
 	//get pointer to camera for convenience:
-	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
-	camera = &scene.cameras.front();
-
-	//start music loop playing:
-	// (note: position will be over-ridden in update())
-	// leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
+	for (auto& cam : scene.cameras) {
+		if (cam.transform->name == "PuffCam") {
+			camera = &cam;
+		}
+	}
 }
 
 PlayMode::~PlayMode() {
@@ -91,7 +143,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.downs += 1;
 			down.pressed = true;
 			return true;
+		} else if (evt.key.keysym.sym == SDLK_SPACE) {
+			puffer.start_build_up();
+			return true;
 		} else if (evt.key.keysym.sym == SDLK_e) {
+			//TODO, disable eating pressed being registered when qte is active
 			eat.downs += 1;
 			eat.pressed = true;
 			return true;
@@ -112,6 +168,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_e) {
 			eat.pressed = false;
 			return true;
+		} else if (evt.key.keysym.sym == SDLK_SPACE) {
+			puffer.release();
 		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
@@ -120,14 +178,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
-			glm::vec2 motion = glm::vec2(
+			mouse_motion = glm::vec2(
 				evt.motion.xrel / float(window_size.y),
-				-evt.motion.yrel / float(window_size.y)
-			);
-			camera->transform->rotation = glm::normalize(
-				camera->transform->rotation
-				* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
-				* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
+				evt.motion.yrel / float(window_size.y)
 			);
 			return true;
 		}
@@ -137,53 +190,66 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
-	//move camera:
-	{
-		//combine inputs into a move:
-		constexpr float PlayerSpeed = 10.0f;
-		glm::vec2 move = glm::vec2(0.0f);
-		if (left.pressed && !right.pressed) move.x =-1.0f;
-		if (!left.pressed && right.pressed) move.x = 1.0f;
-		if (down.pressed && !up.pressed) move.y =-1.0f;
-		if (!down.pressed && up.pressed) move.y = 1.0f;
+	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
+	puffer.update(mouse_motion, swim_direction, elapsed);
 
-		//make it so that moving diagonally doesn't go faster:
-		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
-
-		glm::mat4x3 frame = camera->transform->make_local_to_parent();
-		glm::vec3 frame_right = frame[0];
-		//glm::vec3 up = frame[1];
-		glm::vec3 frame_forward = -frame[2];
-
-		fish->position += move.x * frame_right + move.y * frame_forward;
-	}
-	
 	//collision check:
-	{
-		fish_collider = calculate_collider(fish, fish_meshes->lookup("Fish"));
-		rope_collider = calculate_collider(rope, fish_meshes->lookup("Rope"));
-		bait_collider = calculate_collider(bait, fish_meshes->lookup("Bait"));
+	//if fish collided with bait and eat button pressed
+	//new QTE initialized
+	{		
+		
+		glm::vec3 puffer_position = puffer.get_position();
+		glm::vec3 puffer_view = puffer.get_forward();
 
-		if(fish_collider.collides(bait_collider) && bait->scale != glm::vec3(0.0f, 0.0f, 0.0f)){
-			collide_with_bait = true;
+		Bait* best_bait = nullptr;
+		float closest_in_view_bait = 1000.0f;
+		bait_in_eating_range = false;
+		for(Bait b : QTE::active_baits){
+			glm::vec3 bait_position = b.get_position();
+			glm::vec3 puff_to_bait = bait_position - puffer_position;
+			float distance_squared = glm::dot(puff_to_bait, puff_to_bait);
+
+			float cosine_angle = glm::dot(puffer_view, puff_to_bait) / glm::length(puffer_view) * glm::length(puff_to_bait);
+
+			// bait must be in front of camera
+			bool bait_in_view = puff_to_bait == glm::vec3(0) || cosine_angle > 0.707f;//0.707f is cos45, probably should store inside bait
+
+			if(distance_squared <= Bait::eat_distance_threshold_squared && bait_in_view &&
+				!qte_active){
+				if (eat.pressed && distance_squared < closest_in_view_bait) {
+					best_bait = &b;
+					closest_in_view_bait = distance_squared;
+				}
+				else {
+					bait_in_eating_range = true;
+				}
+			}
 		}
-		else{
-			collide_with_bait = false;
+
+		if (best_bait != nullptr) {
+			qte_active = true;
+			eat_bait_QTE = new QTE(puffer.main_transform,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
+			eat_bait_QTE->start(3);
 		}
 	}
 
 	{
-		if((collide_with_bait && eat.pressed) && !eat_bait_QTE->active){
-			eat_bait_QTE->start(5);
-		}
 		eat_bait_QTE->update(elapsed);
-	}
 
-	{ //update listener to camera position:
-		glm::mat4x3 frame = camera->transform->make_local_to_parent();
-		glm::vec3 frame_right = frame[0];
-		glm::vec3 frame_at = frame[3];
-		Sound::listener.set_position_right(frame_at, frame_right, 1.0f / 60.0f);
+		if(!eat_bait_QTE->active){
+			qte_active = false;
+		}
+		
+		//respawn a new bait here
+		if(eat_bait_QTE->respawn_new_bait == true){
+			Bait new_bait = Bait();
+			std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
+			new_bait.init(new_bait_transforms, 0);
+			QTE::active_baits.pop_back();
+			QTE::active_baits.push_back(new_bait);
+			new_bait.random_respawn_location();
+			eat_bait_QTE->respawn_new_bait = false;
+		}
 	}
 
 	//reset button press counters:
@@ -191,6 +257,7 @@ void PlayMode::update(float elapsed) {
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
+	mouse_motion = glm::vec2(0);
 	eat.downs = 0;
 }
 
@@ -227,7 +294,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.3f;
 
-		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0){
+		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0 && !eat_bait_QTE->failure){
 			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
@@ -236,9 +303,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+				glm::u8vec4(0xff * (eat_bait_QTE->red_text_percentage / eat_bait_QTE->time_limit), 
+							0x00, 
+							0x00, 0x00));
 		}
-		else if(collide_with_bait && !eat_bait_QTE->active){
+		else if(bait_in_eating_range && !qte_active && !eat_bait_QTE->failure){
 			lines.draw_text("Press E to eat the bait",
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
@@ -249,17 +318,27 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 		}
+		else if(eat_bait_QTE->failure){
+			lines.draw_text("Baited!!! FINAL SCORE: " + std::to_string(QTE::score),
+				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text("Baited!!! FINAL SCORE: " + std::to_string(QTE::score),
+				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+		} 
 
-		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
+		lines.draw_text("Score: " + std::to_string(QTE::score),
 			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Score: " + std::to_string(eat_bait_QTE->score),
-			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+        lines.draw_text("Score: " + std::to_string(QTE::score),
+            glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
+            glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+            glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 	}
 	GL_ERRORS();
 }
-
