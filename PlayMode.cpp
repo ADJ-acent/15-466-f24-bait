@@ -229,7 +229,11 @@ void PlayMode::update(float elapsed) {
 		if (best_bait != nullptr) {
 			qte_active = true;
 			eat_bait_QTE = new QTE(puffer.main_transform,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
-			eat_bait_QTE->start(3);
+			if(best_bait->type_of_bait==0){
+				eat_bait_QTE->start(3); //circle
+			} else {
+				eat_bait_QTE->start(5); //square
+			}
 		}
 	}
 
@@ -243,8 +247,15 @@ void PlayMode::update(float elapsed) {
 		//respawn a new bait here
 		if(eat_bait_QTE->respawn_new_bait == true){
 			Bait new_bait = Bait();
-			std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
-			new_bait.init(new_bait_transforms, 0);
+			//pick either square or circle
+			auto circle_or_square = rand() % 2; // 0 or 1
+			std::vector<Scene::Transform *> new_bait_transforms;
+			if(circle_or_square==0){
+				new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
+			} else {
+				new_bait_transforms = scene.spawn(*bait_scene, SQUARE_BAIT);
+			}
+			new_bait.init(new_bait_transforms, circle_or_square);
 			QTE::active_baits.pop_back();
 			QTE::active_baits.push_back(new_bait);
 			new_bait.random_respawn_location();
