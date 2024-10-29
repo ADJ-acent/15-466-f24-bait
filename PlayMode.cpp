@@ -28,7 +28,7 @@ Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * 
 });
 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects_2.pnct"));
 	bait_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
@@ -68,7 +68,7 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+	return new Scene(data_path("scenes/bait_objects_2.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = bait_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
@@ -93,7 +93,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 
 	Bait bait_1 = Bait();
-	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CIRCLE_BAIT);
+	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
 	bait_1.init(bait_1_transforms,0);
 
 	QTE::active_baits.emplace_back(bait_1);
@@ -101,11 +101,13 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
 
 	for(Bait b : QTE::active_baits){
-    	b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("circlebait_string"));
+    	
 		if(b.type_of_bait==0){
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("circlebait_base"));
+			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
 		} else {
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("squarebait_base"));
+			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
+			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
 		}
 	}
 
@@ -253,9 +255,9 @@ void PlayMode::update(float elapsed) {
 			auto circle_or_square = rand() % 2; // 0 or 1
 			std::vector<Scene::Transform *> new_bait_transforms;
 			if(circle_or_square==0){
-				new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
+				new_bait_transforms = scene.spawn(*bait_scene, CARROT_BAIT);
 			} else {
-				new_bait_transforms = scene.spawn(*bait_scene, SQUARE_BAIT);
+				new_bait_transforms = scene.spawn(*bait_scene, FISH_BAIT);
 			}
 			new_bait.init(new_bait_transforms, circle_or_square);
 			QTE::active_baits.pop_back();
