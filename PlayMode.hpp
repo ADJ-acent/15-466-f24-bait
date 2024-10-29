@@ -30,15 +30,13 @@ struct PlayMode : Mode {
 
 	glm::vec2 mouse_motion = glm::vec2(0);
 
-	
-
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 
 	Puffer puffer = Puffer();
 
 	Scene::Transform *fish = nullptr;
-	Scene::Transform *rope = nullptr;
+	Scene::Transform *string = nullptr;
 	Scene::Transform *bait = nullptr;
 
 	Collider fish_collider;

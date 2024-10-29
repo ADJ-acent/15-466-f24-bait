@@ -25,5 +25,7 @@ struct Bait {
     
     void update(float elapsed);
 
+    void random_respawn_location();
+
     glm::vec3 get_position();
 };

@@ -370,12 +370,12 @@ glm::vec3 Puffer::calculate_jitter(float elapsed)
     return shake;
 }
 
-inline glm::vec3 Puffer::get_forward()
+glm::vec3 Puffer::get_forward()
 {
     return main_transform->rotation * glm::vec3(0,0,1);
 }
 
-inline glm::vec3 Puffer::get_right()
+glm::vec3 Puffer::get_right()
 {
     return main_transform->rotation * glm::vec3(-1,0,0);
 }

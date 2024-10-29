@@ -1,10 +1,12 @@
 #include "QTE.hpp"
+#include "Bait.hpp"
 
 void QTE::start(int goal) {
     active = true;
     std::cout << "QTE is active now" << std::endl;
     success = false;
     failure = false;
+    respawn_new_bait = false;
     timer = time_limit;
     input_delay = 2.0f;
     success_count = 0;
@@ -22,7 +24,7 @@ void QTE::update(float elapsed) {
         bait_hook_up(elapsed);
     }
     else if(success){
-        bait_eatten();
+        bait_eaten();
     }
 
     if(input_delay > 0){
@@ -38,6 +40,7 @@ void QTE::update(float elapsed) {
     if (state[SDL_GetScancodeFromKey(required_key)]) {
 
         success_count++;
+        score++;
         bait->scale *= 0.8; // scale down the bait whenever a QTE succeeds
 
         if(success_count == success_count_goal){
@@ -77,7 +80,7 @@ void QTE::bait_hook_up(float elapsed){
     glm::vec3 move_up_speed = glm::vec3(0.0f, 0.0f, 3.0f);
     if(hook_up_timer < 3.0f) {
         // fish->position += move_up_speed * elapsed;
-        rope->position += move_up_speed * elapsed;
+        string->position += move_up_speed * elapsed;
         hook_up_timer += elapsed;
     }
     else{
@@ -85,12 +88,12 @@ void QTE::bait_hook_up(float elapsed){
     }
 }
 
-void QTE::bait_eatten(){
+void QTE::bait_eaten(){
     bait->scale *= 0;
-    score++;
+    bait = nullptr;
+    respawn_new_bait = true; //respawn bool
     end();
 }
-
 
 void QTE::end(){
     active = false;

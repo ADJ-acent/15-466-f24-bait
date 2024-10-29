@@ -207,7 +207,7 @@ void PlayMode::update(float elapsed) {
 		for(Bait b : active_bait){
 			glm::vec3 bait_position = b.get_position();
 			glm::vec3 puff_to_bait = bait_position - puffer_position;
-			float distance_squared = glm::dot(puff_to_bait,puff_to_bait);
+			float distance_squared = glm::dot(puff_to_bait, puff_to_bait);
 
 			float cosine_angle = glm::dot(puffer_view, puff_to_bait) / glm::length(puffer_view) * glm::length(puff_to_bait);
 
@@ -225,8 +225,8 @@ void PlayMode::update(float elapsed) {
 				}
 			}
 		}
+
 		if (best_bait != nullptr) {
-			std::cout << "new QTE created" << std::endl;
 			qte_active = true;
 			eat_bait_QTE = new QTE(puffer.main_transform,best_bait-> mesh_parts.bait_string,best_bait-> mesh_parts.bait_base);
 			eat_bait_QTE->start(3);
@@ -238,6 +238,15 @@ void PlayMode::update(float elapsed) {
 
 		if(!eat_bait_QTE->active){
 			qte_active = false;
+		}
+		
+		//respawn a new bait here
+		if(eat_bait_QTE->respawn_new_bait == true){
+			Bait new_bait = Bait();
+			std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene, CIRCLE_BAIT);
+			new_bait.init(new_bait_transforms, 0);
+			new_bait.random_respawn_location();
+			eat_bait_QTE->respawn_new_bait = false;
 		}
 	}
 

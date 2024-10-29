@@ -7,16 +7,14 @@
 #include <cstdlib> // For rand()
 
 struct QTE {
-    bool active = false;        
-    bool success = false;
-    bool failure = false;       
+    bool active = false, success = false, failure = false, respawn_new_bait = false;            
     float timer, hook_up_timer;         
     float time_limit = 3.0f;    
     float input_delay;
     int success_count, success_count_goal, score = 0;
 
     Scene::Transform *fish = nullptr;
-    Scene::Transform *rope = nullptr;
+    Scene::Transform *string = nullptr;
     Scene::Transform *bait = nullptr;
 
     SDL_Keycode required_key;   
@@ -25,9 +23,9 @@ struct QTE {
     std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
 
     // Constructor
-    QTE(Scene::Transform *fish, Scene::Transform *rope, Scene::Transform *bait){
+    QTE(Scene::Transform *fish, Scene::Transform *string, Scene::Transform *bait){
         this->fish = fish;
-        this->rope = rope;
+        this->string = string;
         this->bait = bait;
     }
     
@@ -37,7 +35,7 @@ struct QTE {
     void update(float elapsed); 
     void reset();
     void bait_hook_up(float elapsed);
-    void bait_eatten();
+    void bait_eaten();
     void end();
 
     std::string get_prompt() {
