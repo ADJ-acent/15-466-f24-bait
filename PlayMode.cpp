@@ -7,6 +7,7 @@
 #include "Load.hpp"
 #include "gl_errors.hpp"
 #include "data_path.hpp"
+#include "Framebuffers.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -28,7 +29,7 @@ Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * 
 });
 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects_2.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
 	bait_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
@@ -68,7 +69,7 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("scenes/bait_objects_2.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = bait_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
@@ -279,6 +280,7 @@ void PlayMode::update(float elapsed) {
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//update camera aspect ratio for drawable:
+	framebuffers.realloc(drawable_size);
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
 	//set up light type and position for lit_color_texture_program:
@@ -289,6 +291,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -297,6 +301,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
 	scene.draw(*camera);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	framebuffers.add_oceandepth();
+	//framebuffers.tone_map();
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
