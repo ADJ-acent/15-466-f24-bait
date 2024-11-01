@@ -1,5 +1,6 @@
 #include "PlayMode.hpp"
 
+#include "DepthTextureProgram.hpp"
 #include "LitColorTextureProgram.hpp"
 
 #include "DrawLines.hpp"
@@ -13,24 +14,24 @@
 
 #include <random>
 
-GLuint main_scene_for_lit_color_texture_program = 0;
-GLuint puffer_scene_for_lit_color_texture_program = 0;
-GLuint bait_scene_for_lit_color_texture_program = 0;
+GLuint main_scene_for_depth_texture_program = 0;
+GLuint puffer_scene_for_depth_texture_program = 0;
+GLuint bait_scene_for_depth_texture_program = 0;
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
-	main_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
 	return ret;
 });
 
 Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
-	puffer_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	puffer_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
 	return ret;
 });
 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
-	bait_scene_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	bait_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
 	return ret;
 });
 
@@ -41,9 +42,9 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
 
-		drawable.pipeline = lit_color_texture_program_pipeline;
+		drawable.pipeline = depth_texture_program_pipeline;
 
-		drawable.pipeline.vao = main_scene_for_lit_color_texture_program;
+		drawable.pipeline.vao = main_scene_for_depth_texture_program;
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
@@ -60,7 +61,7 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
-		drawable.pipeline.vao = puffer_scene_for_lit_color_texture_program;
+		drawable.pipeline.vao = puffer_scene_for_depth_texture_program;
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
@@ -77,7 +78,7 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
-		drawable.pipeline.vao = bait_scene_for_lit_color_texture_program;
+		drawable.pipeline.vao = bait_scene_for_depth_texture_program;
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
@@ -194,9 +195,13 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
+	
+	elapsedtime += elapsed;
+
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
 
+	
 	//collision check:
 	//if fish collided with bait and eat button pressed
 	//new QTE initialized
@@ -280,18 +285,27 @@ void PlayMode::update(float elapsed) {
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//update camera aspect ratio for drawable:
-	framebuffers.realloc(drawable_size);
+	//framebuffers.realloc(drawable_size);
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
-	//set up light type and position for lit_color_texture_program:
+	//set up light type and position for depth_texture_program:
 	// TODO: consider using the Light(s) in the scene to do this
+	glUseProgram(depth_texture_program->program);
+	glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
+	glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+	glUniform3fv(depth_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform1f(depth_texture_program->TIME_float, elapsedtime);
+	glUseProgram(0);
+
+
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
-	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 1.0f,1.0f)));
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+	
+	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
@@ -302,9 +316,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	framebuffers.add_oceandepth();
+	//framebuffers.add_oceandepth();
 	//framebuffers.tone_map();
 
 	{ //use DrawLines to overlay some text:

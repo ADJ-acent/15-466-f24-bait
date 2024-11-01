@@ -90,9 +90,9 @@ void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
 	//resize texture:
 	glBindTexture(GL_TEXTURE_2D, ocean_depth_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0,
-		GL_RGB16F, //<-- storage will be RGB 16-bit half-float
+		GL_R16F, //<-- storage will be RGB 16-bit half-float
 		size.x, size.y, 0, //width, height, border
-		GL_RGB, GL_FLOAT, //<-- source data (if we were uploading it) would be floating point RGB
+		GL_DEPTH_COMPONENT16, GL_FLOAT, //<-- source data (if we were uploading it) would be floating point RGB
 		nullptr //<-- don't upload data, just allocate on-GPU storage
 	);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -440,6 +440,7 @@ void Framebuffers::add_oceandepth() {
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, ocean_depth_fb); //bind the ocean depth frame buffer to read texture to
+    glBindTexture(GL_TEXTURE_2D, ocean_depth_tex);
 
 	glUseProgram(ocean_depth_program->program); //use the ocean depth program
 	glBindVertexArray(empty_vao);

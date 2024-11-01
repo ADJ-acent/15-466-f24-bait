@@ -51,4 +51,7 @@ struct PlayMode : Mode {
 	//camera:
 	Scene::Camera *camera = nullptr;
 
+	//TESTINGGG!
+	float elapsedtime = 0.0f;
+
 };
