@@ -22,6 +22,7 @@ struct PlayMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	//----- game state -----
+	static bool qte_active;
 
 	//input tracking:
 	struct Button {
@@ -36,7 +37,9 @@ struct PlayMode : Mode {
 
 	Puffer puffer = Puffer();
 
-	static bool qte_active;
+	std::shared_ptr< Puffer > shared_puffer_ptr;
+	std::shared_ptr< Bait > shared_bait_ptr;
+
 	bool bait_in_eating_range = false;
 	
 	//camera:

@@ -5,18 +5,11 @@ std::vector< Bait > QTE::active_baits = {};
 
 void QTE::start() {
     active = true;
-    std::cout << "QTE is active now" << std::endl;
     success = false;
     failure = false;
-    respawn_new_bait = false;
     timer = time_limit;
     red_text_percentage = 0.0f;
     input_delay = 2.0f;
-    success_count = 0;
-
-    if(bait != nullptr){
-        success_count_goal = bait->bait_bites_left;
-    }
     
     std::srand(uint32_t(std::time(0)));
     int random_index = std::rand() % possible_keys.size();
@@ -28,9 +21,11 @@ void QTE::update(float elapsed) {
 
     if(failure){
         bait_hook_up(elapsed);
+        return;
     }
     else if(success){
         bait_eaten();
+        return;
     }
 
     if(input_delay > 0){
@@ -38,7 +33,7 @@ void QTE::update(float elapsed) {
         return;
     }  
 
-    std::cout << get_prompt() << std::endl;
+    //std::cout << get_prompt() << std::endl;
     timer -= elapsed;
     red_text_percentage += elapsed;
 
@@ -46,17 +41,16 @@ void QTE::update(float elapsed) {
     
     if (state[SDL_GetScancodeFromKey(required_key)]) {
 
-        success_count++;
         QTE::score++; 
         bait->bait_bites_left--;
         bait->mesh_parts.bait_base->scale *= 0.8; // scale down the bait whenever a QTE succeeds
 
-        if(success_count == success_count_goal){
+        if(bait->bait_bites_left == 0){
             success = true;
+            return;
         }
 
         reset();
-        
         return;
     }
     
@@ -100,7 +94,6 @@ void QTE::bait_hook_up(float elapsed){
 void QTE::bait_eaten(){
     bait->mesh_parts.bait_base->scale *= 0;
     bait = nullptr;
-    respawn_new_bait = true; //respawn bool
     end();
 }
 

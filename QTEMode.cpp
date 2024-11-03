@@ -30,6 +30,17 @@ Load< GLuint > fade_program(LoadTagEarly, [](){
 	return ret;
 });
 
+
+
+
+
+
+
+
+
+
+
+
 //-------------------------------------
 
 QTEMode::QTEMode(std::shared_ptr< Puffer > puffer, std::shared_ptr< Bait > bait) {

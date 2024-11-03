@@ -204,6 +204,7 @@ void PlayMode::update(float elapsed) {
 		Bait* best_bait = nullptr;
 		float closest_in_view_bait = 1000.0f;
 		bait_in_eating_range = false;
+
 		for(Bait b : QTE::active_baits){
 			glm::vec3 bait_position = b.get_position();
 			glm::vec3 puff_to_bait = bait_position - puffer_position;
@@ -226,40 +227,40 @@ void PlayMode::update(float elapsed) {
 		}
 
 		if (best_bait != nullptr && !PlayMode::qte_active) {
+			eat.pressed = false;
 			PlayMode::qte_active = true;
 
-
 			//QUESTION: works but not entirely sure what's going on behind
-			std::shared_ptr< Puffer > shared_puffer_ptr = std::make_shared< Puffer >(puffer);
-			std::shared_ptr< Bait > shared_bait_ptr = std::make_shared< Bait >(*best_bait);
-
+			shared_puffer_ptr = std::make_shared< Puffer >(puffer);
+			shared_bait_ptr = std::make_shared< Bait >(*best_bait);
 
 			QTEMode qte_mode = QTEMode(shared_puffer_ptr, shared_bait_ptr);
 			qte_mode.background = shared_from_this();
 			Mode::set_current(std::make_shared< QTEMode >(qte_mode));
 		}
+
+		//respawn new bait if the bait is eaten up
+		if(shared_bait_ptr != nullptr && shared_bait_ptr->bait_bites_left == 0){
+			shared_bait_ptr = nullptr;
+			QTE::active_baits.pop_back();
+			Bait new_bait = Bait();
+			//pick either square or circle
+			std::srand(static_cast<unsigned int>(std::time(nullptr)));
+			auto circle_or_square = static_cast<BaitType>(std::rand() % 2);
+			std::vector<Scene::Transform *> new_bait_transforms;
+			if(circle_or_square==0){
+				new_bait_transforms = scene.spawn(*bait_scene, CARROT_BAIT);
+			} else {
+				new_bait_transforms = scene.spawn(*bait_scene, FISH_BAIT);
+			}
+			new_bait.init(new_bait_transforms, circle_or_square);
+			QTE::active_baits.push_back(new_bait);
+			new_bait.random_respawn_location();
+		} 
 	}
 
-	{
-		
-		//respawn a new bait here
-		// if(eat_bait_QTE->respawn_new_bait == true){
-		// 	Bait new_bait = Bait();
-		// 	//pick either square or circle
-		// 	std::srand(static_cast<unsigned int>(std::time(nullptr)));
-		// 	auto circle_or_square = static_cast<BaitType>(std::rand() % 2);
-		// 	std::vector<Scene::Transform *> new_bait_transforms;
-		// 	if(circle_or_square==0){
-		// 		new_bait_transforms = scene.spawn(*bait_scene, CARROT_BAIT);
-		// 	} else {
-		// 		new_bait_transforms = scene.spawn(*bait_scene, FISH_BAIT);
-		// 	}
-		// 	new_bait.init(new_bait_transforms, circle_or_square);
-		// 	QTE::active_baits.pop_back();
-		// 	QTE::active_baits.push_back(new_bait);
-		// 	new_bait.random_respawn_location();
-		// 	eat_bait_QTE->respawn_new_bait = false;
-		// }
+	if(Mode::current == shared_from_this()){
+		PlayMode::qte_active = false;
 	}
 
 	//reset button press counters:
