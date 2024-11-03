@@ -124,9 +124,10 @@ const game_names = [
 	maek.CPP('load_opus.cpp'),
 	maek.CPP('Puffer.cpp'),
 	maek.CPP('Bait.cpp'),
-
+	maek.CPP('QTE.cpp'),
 	// maek.CPP('Spawner.cpp'),
-	maek.CPP("Animation.cpp")
+	maek.CPP("Animation.cpp"),
+	maek.CPP('QTEMode.cpp')
 ];
 
 const common_names = [
@@ -142,8 +143,7 @@ const common_names = [
 	maek.CPP('Mode.cpp'),
 	maek.CPP('GL.cpp'),
 	maek.CPP('Load.cpp'),
-	maek.CPP('Collide.cpp'),
-	maek.CPP('QTE.cpp')
+	maek.CPP('Collide.cpp')
 ];
 
 // const show_meshes_names = [

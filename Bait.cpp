@@ -1,10 +1,18 @@
 #include "Bait.hpp"
 #include <iostream>
 
-void Bait::init(std::vector<Scene::Transform *> transform_vector, int tob)
+void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
 {
     assign_mesh_parts(transform_vector);
     type_of_bait = tob;
+
+    if(type_of_bait == Circle){
+        bait_bites_left = 3;
+    }
+    else{
+        bait_bites_left = 5;
+    }
+
     main_transform->scale = glm::vec3(3.0f);
 }
 

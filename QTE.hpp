@@ -13,25 +13,27 @@ struct QTE {
     static std::vector< Bait > active_baits;
 
     bool active = false, success = false, failure = false, respawn_new_bait = false;            
-    float timer, hook_up_timer, red_text_percentage = 0;         
+    float timer = 0.0f, hook_up_timer = 0.0f, red_text_percentage = 0.0f;         
     float time_limit = 3.0f;    
-    float input_delay;
-    int success_count, success_count_goal;
+    float input_delay = 0.0f;
+    int success_count = 0, success_count_goal = 0;
     
 
-    Puffer *puffer = nullptr;
-    Scene::Transform *string = nullptr;
-    Scene::Transform *bait = nullptr;
-
+    std::shared_ptr< Puffer > puffer;
+    std::shared_ptr< Bait > bait;
     SDL_Keycode required_key;   
 
     // Possible keys for the QTE
-    std::vector<SDL_Keycode> possible_keys = { SDLK_0, SDLK_1, SDLK_2, SDLK_3 };
+    std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };
 
-    QTE(Puffer *puffer_, Scene::Transform *string_, Scene::Transform *bait_): puffer(puffer_), string(string_), bait(bait_) {};
+    QTE(std::shared_ptr< Puffer > puffer_, std::shared_ptr< Bait > bait_): puffer(puffer_), bait(bait_) {
+        if (!puffer || !bait) {
+            throw std::invalid_argument("Puffer or Bait cannot be null");
+        }
+    };
     QTE() = default;
 
-    void start(int goal); 
+    void start(); 
     void update(float elapsed); 
     void reset();
     void bait_hook_up(float elapsed);
