@@ -113,6 +113,28 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
             }, 
             &mesh_parts.puff_r_fin->rotation)
         );
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, 0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, -0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.9f, glm::quat(0.86f, 0.0f, -0.51f, 0.0f)},
+                SlerpFrame{0.11f, glm::quat(0.981f, 0.0f, 0.194f, 0.0f)},
+                SlerpFrame{0.16f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_tail->rotation)
+        );
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, -0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, 0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.9f, glm::quat(0.86f, 0.0f, 0.51f, 0.0f)},
+                SlerpFrame{0.11f, glm::quat(0.981f, 0.0f, -0.194f, 0.0f)},
+                SlerpFrame{0.16f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_tail->rotation)
+        );
     }
 }
 
@@ -191,6 +213,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     else {
         swim_cooldown += elapsed;
         swim_animation[swimming_side].update(swim_cooldown);
+        swim_animation[swimming_side + 2].update(swim_cooldown);
         if (swim_cooldown > swim_cooldown_threshold) {
             swim_cooldown = 0.0f;
         }
