@@ -2,6 +2,8 @@
 
 #include "DepthTextureProgram.hpp"
 #include "LitColorTextureProgram.hpp"
+#include "WaveTextureProgram.hpp"
+#include "WiggleTextureProgram.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -17,23 +19,33 @@
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
+GLuint waterplane_scene_for_wave_texture_program = 0;
+GLuint seaweed_objs_for_wiggle_texture_program = 0;
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
 	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
+	seaweed_objs_for_wiggle_texture_program = ret->make_vao_for_program(wiggle_texture_program->program);
 	return ret;
 });
 
 Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
-	puffer_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
+	puffer_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
-	bait_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
+	bait_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
+
+Load< MeshBuffer > waterplane_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/waterplane_scene.pnct"));
+	waterplane_scene_for_wave_texture_program = ret->make_vao_for_program(wave_texture_program->program);
+	return ret;
+});
+
 
 Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 	return new Scene(data_path("scenes/ocean_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
@@ -42,9 +54,26 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
 
-		drawable.pipeline = depth_texture_program_pipeline;
+		if(mesh_name.find("seaweed") == -1)
+		{
+			if(mesh_name.find("sand") == -1)
+			{
+				drawable.pipeline = lit_color_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+			}
+			else
+			{
+				drawable.pipeline = depth_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+			}
+			
+		}
+		else
+		{
+			drawable.pipeline = wiggle_texture_program_pipeline;
+			drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
+		}
 
-		drawable.pipeline.vao = main_scene_for_depth_texture_program;
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
@@ -86,13 +115,33 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > waterplane_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/waterplane_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = waterplane_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = wave_texture_program_pipeline;
+
+		drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+	});
+});
+
 PlayMode::PlayMode() : scene(*main_scene) {
+
+	scene.add(*waterplane_scene);
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
 	eat_bait_QTE = new QTE();
 
+	
 
 	Bait bait_1 = Bait();
 	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
@@ -289,20 +338,38 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
 	//set up light type and position for depth_texture_program:
-	// TODO: consider using the Light(s) in the scene to do this
-	glUseProgram(depth_texture_program->program);
-	glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
-	glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
-	glUniform3fv(depth_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUniform1f(depth_texture_program->TIME_float, elapsedtime);
-	glUseProgram(0);
+	// all the shaders
+	{
+		glUseProgram(depth_texture_program->program);
+		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(depth_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform1f(depth_texture_program->TIME_float, elapsedtime);
+		glUseProgram(0);
 
 
-	glUseProgram(lit_color_texture_program->program);
-	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
-	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 1.0f,1.0f)));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-	glUseProgram(0);
+		glUseProgram(lit_color_texture_program->program);
+		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f,1.0f)));
+		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUseProgram(0);
+
+		glUseProgram(wave_texture_program->program);
+		glUniform1i(wave_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
+		glUseProgram(0);
+
+
+		glUseProgram(wiggle_texture_program->program);
+		glUniform1i(wiggle_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(wiggle_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(wiggle_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform1f(wiggle_texture_program->TIME_float, elapsedtime);
+		glUniform3fv(wiggle_texture_program->PLAYERPOS_vec3, 1, glm::value_ptr( puffer.get_position()));
+		glUseProgram(0);
+	}
 
 	
 	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);

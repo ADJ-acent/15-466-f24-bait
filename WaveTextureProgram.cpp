@@ -1,26 +1,26 @@
-#include "DepthTextureProgram.hpp"
+#include "WaveTextureProgram.hpp"
 
 #include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
 
-Scene::Drawable::Pipeline depth_texture_program_pipeline;
+Scene::Drawable::Pipeline wave_texture_program_pipeline;
 
-Load< DepthTextureProgram > depth_texture_program(LoadTagEarly, []() -> DepthTextureProgram const * {
-	DepthTextureProgram *ret = new DepthTextureProgram();
+Load< WaveTextureProgram > wave_texture_program(LoadTagEarly, []() -> WaveTextureProgram const * {
+	WaveTextureProgram *ret = new WaveTextureProgram();
 
 	//----- build the pipeline template -----
-	depth_texture_program_pipeline.program = ret->program;
+	wave_texture_program_pipeline.program = ret->program;
 
-	depth_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
-	depth_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
-	depth_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
+	wave_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
+	wave_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
+	wave_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
 	/* This will be used later if/when we build a light loop into the Scene:
-	depth_texture_program_pipeline.LIGHT_TYPE_int = ret->LIGHT_TYPE_int;
-	depth_texture_program_pipeline.LIGHT_LOCATION_vec3 = ret->LIGHT_LOCATION_vec3;
-	depth_texture_program_pipeline.LIGHT_DIRECTION_vec3 = ret->LIGHT_DIRECTION_vec3;
-	depth_texture_program_pipeline.LIGHT_ENERGY_vec3 = ret->LIGHT_ENERGY_vec3;
-	depth_texture_program_pipeline.LIGHT_CUTOFF_float = ret->LIGHT_CUTOFF_float;
+	wave_texture_program_pipeline.LIGHT_TYPE_int = ret->LIGHT_TYPE_int;
+	wave_texture_program_pipeline.LIGHT_LOCATION_vec3 = ret->LIGHT_LOCATION_vec3;
+	wave_texture_program_pipeline.LIGHT_DIRECTION_vec3 = ret->LIGHT_DIRECTION_vec3;
+	wave_texture_program_pipeline.LIGHT_ENERGY_vec3 = ret->LIGHT_ENERGY_vec3;
+	wave_texture_program_pipeline.LIGHT_CUTOFF_float = ret->LIGHT_CUTOFF_float;
 	*/
 
 	//make a 1-pixel white texture to bind by default:
@@ -37,13 +37,13 @@ Load< DepthTextureProgram > depth_texture_program(LoadTagEarly, []() -> DepthTex
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
-	depth_texture_program_pipeline.textures[0].texture = tex;
-	depth_texture_program_pipeline.textures[0].target = GL_TEXTURE_2D;
+	wave_texture_program_pipeline.textures[0].texture = tex;
+	wave_texture_program_pipeline.textures[0].target = GL_TEXTURE_2D;
 
 	return ret;
 });
 
-DepthTextureProgram::DepthTextureProgram() {
+WaveTextureProgram::WaveTextureProgram() {
 	//Compile vertex and fragment shaders using the convenient 'gl_compile_program' helper function:
 	program = gl_compile_program(
 		//vertex shader:
@@ -51,6 +51,7 @@ DepthTextureProgram::DepthTextureProgram() {
 		"uniform mat4 OBJECT_TO_CLIP;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
+        "uniform float TIME;\n"
 		"in vec4 Position;\n"
 		"in vec3 Normal;\n"
 		"in vec4 Color;\n"
@@ -59,16 +60,61 @@ DepthTextureProgram::DepthTextureProgram() {
 		"out vec3 normal;\n"
 		"out vec4 color;\n"
 		"out vec2 texCoord;\n"
-		"out mat4 objclip;\n"
+        "out mat4 objclip;\n"
 		"out vec4 postrans;\n"
+
+        //noise function 
+        "	vec2 noise2x2(vec2 p) {\n"
+		"	float x = dot(p, vec2(123.4, 234.5));\n"
+		"	float y = dot(p, vec2(345.6, 456.7));\n"
+		"	vec2 noise = vec2(x, y);\n"
+		"	noise = sin(noise);\n"
+		"	noise = noise * 43758.5453;\n"
+		"	noise = fract(noise);\n"
+		"	return noise;\n"
+		"	}\n"
+
 		"void main() {\n"
+
+        "	vec2 uv = TexCoord * 24.0;\n"
+		"	vec2 currgridid = floor(uv);\n"
+		"	vec2 currentgridcoord = fract(uv);\n"
+		"	currentgridcoord = currentgridcoord - 0.5;\n"
+		" 	vec2 redgriduv = currentgridcoord;\n"
+		"	redgriduv = abs(redgriduv);\n"
+		"	float distedge = 2.0 * max(redgriduv.x, redgriduv.y);\n"
+		
+		"	float pointsongrid = 0.0;\n"
+		"	float mindist = 100.0;\n"
+		
+		//"	vec3 redgridcolor = vec3(smoothstep(0.9,1.0,distedge),0.0,0.0);\n"//SHOWS THE GRIDLINE
+
+		"	for(float i = -1.0; i <= 1.0; i++){\n"
+		"		for(float j = -1.0; j <= 1.0; j++){\n"
+		"			vec2 adjgridcoords = vec2(i, j);\n"
+		"			vec2 pointonadjgrid = adjgridcoords;\n"
+		
+		"			vec2 noise = noise2x2(currgridid + adjgridcoords);\n"
+    
+		"			pointonadjgrid = adjgridcoords + sin(TIME * noise)* 0.5;\n"
+		"			float dist = length(currentgridcoord - pointonadjgrid);\n"
+		"			mindist = min(dist, mindist);\n"
+		"			pointsongrid += smoothstep(0.95, 0.96, 1.0-dist);\n"
+		"	}\n"
+		"}\n"
+		
+		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
+		
+		"	float oceanwave =  smoothstep(0.0,1.0,mindist);\n"
+
 		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
+        "   gl_Position.y += 5.0 * oceanwave;\n"
 		"	position = OBJECT_TO_LIGHT * Position;\n"
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
-		"	objclip = OBJECT_TO_CLIP;\n"
+        "	texCoord = TexCoord;\n"
+        "	objclip = OBJECT_TO_CLIP;\n"
 		"	postrans = Position;\n"
-		"	texCoord = TexCoord;\n"
 		"}\n"
 	,
 		//fragment shader:
@@ -129,13 +175,13 @@ DepthTextureProgram::DepthTextureProgram() {
 
 		
 		//create the grid
-		"	vec2 uv = texCoord * 16.0;\n"
+		"	vec2 uv = texCoord * 24.0;\n"
 		"	vec2 currgridid = floor(uv);\n"
 		"	vec2 currentgridcoord = fract(uv);\n"
 		"	currentgridcoord = currentgridcoord - 0.5;\n"
 		" 	vec2 redgriduv = currentgridcoord;\n"
 		"	redgriduv = abs(redgriduv);\n"
-		"	float distedge = 2.0 * max(redgriduv.x, redgriduv.y);\n"
+		"	float distedge = 10.0 * max(redgriduv.x, redgriduv.y);\n"
 		
 		"	float pointsongrid = 0.0;\n"
 		"	float mindist = 100.0;\n"
@@ -200,7 +246,7 @@ DepthTextureProgram::DepthTextureProgram() {
 
 }
 
-DepthTextureProgram::~DepthTextureProgram() {
+WaveTextureProgram::~WaveTextureProgram() {
 	glDeleteProgram(program);
 	program = 0;
 }
