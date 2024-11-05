@@ -26,6 +26,7 @@ Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
 	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
 	seaweed_objs_for_wiggle_texture_program = ret->make_vao_for_program(wiggle_texture_program->program);
+	waterplane_scene_for_wave_texture_program = ret->make_vao_for_program(wave_texture_program->program);
 	return ret;
 });
 
@@ -41,43 +42,58 @@ Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	return ret;
 });
 
-Load< MeshBuffer > waterplane_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/waterplane_scene.pnct"));
-	waterplane_scene_for_wave_texture_program = ret->make_vao_for_program(wave_texture_program->program);
-	return ret;
-});
-
 
 Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 	return new Scene(data_path("scenes/ocean_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
-		scene.drawables.emplace_back(transform);
-		Scene::Drawable &drawable = scene.drawables.back();
+		
 
-		if(mesh_name.find("seaweed") == -1)
+		if(mesh_name.find("seaweed") != -1)
 		{
-			if(mesh_name.find("sand") == -1)
-			{
-				drawable.pipeline = lit_color_texture_program_pipeline;
-				drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			}
-			else
-			{
-				drawable.pipeline = depth_texture_program_pipeline;
-				drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			}
+			scene.drawables.emplace_back(transform);
+			Scene::Drawable &drawable = scene.drawables.back();
+			drawable.pipeline = wiggle_texture_program_pipeline;
+			drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
+			drawable.pipeline.type = mesh.type;
+			drawable.pipeline.start = mesh.start;
+			drawable.pipeline.count = mesh.count;
+					
+		}
+		else if(mesh_name.find("sand") != -1)
+		{
+			scene.drawables.emplace_back(transform);
+			Scene::Drawable &drawable = scene.drawables.back();
+			drawable.pipeline = depth_texture_program_pipeline;
+			drawable.pipeline.vao = main_scene_for_depth_texture_program;
+			drawable.pipeline.type = mesh.type;
+			drawable.pipeline.start = mesh.start;
+			drawable.pipeline.count = mesh.count;
+		}
+		else if(mesh_name.find("waterplane") != -1)
+		{
+			scene.drawables.emplace_front(transform);
+			Scene::Drawable &drawable = scene.drawables.front();
+			drawable.pipeline.trans = 1; //set transparency to 1
+			drawable.pipeline = wave_texture_program_pipeline;
+			drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
+			drawable.pipeline.type = mesh.type;
+			drawable.pipeline.start = mesh.start;
+			drawable.pipeline.count = mesh.count;
 			
 		}
 		else
 		{
-			drawable.pipeline = wiggle_texture_program_pipeline;
-			drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
+			scene.drawables.emplace_back(transform);
+			Scene::Drawable &drawable = scene.drawables.back();
+			drawable.pipeline = lit_color_texture_program_pipeline;
+			drawable.pipeline.vao = main_scene_for_depth_texture_program;
+			drawable.pipeline.type = mesh.type;
+			drawable.pipeline.start = mesh.start;
+			drawable.pipeline.count = mesh.count;
 		}
 
-		drawable.pipeline.type = mesh.type;
-		drawable.pipeline.start = mesh.start;
-		drawable.pipeline.count = mesh.count;
+		
 
 	});
 });
@@ -116,33 +132,15 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
-Load< Scene > waterplane_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("scenes/waterplane_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
-		Mesh const &mesh = waterplane_meshes->lookup(mesh_name);
 
-		scene.drawables.emplace_back(transform);
-		Scene::Drawable &drawable = scene.drawables.back();
-
-		drawable.pipeline = wave_texture_program_pipeline;
-
-		drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
-		drawable.pipeline.type = mesh.type;
-		drawable.pipeline.start = mesh.start;
-		drawable.pipeline.count = mesh.count;
-
-	});
-});
 
 PlayMode::PlayMode() : scene(*main_scene) {
 
-	scene.add(*waterplane_scene);
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
 	eat_bait_QTE = new QTE();
-
-	
 
 	Bait bait_1 = Bait();
 	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
@@ -171,6 +169,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 			camera = &cam;
 		}
 	}
+
 }
 
 PlayMode::~PlayMode() {
@@ -341,6 +340,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//set up light type and position for depth_texture_program:
 	// all the shaders
 	{
+		
 		glUseProgram(depth_texture_program->program);
 		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
@@ -355,13 +355,16 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUseProgram(0);
 
+		glm::vec4 xyzvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		glUseProgram(wave_texture_program->program);
 		glUniform1i(wave_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
+		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0);
-
+		
 
 		glUseProgram(wiggle_texture_program->program);
 		glUniform1i(wiggle_texture_program->LIGHT_TYPE_int, 1);
@@ -371,6 +374,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wiggle_texture_program->PLAYERPOS_vec3, 1, glm::value_ptr( puffer.get_position()));
 		glUniform1f(wiggle_texture_program->PLAYERSCALE_float, puffer.current_scale);
 		glUseProgram(0);
+		
 	}
 
 	
@@ -382,8 +386,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
-
 	scene.draw(*camera);
+	//glDisable(GL_BLEND);
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

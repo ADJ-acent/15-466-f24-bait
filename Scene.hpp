@@ -68,6 +68,7 @@ struct Scene {
 
 			//attributes:
 			GLuint vao = 0; //attrib->buffer mapping; passed to glBindVertexArray
+			GLuint trans = 0; //transparent bit
 
 			GLenum type = GL_TRIANGLES; //what sort of primitive to draw; passed to glDrawArrays
 			GLuint start = 0; //first vertex to draw; passed to glDrawArrays

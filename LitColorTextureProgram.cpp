@@ -89,7 +89,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"out vec4 fragColor;\n"
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
-		"   float threshold = 150.0f;\n"
+		"   float threshold = 200.0f;\n"
 		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
@@ -116,7 +116,6 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_DIRECTION_vec3 = glGetUniformLocation(program, "LIGHT_DIRECTION");
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
-
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 

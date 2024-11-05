@@ -50,6 +50,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		"#version 330\n"
 		"uniform mat4 OBJECT_TO_CLIP;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
+		"uniform mat4 OBJECT_TO_WORLD;\n"
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
         "uniform float TIME;\n"
 		"in vec4 Position;\n"
@@ -109,8 +110,8 @@ WaveTextureProgram::WaveTextureProgram() {
 
 		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
         "   gl_Position.y += 5.0 * oceanwave;\n"
-		"	position = OBJECT_TO_LIGHT * Position;\n"
-		"	normal = NORMAL_TO_LIGHT * Normal;\n"
+		"	position = (OBJECT_TO_WORLD * Position).xyz;\n"
+		"	normal = Normal;\n"
 		"	color = Color;\n"
         "	texCoord = TexCoord;\n"
         "	objclip = OBJECT_TO_CLIP;\n"
@@ -123,6 +124,8 @@ WaveTextureProgram::WaveTextureProgram() {
 		"uniform int LIGHT_TYPE;\n"
 		"uniform vec3 LIGHT_LOCATION;\n"
 		"uniform vec3 LIGHT_DIRECTION;\n"
+		"uniform vec3 CAMPOS;\n"
+		"uniform vec3 CAMROT;\n"
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
 		"uniform float TIME;\n"
@@ -148,41 +151,22 @@ WaveTextureProgram::WaveTextureProgram() {
 
 
 		"void main() {\n"
-        "   float threshold = 150.0f;\n"
-		"	vec3 n = normalize(normal);\n"
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
-		
-		"	vec3 e;\n"
-		"	if (LIGHT_TYPE == 0) { //point light \n"
-		"		vec3 l = (LIGHT_LOCATION - position);\n"
-		"		float dis2 = dot(l,l);\n"
-		"		l = normalize(l);\n"
-		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
-		"		e = nl * LIGHT_ENERGY;\n"
-		"	} else if (LIGHT_TYPE == 1) { //hemi light \n"
-		"		e = (dot(n,-LIGHT_DIRECTION) * 0.5 + 0.5) * LIGHT_ENERGY;\n"
-		"	} else if (LIGHT_TYPE == 2) { //spot light \n"
-		"		vec3 l = (LIGHT_LOCATION - position);\n"
-		"		float dis2 = dot(l,l);\n"
-		"		l = normalize(l);\n"
-		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
-		"		float c = dot(l,-LIGHT_DIRECTION);\n"
-		"		nl *= smoothstep(LIGHT_CUTOFF,mix(LIGHT_CUTOFF,1.0,0.1), c);\n"
-		"		e = nl * LIGHT_ENERGY;\n"
-		"	} else { //(LIGHT_TYPE == 3) //directional light \n"
-		"		e = max(0.0, dot(n,-LIGHT_DIRECTION)) * LIGHT_ENERGY;\n"
-		"	}\n"
+        "   float threshold = 200.0f;\n" //the viewing threshold for the fog
+		"	vec3 n = normalize(normal);\n" //normalized vector of the normal from the fragment
+		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n" //shade of the ocean being used
 
+		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
+		"	float fresnelcoeff = dot(n,normalize(camtowatervec));\n"//fresnal coefficient
 		
+
 		//create the grid
-		"	vec2 uv = texCoord * 24.0;\n"
+		"	vec2 uv = texCoord * 24.0;\n" //get the uv coordinate, create the grid, get the points
 		"	vec2 currgridid = floor(uv);\n"
 		"	vec2 currentgridcoord = fract(uv);\n"
 		"	currentgridcoord = currentgridcoord - 0.5;\n"
 		" 	vec2 redgriduv = currentgridcoord;\n"
 		"	redgriduv = abs(redgriduv);\n"
 		"	float distedge = 10.0 * max(redgriduv.x, redgriduv.y);\n"
-		
 		"	float pointsongrid = 0.0;\n"
 		"	float mindist = 100.0;\n"
 		
@@ -204,11 +188,11 @@ WaveTextureProgram::WaveTextureProgram() {
 		
 		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
 		
-		"	vec3 oceanoverlay = vec3(smoothstep(0.0,1.0,mindist)) * vec3(1.0,0.9,0.4);\n"
-		
-		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
+		"	vec3 oceanoverlay = vec3(smoothstep(0.0,1.0,mindist)) * vec3(1.0,0.9,0.4);\n" //the wave overlay color
+		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n" //create the fog
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
-		"	fragColor = vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0);\n"
+		"	fragColor = vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) * fresnelcoeff , oceanshade,fog), 1.0);\n"
+		"	fragColor = vec4(vec3(fresnelcoeff),1.0f);"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -224,6 +208,7 @@ WaveTextureProgram::WaveTextureProgram() {
 	//look up the locations of uniforms:
 	OBJECT_TO_CLIP_mat4 = glGetUniformLocation(program, "OBJECT_TO_CLIP");
 	OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(program, "OBJECT_TO_LIGHT");
+	OBJECT_TO_WORLD_mat4 = glGetUniformLocation(program, "OBJECT_TO_WORLD");
 	NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(program, "NORMAL_TO_LIGHT");
 
 	LIGHT_TYPE_int = glGetUniformLocation(program, "LIGHT_TYPE");
@@ -231,7 +216,10 @@ WaveTextureProgram::WaveTextureProgram() {
 	LIGHT_DIRECTION_vec3 = glGetUniformLocation(program, "LIGHT_DIRECTION");
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
+	CAMPOS_vec3 = glGetUniformLocation(program, "CAMPOS");
+	CAMROT_vec3 = glGetUniformLocation(program, "CAMROT");
 	TIME_float =  glGetUniformLocation(program, "TIME");
+	
 
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
