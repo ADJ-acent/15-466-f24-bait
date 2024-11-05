@@ -19,7 +19,8 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
 
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
-    original_mesh_rotation = mesh->rotation;
+    original_mesh_rotation = mesh->rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
+    mesh->rotation = original_mesh_rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
 
@@ -206,7 +207,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     //he moves in the direction of the "slingshot"
 
     if (swim_cooldown == 0.0f) {
-        if (swim_direction != 0 && !building_up) { //disable swimming when charging up
+        if (swim_direction != 0) {
             swim(swim_direction);
             swim_cooldown = 0.001f; // increment slightly to start the timer
         }
@@ -278,8 +279,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        
-        if (release_rotate_angle > 1.0f) {
+        if (release_rotate_angle > 1.0f || building_up) {
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
             if (building_up) { // experimental...conflicted on how this feels
                 mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
@@ -292,10 +292,6 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     base_rotation = mesh->rotation;
                 }
             }
-        }
-        else if (building_up) {
-            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
         }
         else {//only return to tail view when we aren't rolling
             // update mesh rotation to return to normal (if we rotated camera recently)
