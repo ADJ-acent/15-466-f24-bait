@@ -13,6 +13,7 @@ Load< WaveTextureProgram > wave_texture_program(LoadTagEarly, []() -> WaveTextur
 
 	wave_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
 	wave_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
+	wave_texture_program_pipeline.OBJECT_TO_WORLD_mat4 = ret->OBJECT_TO_WORLD_mat4;
 	wave_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
 	/* This will be used later if/when we build a light loop into the Scene:
@@ -156,7 +157,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n" //shade of the ocean being used
 
 		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
-		"	float fresnelcoeff = dot(n,normalize(camtowatervec));\n"//fresnal coefficient
+		"	float fresnelcoeff = abs(dot(n,normalize(camtowatervec)));\n"//fresnal coefficient
 		
 
 		//create the grid
