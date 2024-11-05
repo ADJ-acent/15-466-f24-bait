@@ -5,8 +5,10 @@
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
 #include "Load.hpp"
+#include "Texture.hpp"
 #include "gl_errors.hpp"
 #include "data_path.hpp"
+#include "UIRenderProgram.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -85,6 +87,9 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 	});
 });
+
+extern UIElements ui_elements;
+extern Load< UIRenderProgram > ui_render_program;
 
 PlayMode::PlayMode() : scene(*main_scene) {
 
@@ -292,6 +297,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
 	scene.draw(*camera);
+
+	ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
+	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);

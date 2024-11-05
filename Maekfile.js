@@ -127,7 +127,10 @@ const game_names = [
 	maek.CPP('QTE.cpp'),
 	// maek.CPP('Spawner.cpp'),
 	maek.CPP("Animation.cpp"),
-	maek.CPP('QTEMode.cpp')
+	maek.CPP('QTEMode.cpp'),
+	maek.CPP("UIRenderProgram.cpp"),
+	maek.CPP("Texture.cpp")
+
 ];
 
 const common_names = [
