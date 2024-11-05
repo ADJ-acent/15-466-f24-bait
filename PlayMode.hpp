@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
+#include "CollisionDetection.hpp"
 
 #include <vector>
 #include <deque>
@@ -42,6 +43,9 @@ struct PlayMode : Mode {
 	Collider fish_collider;
 	Collider string_collider;
 	Collider bait_collider;
+
+	CollisionDetector puffer_collider;
+	bool colliding_test;
 
 	bool qte_active = false;
 	bool bait_in_eating_range = false;

@@ -15,6 +15,19 @@
 #include <limits>
 #include <string>
 
+struct Vertex {
+	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::u8vec4 Color;
+	glm::vec2 TexCoord;
+};
+
+struct Triangle {
+	glm::vec3 a;
+	glm::vec3 b;
+	glm::vec3 c;
+};
+
 
 struct Mesh {
 	//Meshes are vertex ranges (and primitive types) in their MeshBuffer:
@@ -27,6 +40,10 @@ struct Mesh {
 	//useful for debug visualization and (perhaps, eventually) collision detection:
 	glm::vec3 min = glm::vec3( std::numeric_limits< float >::infinity());
 	glm::vec3 max = glm::vec3(-std::numeric_limits< float >::infinity());
+
+	std::vector< glm::vec3 > vertexes = {};
+	std::vector< Triangle > triangles = {};
+	
 };
 
 struct MeshBuffer {
@@ -44,6 +61,8 @@ struct MeshBuffer {
 
 	//This is the OpenGL vertex buffer object containing the mesh data:
 	GLuint buffer = 0;
+
+	std::vector< Vertex > vertexes = {};
 
 	//-- internals ---
 
@@ -67,4 +86,6 @@ struct MeshBuffer {
 	Attrib Normal;
 	Attrib Color;
 	Attrib TexCoord;
+
+	std::vector<Vertex> data;
 };

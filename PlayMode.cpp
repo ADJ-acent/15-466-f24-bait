@@ -77,6 +77,9 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*main_meshes);
+		//NOTE: add this to other scenes
 
 	});
 });
@@ -94,6 +97,8 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*pufferfish_meshes);
 
 	});
 });
@@ -112,6 +117,9 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
 
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*bait_meshes);
+
 	});
 });
 
@@ -128,6 +136,9 @@ Load< Scene > waterplane_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
+
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*waterplane_meshes);
 
 	});
 });
@@ -150,6 +161,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	QTE::active_baits.emplace_back(bait_1);
 
 	fish_collider = calculate_collider(puffer.main_transform, pufferfish_meshes->lookup("PuffBody"));
+	puffer_collider.init(puffer, puffer.main_transform,pufferfish_meshes->lookup("PuffBody")); 
 
 	for(Bait b : QTE::active_baits){
     	
@@ -162,8 +174,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
-	// puffer = scene.add_puffer(*puffer_scene);
-	// puffer.init();
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
 		if (cam.transform->name == "PuffCam") {
@@ -249,6 +259,27 @@ void PlayMode::update(float elapsed) {
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
+
+	//collision check w collider
+
+	// for (auto it = main_scene->transforms.begin(); it != main_scene->transforms.end(); ++it) {
+	// 	const Scene::Transform* transformPtr = &(*it);  // Use const pointer
+	// 	colliding_test = puffer_collider.check_collision(transformPtr, main_meshes->lookup(transformPtr->name));
+	// 	// std::cout << colliding_test;
+	// }
+
+	for (Scene::Drawable &d : scene.drawables){
+		assert(d.mesh);
+		colliding_test = puffer_collider.check_collision(d.transform,d.mesh,d.meshbuffer);
+		if (colliding_test) {
+			break;
+		}
+	}
+
+	
+
+	
+	
 
 	
 	//collision check:
@@ -398,7 +429,65 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			0.0f, 0.0f, 0.0f, 1.0f
 		));
 
+		DrawLines lines_mesh(camera->make_projection() * glm::mat4(camera->transform->make_world_to_local()));
+
 		constexpr float H = 0.3f;
+
+		//draw triangles for debug
+		{
+		
+			// for (Scene::Drawable &d : scene.drawables){
+			// 	for(GLuint i = d.mesh->start; i < d.mesh->count+d.mesh->start; i+=3){
+				
+			// 		glm::vec3 triangle_a = d.transform->make_local_to_world() * glm::vec4(d.meshbuffer->data[i].Position, 1.0f);
+			// 		glm::vec3 triangle_b = d.transform->make_local_to_world() * glm::vec4(d.meshbuffer->data[i+1].Position, 1.0f);
+			// 		glm::vec3 triangle_c = d.transform->make_local_to_world() * glm::vec4(d.meshbuffer->data[i+2].Position, 1.0f);
+
+			// 		lines_mesh.draw(triangle_a,triangle_b);
+			// 		lines_mesh.draw(triangle_a,triangle_c);
+			// 		lines_mesh.draw(triangle_b,triangle_c);
+			// 	}
+			// }
+			// for (auto it = main_scene->transforms.begin(); it != main_scene->transforms.end(); ++it) {
+			// 	const Scene::Transform* transformPtr = &(*it);  // Use const pointer
+			// 	std::cout << transformPtr->name;
+			// 	for(Triangle t : main_meshes->lookup(transformPtr->name).triangles){
+			// 		//get barycentric coordinates of closest point in the plane of (a,b,c) triangle in the mesh:
+			// 		glm::vec3 triangle_a = glm::vec3(transformPtr->make_local_to_world() * glm::vec4(t.a, 1.0f));
+			// 		glm::vec3 triangle_b = glm::vec3(transformPtr->make_local_to_world() * glm::vec4(t.b, 1.0f));
+			// 		glm::vec3 triangle_c = glm::vec3(transformPtr->make_local_to_world() * glm::vec4(t.c, 1.0f));
+			// 		lines.draw(triangle_a,triangle_b);
+			// 		lines.draw(triangle_a,triangle_c);
+			// 		lines.draw(triangle_b,triangle_c);
+			// 	}
+			
+			// }
+
+			// for(Triangle t : bait_meshes->lookup("carrotbait_base").triangles){
+			// 	//get barycentric coordinates of closest point in the plane of (a,b,c) triangle in the mesh:
+			// 	glm::vec3 triangle_a = glm::vec3(QTE::active_baits[0].main_transform->make_local_to_world() * glm::vec4(t.a, 1.0f));
+			// 	glm::vec3 triangle_b = glm::vec3(QTE::active_baits[0].main_transform->make_local_to_world() * glm::vec4(t.b, 1.0f));
+			// 	glm::vec3 triangle_c = glm::vec3(QTE::active_baits[0].main_transform->make_local_to_world() * glm::vec4(t.c, 1.0f));
+			// 	lines.draw(triangle_a,triangle_b);
+			// 	lines.draw(triangle_a,triangle_c);
+			// 	lines.draw(triangle_b,triangle_c);
+			// }
+		}
+
+		if(colliding_test){
+			lines.draw_text("colliding!",
+				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+			float ofs = 2.0f / drawable_size.y;
+			lines.draw_text("colliding!",
+				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
+				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+				glm::u8vec4(0xff * (eat_bait_QTE->red_text_percentage / eat_bait_QTE->time_limit), 
+							0x00, 
+							0x00, 0x00));
+		}
+		
 
 		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0 && !eat_bait_QTE->failure){
 			lines.draw_text(eat_bait_QTE->get_prompt(),
