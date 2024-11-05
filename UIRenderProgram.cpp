@@ -1,5 +1,5 @@
 #include "UIRenderProgram.hpp"
-
+#include "Texture.hpp"
 #include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -61,7 +61,7 @@ UIRenderProgram::~UIRenderProgram() {
 	program = 0;
 }
 
-void UIRenderProgram::draw_ui(Texture& texture, float scale, glm::vec2 position, glm::uvec2 drawable_size, glm::vec3 tint)
+void UIRenderProgram::draw_ui(Texture& texture, glm::vec2 position, glm::uvec2 drawable_size, AlignMode align, glm::vec2 scale, glm::vec3 tint) const
 {
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -84,14 +84,25 @@ void UIRenderProgram::draw_ui(Texture& texture, float scale, glm::vec2 position,
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
+	float width = texture.width * scale.x;
+	float height = texture.height * scale.y;
 
+	glm::vec2 align_offset = get_align_offset(align);
+	align_offset.x *= width;
+	align_offset.y *= height;
+
+	float absolute_position_x = position.x * 1280.0f + align_offset.x;
+	float absolute_position_y =  position.x * 1280.0f * aspect + align_offset.y;
+
+	// quad that we will draw
 	float vertices[4][4] = {
-		{ position.x, position.y,   0.0f, 0.0f }, // Top-left
-		{ position.x + texture.width, position.y, 1.0f, 0.0f },  // Top-right      
-		{ position.x, position.y + texture.height, 0.0f, 1.0f }, // Bottom-left
-		{ position.x + texture.width, position.y + texture.height, 1.0f, 1.0f }, // Bottom-right
+		{ absolute_position_x, absolute_position_y,   0.0f, 0.0f }, // Top-left
+		{ absolute_position_x + width, absolute_position_y, 1.0f, 0.0f },  // Top-right      
+		{ absolute_position_x, absolute_position_y + height, 0.0f, 1.0f }, // Bottom-left
+		{ absolute_position_x + width, absolute_position_y + height, 1.0f, 1.0f }, // Bottom-right
 	};
 
+	// set tint of the element
 	glUniform3f(ui_render_program->TexColor_vec3, tint.x, tint.y, tint.z);
 
 	glBindTexture(GL_TEXTURE_2D, texture.handle);
@@ -105,4 +116,39 @@ void UIRenderProgram::draw_ui(Texture& texture, float scale, glm::vec2 position,
     glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_BLEND);
 	glUseProgram(0);
+}
+
+glm::vec2 UIRenderProgram::get_align_offset(AlignMode align)
+{
+	glm::vec2 offset = glm::vec2(0);
+    switch (align) {
+		case AlignMode::TopLeft:
+			offset = glm::vec2(0.0f, -1.0f);
+			break;
+		case AlignMode::Top:
+			offset = glm::vec2(-0.5f, -1.0f);
+			break;
+		case AlignMode::TopRight:
+			offset = glm::vec2(-1.0f, -1.0f);
+			break;
+		case AlignMode::CenterLeft:
+			offset = glm::vec2(0.0f, -0.5f);
+			break;
+		case AlignMode::Center:
+			offset = glm::vec2(-0.5f, -0.5f);
+			break;
+		case AlignMode::CenterRight:
+			offset = glm::vec2(-1.0f, -0.5f);
+			break;
+		case AlignMode::BottomLeft:
+			offset = glm::vec2(0.0f, 0.0f);
+			break;
+		case AlignMode::Bottom:
+			offset = glm::vec2(-0.5f, 0.0f);
+			break;
+		case AlignMode::BottomRight:
+			offset = glm::vec2(-1.0f, 0.0f);
+			break;
+	}
+	return offset;
 }
