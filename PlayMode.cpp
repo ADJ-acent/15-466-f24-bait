@@ -21,6 +21,7 @@ GLuint puffer_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
+
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
 	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
@@ -368,6 +369,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wiggle_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform1f(wiggle_texture_program->TIME_float, elapsedtime);
 		glUniform3fv(wiggle_texture_program->PLAYERPOS_vec3, 1, glm::value_ptr( puffer.get_position()));
+		glUniform1f(wiggle_texture_program->PLAYERSCALE_float, puffer.current_scale);
 		glUseProgram(0);
 	}
 

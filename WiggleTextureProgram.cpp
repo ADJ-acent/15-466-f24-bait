@@ -57,6 +57,7 @@ WiggleTextureProgram::WiggleTextureProgram() {
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
         "uniform float TIME;\n"
         "uniform vec3 PLAYERPOS;\n"
+        "uniform float PLAYERSCALE;\n"
 		"in vec4 Position;\n"
 		"in vec3 Normal;\n"
 		"in vec4 Color;\n"
@@ -83,7 +84,7 @@ WiggleTextureProgram::WiggleTextureProgram() {
         "   vec3 worldpos = (OBJECT_TO_WORLD * Position).xyz;\n"
         "   vec3 offset = (worldpos - PLAYERPOS);\n"
         "   float distplayer = length(offset);\n"
-        "   worldpos.z += (((min(distplayer,20.0) - 20.0) * TexCoord.x)) * 0.5;\n"
+        "   worldpos.z += (((min(distplayer,20.0) - 20.0) * TexCoord.x) * PLAYERSCALE) * 0.5;\n"
         "   offset = (worldpos - PLAYERPOS);\n"
         "   distplayer = length(offset);\n"
         "   offset = normalize(offset);\n"
@@ -152,6 +153,7 @@ WiggleTextureProgram::WiggleTextureProgram() {
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
 	TIME_float =  glGetUniformLocation(program, "TIME");
     PLAYERPOS_vec3 =  glGetUniformLocation(program, "PLAYERPOS");
+    PLAYERSCALE_float =  glGetUniformLocation(program, "PLAYERSCALE");
 
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
