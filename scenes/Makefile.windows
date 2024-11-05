@@ -3,11 +3,11 @@ BLENDER="C:\Program Files\Blender Foundation\Blender 4.2\blender.exe"
 DIST=../dist
 
 all : \
-    $(DIST)/pufferfish.pnct \
-    $(DIST)/pufferfish.scene \
+    $(DIST)/ocean_scene.pnct \
+    $(DIST)/ocean_scene.scene \
 
-$(DIST)/pufferfish.scene : pufferfish.blend export-scene.py
-    $(BLENDER) --background --python export-scene.py -- "pufferfish.blend:Collection" "$(DIST)/scenes/pufferfish.scene"
+$(DIST)/ocean_scene.scene : ocean_scene.blend export-scene.py
+    $(BLENDER) --background --python export-scene.py -- "ocean_scene.blend:Collection" "$(DIST)/scenes/ocean_scene.scene"
 
-$(DIST)/pufferfish.pnct : pufferfish.blend export-meshes.py
-    $(BLENDER) --background --python export-meshes.py -- "pufferfish.blend:Collection" "$(DIST)/meshes/pufferfish.pnct" 
+$(DIST)/ocean_scene.pnct : ocean_scene.blend export-meshes.py
+    $(BLENDER) --background --python export-meshes.py -- "ocean_scene.blend:Collection" "$(DIST)/meshes/ocean_scene.pnct" 

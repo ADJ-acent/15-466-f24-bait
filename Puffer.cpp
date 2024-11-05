@@ -22,9 +22,9 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     original_mesh_rotation = mesh->rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
-    original_swim_rotation =  mesh->rotation * glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
-    mesh->rotation = original_swim_rotation;
 
+    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
+    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
     
     
     { //set up build up animations
@@ -114,6 +114,28 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
             }, 
             &mesh_parts.puff_r_fin->rotation)
         );
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, 0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, -0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.9f, glm::quat(0.86f, 0.0f, -0.51f, 0.0f)},
+                SlerpFrame{0.11f, glm::quat(0.981f, 0.0f, 0.194f, 0.0f)},
+                SlerpFrame{0.16f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_tail->rotation)
+        );
+        swim_animation.push_back(SlerpAnimation({
+                SlerpFrame{0.0f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.1f, glm::quat(0.86f, 0.0f, -0.51f, 0.0f)},
+                SlerpFrame{0.3f, glm::quat(0.981f, 0.0f, 0.194f, 0.0f)},
+                SlerpFrame{0.8f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+                SlerpFrame{0.9f, glm::quat(0.86f, 0.0f, 0.51f, 0.0f)},
+                SlerpFrame{0.11f, glm::quat(0.981f, 0.0f, -0.194f, 0.0f)},
+                SlerpFrame{0.16f, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)},
+            }, 
+            &mesh_parts.puff_tail->rotation)
+        );
     }
 }
 
@@ -192,6 +214,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     else {
         swim_cooldown += elapsed;
         swim_animation[swimming_side].update(swim_cooldown);
+        swim_animation[swimming_side +2 ].update(swim_cooldown);
         if (swim_cooldown > swim_cooldown_threshold) {
             swim_cooldown = 0.0f;
         }
@@ -278,7 +301,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             // update mesh rotation to return to normal (if we rotated camera recently)
             
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_swim_rotation, rotation_amt);
+            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
             if (swim_cooldown == 0.0f) {
                 base_rotation = mesh->rotation;
@@ -298,10 +321,10 @@ void Puffer::update_build_up_animations(float t)
 //swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
-    
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
+    base_rotation = mesh->rotation;
     
 }
 
