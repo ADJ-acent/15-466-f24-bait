@@ -1,8 +1,9 @@
+#pragma once
 #include "Mode.hpp"
+#include "QTEMode.hpp"
 
 #include "Scene.hpp"
 #include "Sound.hpp"
-#include "QTE.hpp"
 
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
@@ -21,6 +22,7 @@ struct PlayMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	//----- game state -----
+	static bool qte_active;
 
 	//input tracking:
 	struct Button {
@@ -35,18 +37,10 @@ struct PlayMode : Mode {
 
 	Puffer puffer = Puffer();
 
-	Scene::Transform *fish = nullptr;
-	Scene::Transform *string = nullptr;
-	Scene::Transform *bait = nullptr;
+	std::shared_ptr< Puffer > shared_puffer_ptr;
+	std::shared_ptr< Bait > shared_bait_ptr;
 
-	Collider fish_collider;
-	Collider string_collider;
-	Collider bait_collider;
-
-	bool qte_active = false;
 	bool bait_in_eating_range = false;
-
-	QTE *eat_bait_QTE = nullptr;
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
