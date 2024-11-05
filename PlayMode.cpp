@@ -304,7 +304,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	scene.draw(*camera);
 
 	ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
-	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f),drawable_size, UIRenderProgram::AlignMode::Center);
+	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
