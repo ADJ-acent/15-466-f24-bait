@@ -166,3 +166,13 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
 
     // return glm::vec3(0,0,0);
 }
+
+bool CollisionDetector::check_over_water(const Scene::Transform *water_transform, const Mesh *water_mesh)
+{
+    float radius = puffer->current_scale*4.0f;
+    glm::vec3 water_level = glm::vec3(water_transform->make_local_to_world() * glm::vec4(water_mesh->max, 1.0f));
+    if(water_level.z < puffer->get_position().z - radius){
+        return true;
+    }
+    return false;
+}

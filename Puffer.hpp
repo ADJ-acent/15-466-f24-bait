@@ -40,6 +40,7 @@ struct Puffer {
     bool building_up = false;
     bool recovered = true;
     bool overshoot = false;
+    bool above_water = false;
 
     glm::vec3 original_mesh_scale = glm::vec3(1.0f);
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
