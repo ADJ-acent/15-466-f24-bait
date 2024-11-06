@@ -46,7 +46,7 @@ void CollisionDetector::init(Puffer &p, Scene::Transform *t, const Mesh &m)
 
 }
 
-glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
+std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
 {
     // find barycentric coordinates of center of sphere on the triangle 
     // then checking distance
@@ -56,18 +56,27 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
     // calculate_AABB(transform,mesh);
     glm::vec3 center = transform->position;
     assert(other_mesh);
-    assert(other_mesh);
 
-    glm::vec3 closest = glm::vec3(0);
+    glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
+    glm::vec3 closest_point_normal = glm::vec3(0);
 	float closest_dis2 = std::numeric_limits< float >::infinity();
     float radius = puffer->current_scale*4.0f;
 
+    auto get_world_normal = [&](Triangle triangle, glm::vec3 barycentric_coord, glm::mat4x4 world_from_local) {
+        glm::mat3 world_from_local_normal = glm::mat3(glm::transpose(glm::inverse(world_from_local)));
+        const glm::vec3 a_normal = world_from_local_normal * triangle.a_normal;
+        const glm::vec3 b_normal = world_from_local_normal * triangle.b_normal;
+        const glm::vec3 c_normal = world_from_local_normal * triangle.c_normal;
+
+        return barycentric_coord.x * a_normal + barycentric_coord.y * b_normal + barycentric_coord.z * c_normal;
+    };
+
 	for (Triangle t : other_mesh->triangles) {
 		//find closest point on triangle:
-
-		glm::vec3 const &a = transform_other->make_local_to_world() * glm::vec4(t.a, 1.0f);
-		glm::vec3 const &b = transform_other->make_local_to_world() * glm::vec4(t.b, 1.0f);
-		glm::vec3 const &c = transform_other->make_local_to_world() * glm::vec4(t.c, 1.0f);
+        glm::mat4x4 world_from_local = transform_other->make_local_to_world();
+		glm::vec3 const &a = world_from_local * glm::vec4(t.a, 1.0f);
+		glm::vec3 const &b = world_from_local * glm::vec4(t.b, 1.0f);
+		glm::vec3 const &c = world_from_local * glm::vec4(t.c, 1.0f);
 
 		//get barycentric coordinates of closest point in the plane of (a,b,c):
 		glm::vec3 coords = barycentric_weights(a,b,c, center);
@@ -85,11 +94,12 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
                 if (dis2 < closest_dis2) {
                     closest_dis2 = dis2;
                     closest = coords_to_world;
+                    closest_point_normal = get_world_normal(t, coords, world_from_local);
                 }
             }
 		} else {
 			//check triangle vertices and edges:
-			auto check_edge = [&center, &closest, &closest_dis2, &radius](glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+			auto check_edge = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c) {
 
 				//find closest point on line segment ab:
 				float along = glm::dot(center-a, b-a);
@@ -114,6 +124,7 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
                     if (dis2 < closest_dis2) {
                         closest_dis2 = dis2;
                         closest = pt;
+                        closest_point_normal = get_world_normal(t, coords, world_from_local);
                     }
                 }
 				
@@ -124,7 +135,7 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
 		}
 	}
 
-	return closest;
+	return {closest, closest_point_normal};
 
     /////////
 
