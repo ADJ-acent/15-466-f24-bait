@@ -26,5 +26,5 @@ struct CollisionDetector{
     void init(Puffer &puffer, Scene::Transform *t, const Mesh &m);
 
     //check collision given the collision detector and another mesh and transform
-    bool check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh, const MeshBuffer *meshbuffer);
+    glm::vec3 check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
 };

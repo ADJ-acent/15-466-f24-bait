@@ -54,6 +54,8 @@ struct Puffer {
     inline static constexpr float puffer_rotation_release_halflife = .3f;
     inline static constexpr float speed = 1.0f;
 
+    std::vector<std::string> names = {"PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
+
     void init(std::vector<Scene::Transform * > transform_vector);
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();

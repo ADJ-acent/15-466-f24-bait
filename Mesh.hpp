@@ -14,6 +14,7 @@
 #include <map>
 #include <limits>
 #include <string>
+#include <vector>
 
 struct Vertex {
 	glm::vec3 Position;

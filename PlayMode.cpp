@@ -267,13 +267,27 @@ void PlayMode::update(float elapsed) {
 	// 	colliding_test = puffer_collider.check_collision(transformPtr, main_meshes->lookup(transformPtr->name));
 	// 	// std::cout << colliding_test;
 	// }
+	colliding_test = false;
 
 	for (Scene::Drawable &d : scene.drawables){
 		assert(d.mesh);
-		colliding_test = puffer_collider.check_collision(d.transform,d.mesh,d.meshbuffer);
-		if (colliding_test) {
-			break;
+		bool in_puffer = false;
+		for(std::string name : puffer.names){
+			if(name == d.transform->name){
+				in_puffer = true;
+			}
 		}
+		if(!in_puffer){
+			glm::vec3 collision_point = puffer_collider.check_collision(d.transform,d.mesh);
+			if (collision_point != glm::vec3(0,0,0)){
+				colliding_test = true;
+				puffer.velocity = puffer.velocity * -1.0f;
+			}
+			if (colliding_test) {
+				break;
+			}
+		}
+		
 	}
 
 	

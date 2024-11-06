@@ -81,7 +81,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 				mesh.vertexes.emplace_back(data[v].Position);
 			}
 
-			for (uint32_t v_0 = mesh.start; v_0 < mesh.start + mesh.count -2; ++v_0) {
+			for (uint32_t v_0 = mesh.start; v_0 < mesh.start + mesh.count; v_0+=3) {
 				Triangle triangle;
 				triangle.a = data[v_0].Position;
 				triangle.b = data[v_0+1].Position;
