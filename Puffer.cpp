@@ -316,7 +316,7 @@ void Puffer::handle_collision(glm::vec3 collision_point,float bounce_factor)
     } else if(velocity!=glm::vec3(0.0f)){
         //if collided with velocity
         // glm::vec3 velocity_direction = glm::normalize(velocity);
-        velocity = glm::mix(velocity * -1.0f,direction,0.5f) * glm::length(velocity);
+        velocity = glm::mix(velocity * -1.0f,direction,0.5f) * glm::length(velocity) * bounce_factor;
     }
 
 }
