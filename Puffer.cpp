@@ -227,7 +227,11 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     {// handle movement
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
         velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+        if(above_water){
+            velocity -= glm::vec3(0.0f,0.0f,0.5f)*elapsed;
+        }
         main_transform->position += velocity;
+        
         if (building_up) {
             build_up_time += elapsed * 0.5f;
             // grow

@@ -276,7 +276,7 @@ void PlayMode::update(float elapsed) {
 			}
 			//check that its not seaweed
 			bool checking_non_colliding_object = false;
-			if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+			if((d.transform->name.substr(0,7) == "seaweed")){
 				checking_non_colliding_object = true;
 			}
 
@@ -285,7 +285,13 @@ void PlayMode::update(float elapsed) {
 				bounce_factor = 0.5f;
 			}
 
+			if(d.transform->name.substr(0,5)=="water"){
+				checking_non_colliding_object = true;
+				puffer.above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+			}
+
 			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+				
 				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
 				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
 					colliding = true;

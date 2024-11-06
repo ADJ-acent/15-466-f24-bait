@@ -28,4 +28,6 @@ struct CollisionDetector{
 
     //check collision given the collision detector and another mesh and transform
     std::array<glm::vec3,2> check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
+
+    bool check_over_water(const Scene::Transform *water_transform, const Mesh *water_mesh);
 };
