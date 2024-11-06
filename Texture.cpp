@@ -1,8 +1,11 @@
 #include "Texture.hpp"
+#include "Animation.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 UIElements ui_elements;
+
+SpriteAnimation qte_timer_animation;
 
 Load< void > load_textures(LoadTagDefault, []() -> void {
 	stbi_set_flip_vertically_on_load(true);
@@ -36,4 +39,20 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
     // health_UI_fill = load_tex_to_GL(data_path("ui/HamsterHealthFill.png"));
 	ui_elements.w = load_tex_to_GL(data_path("ui/keyboard_w_outline.png"));
 	ui_elements.w_pressed = load_tex_to_GL(data_path("ui/keyboard_w.png"));
+
+	//load qte timer textures
+	{
+		uint32_t cur_index = 0;
+		qte_timer_animation.frames.clear();
+		while (true) {
+			std::string cur_path = data_path("ui/qte_timer/qte_timer_" + std::to_string(cur_index)+".png");
+			int x, y, channels;
+			if (!stbi_info(cur_path.c_str(), &x, &y, &channels)) {
+				break;
+			}
+			qte_timer_animation.frames.push_back(load_tex_to_GL(cur_path));
+			cur_index++;
+		}
+		// std::cout<<"loaded "<<cur_index<< " frames of qte timer animation"<<std::endl;
+	}
 });

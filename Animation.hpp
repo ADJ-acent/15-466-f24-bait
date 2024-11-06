@@ -1,4 +1,5 @@
 #pragma once
+#include "Texture.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <vector>
@@ -32,4 +33,10 @@ struct SlerpAnimation {
 
     SlerpAnimation(std::vector<SlerpFrame> frames_, glm::quat *target_) : frames(frames_), target(target_){};
     SlerpAnimation() = delete;
+};
+
+struct SpriteAnimation {
+    std::vector<Texture> frames;
+    // t between 0 and 1, make sure to normalize before passing in t
+    Texture get_current_frame(float t);
 };
