@@ -44,7 +44,8 @@ Load< GLuint > fade_program(LoadTagEarly, [](){
 //-------------------------------------
 
 QTEMode::QTEMode(std::shared_ptr< Puffer > puffer, std::shared_ptr< Bait > bait) {
-    eat_bait_QTE = QTE(puffer, bait);
+    std::cout << "eat_bait_QTE starts" << std::endl;
+	eat_bait_QTE = QTE(puffer, bait);
     eat_bait_QTE.start();
 }
 

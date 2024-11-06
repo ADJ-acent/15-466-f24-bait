@@ -1,7 +1,6 @@
 #include "QTE.hpp"
 
 int QTE::score = 0;
-std::vector< Bait > QTE::active_baits = {};
 
 void QTE::start() {
     active = true;
@@ -10,6 +9,7 @@ void QTE::start() {
     timer = time_limit;
     red_text_percentage = 0.0f;
     input_delay = 2.0f;
+    bait->is_active = false;
     
     std::srand(uint32_t(std::time(0)));
     int random_index = std::rand() % possible_keys.size();
@@ -44,6 +44,8 @@ void QTE::update(float elapsed) {
         QTE::score++; 
         bait->bait_bites_left--;
         bait->mesh_parts.bait_base->scale *= 0.8; // scale down the bait whenever a QTE succeeds
+        std::cout << "scaled down" << std::endl;
+        std::cout << bait->bait_bites_left << std::endl;
 
         if(bait->bait_bites_left == 0){
             success = true;
@@ -79,11 +81,13 @@ void QTE::reset(){
 }
 
 void QTE::bait_hook_up(float elapsed){
-    glm::vec3 move_up_speed = glm::vec3(0.0f, 0.0f, 10.0f);
-    if(hook_up_timer < 3.0f) {
+    //glm::vec3 move_up_speed = glm::vec3(0.0f, 0.0f, 10.0f);
+    if(hook_up_timer < 5.0f) {
         // puffer->main_transform->position = bait->mesh_parts.bait_base->make_local_to_world() * glm::vec4(bait->mesh_parts.bait_base->position,1.0f);
         
-        bait->mesh_parts.bait_string->position += move_up_speed * elapsed;
+        // bait->mesh_parts.bait_string->position += move_up_speed * elapsed;
+
+        bait->reel_up(elapsed);
         hook_up_timer += elapsed;
     }
     else{

@@ -35,11 +35,12 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
     }
 }
 
-void Bait::update(float elapsed)
+void Bait::reel_up(float elapsed)
 {
     assert(main_transform);
-    float velocity_amt = 1.0f;
-    main_transform->position += velocity_amt*elapsed;
+    float reel_up_speed = 15.0f;
+    main_transform->position.z += reel_up_speed * elapsed;
+    is_active = false;
 }
 
 glm::vec3 Bait::get_position()

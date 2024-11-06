@@ -3,6 +3,8 @@
 #include "Scene.hpp"
 #include "Animation.hpp"
 #include "Collide.hpp"
+
+#include <iostream>
 #include <vector>
 
 enum BaitType {
@@ -16,6 +18,9 @@ struct Bait {
     Collider bait_collider;
     Collider string_collider;
     BaitType type_of_bait;
+    const float total_life_time = 15.0f;
+    float current_life_time = 0.0f;
+    bool is_active = false;
 
     int bait_bites_left = 0;
     
@@ -29,10 +34,10 @@ struct Bait {
     void init(std::vector<Scene::Transform * > transform_vector, BaitType type_of_bait);
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
-    
-    void update(float elapsed);
 
     void random_respawn_location();
 
     glm::vec3 get_position();
+
+    void reel_up(float elapsed);
 };

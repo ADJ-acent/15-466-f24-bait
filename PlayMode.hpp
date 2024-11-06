@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
+#include "BaitManager.hpp"
 
 #include <vector>
 #include <deque>
@@ -22,7 +23,7 @@ struct PlayMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	//----- game state -----
-	static bool qte_active;
+	bool qte_active;
 
 	//input tracking:
 	struct Button {
@@ -36,9 +37,9 @@ struct PlayMode : Mode {
 	Scene scene;
 
 	Puffer puffer = Puffer();
+	BaitManager bait_manager = BaitManager();
 
 	std::shared_ptr< Puffer > shared_puffer_ptr;
-	std::shared_ptr< Bait > shared_bait_ptr;
 
 	bool bait_in_eating_range = false;
 	
