@@ -221,6 +221,11 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 				bounce_factor = 0.1f;
 			}
 
+            if(d.transform->name.substr(0,5)=="water"){
+				checking_non_colliding_object = true;
+				above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+			}
+
 			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
 				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
 				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
@@ -255,10 +260,13 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     {// handle movement
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
-        velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
         if(above_water){
-            velocity -= glm::vec3(0.0f,0.0f,0.5f)*elapsed;
+            velocity -= glm::vec3(0.0f,0.0f,gravity)*elapsed;
+        } else {
+            velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
         }
+        
+        
         main_transform->position += velocity;
         
         if (building_up) {
