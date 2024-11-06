@@ -2,6 +2,7 @@
 
 #include "Scene.hpp"
 #include "Animation.hpp"
+#include "CollisionDetection.hpp"
 #include <vector>
 
 struct Puffer {
@@ -61,6 +62,7 @@ struct Puffer {
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
+    void handle_collision(glm::vec3 collision_point,float bounce_factor);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
     void enter_QTE(glm::vec3 position);

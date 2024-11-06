@@ -20,7 +20,7 @@ struct CollisionDetector{
     Puffer *puffer;
 
     //for min and max, calculate the AABB
-    void calculate_AABB(Scene::Transform* transform, const Mesh &mesh);
+    void calculate_AABB(const Mesh &mesh);
 
     //init a collision detector for an object
     void init(Puffer &puffer, Scene::Transform *t, const Mesh &m);

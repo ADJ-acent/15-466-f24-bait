@@ -45,7 +45,7 @@ struct PlayMode : Mode {
 	Collider bait_collider;
 
 	CollisionDetector puffer_collider;
-	bool colliding_test;
+	bool colliding;
 
 	bool qte_active = false;
 	bool bait_in_eating_range = false;

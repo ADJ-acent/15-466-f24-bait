@@ -24,7 +24,7 @@ glm::vec3 barycentric_weights(glm::vec3 const &a, glm::vec3 const &b, glm::vec3 
     return glm::vec3(1.0f-v-w,v,w);
 }
 
-void CollisionDetector::calculate_AABB(Scene::Transform *transform_, const Mesh &mesh)
+void CollisionDetector::calculate_AABB(const Mesh &mesh)
 {
     glm::vec3 local_min = mesh.min;
     glm::vec3 local_max = mesh.max;
@@ -42,14 +42,7 @@ void CollisionDetector::init(Puffer &p, Scene::Transform *t, const Mesh &m)
     transform = t; //store pointer to transform
     puffer = &p;
 
-    glm::vec3 local_min = m.min;
-    glm::vec3 local_max = m.max;
-    glm::vec3 world_min = glm::vec3(transform->make_local_to_world() * glm::vec4(local_min, 1.0f));
-    glm::vec3 world_max = glm::vec3(transform->make_local_to_world() * glm::vec4(local_max, 1.0f));
-    
-    aabb.max = world_max;
-    aabb.min = world_min;
-   
+    calculate_AABB(m);
 
 }
 

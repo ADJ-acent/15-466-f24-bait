@@ -307,6 +307,19 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
 }
 
+void Puffer::handle_collision(glm::vec3 collision_point,float bounce_factor)
+{
+    glm::vec3 direction = glm::normalize(get_position() - collision_point);
+    if(building_up){
+        //if puffing up
+        velocity = direction * speed * 0.5f * bounce_factor;
+    } else if(velocity!=glm::vec3(0.0f)){
+        //if collided with velocity
+        velocity = glm::mix(velocity * -1.0f,direction,0.5f) * bounce_factor;
+    }
+
+}
+
 void Puffer::update_build_up_animations(float t)
 {
     for (LinearAnimation& animation : build_up_animations) {
