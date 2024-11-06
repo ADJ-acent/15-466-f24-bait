@@ -410,10 +410,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUseProgram(0);
 
 		glm::vec3 reflectcam = camera->transform->make_local_to_world() * xyzvec;
-		float dist = 2.0f * abs(reflectcam.z - waterheight);
+		//float dist = 2.0f * abs(reflectcam.z - waterheight);
 		
-		camera->transform->position.z += dist;
-		camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
+		//camera->transform->position.z += dist;
+		//camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
 
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
@@ -424,8 +424,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
 
-		camera->transform->position.z -= dist;
-		camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
+		//camera->transform->position.z -= dist;
+		//camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
 
 	}
 	
