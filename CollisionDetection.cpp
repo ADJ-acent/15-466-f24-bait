@@ -61,7 +61,7 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
     glm::vec3 closest_point_normal = glm::vec3(0);
 	float closest_dis2 = std::numeric_limits< float >::infinity();
-    float radius = puffer->current_scale*4.0f;
+    float radius = puffer->current_scale*4.5f;
 
     auto get_world_normal = [&](Triangle triangle, glm::vec3 barycentric_coord, glm::mat4x4 world_from_local) {
         glm::mat3 world_from_local_normal = glm::mat3(glm::transpose(glm::inverse(world_from_local)));
@@ -167,6 +167,27 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     // return glm::vec3(0,0,0);
 }
 
+bool CollisionDetector::check_ray_mesh_collision(const glm::vec3 p0, const glm::vec3 dir, const Scene::Transform *transform_other, const Mesh *other_mesh, float& t)
+{
+    assert(other_mesh);
+
+    t = std::numeric_limits<float>::infinity();
+    bool collided = false;
+	for (Triangle triangle : other_mesh->triangles) {
+		//find closest point on triangle:
+        glm::mat4x4 world_from_local = transform_other->make_local_to_world();
+		glm::vec3 const &a = world_from_local * glm::vec4(triangle.a, 1.0f);
+		glm::vec3 const &b = world_from_local * glm::vec4(triangle.b, 1.0f);
+		glm::vec3 const &c = world_from_local * glm::vec4(triangle.c, 1.0f);
+        float cur_t;
+        if (line_triangle_intersection(p0, dir, a, b, c, cur_t) && cur_t < t) {
+            t = cur_t;
+            collided = true;
+        }
+	}
+    return collided;
+}
+
 bool CollisionDetector::check_over_water(const Scene::Transform *water_transform, const Mesh *water_mesh)
 {
     float radius = puffer->current_scale*4.0f;
@@ -174,5 +195,48 @@ bool CollisionDetector::check_over_water(const Scene::Transform *water_transform
     if(water_level.z < puffer->get_position().z - (radius/2.0f)){
         return true;
     }
+    return false;
+}
+
+//referenced https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+bool CollisionDetector::line_triangle_intersection(
+    const glm::vec3& P0, const glm::vec3& dir,   // Line point and direction
+    const glm::vec3& V0, const glm::vec3& V1, const glm::vec3& V2, // Triangle vertices
+    float& time)                     // Output: intersection point
+{
+    const float EPSILON = 1e-5f;
+    
+    glm::vec3 edge1 = V1 - V0;
+    glm::vec3 edge2 = V2 - V0;
+
+    glm::vec3 h = glm::cross(dir, edge2);
+    float a = glm::dot(edge1, h);
+
+    // parallel to triangle
+    if (std::abs(a) < EPSILON)
+        return false;
+
+    float f = 1.0f / a;
+    glm::vec3 s = P0 - V0;
+    float u = f * glm::dot(s, h);
+
+    // intersection is outside the triangle
+    if (u < 0.0f || u > 1.0f)
+        return false;
+
+    glm::vec3 q = glm::cross(s, edge1);
+    float v = f * glm::dot(dir, q);
+
+    // intersection is outside the triangle
+    if (v < 0.0f || u + v > 1.0f)
+        return false;
+
+    float t = f * glm::dot(edge2, q);
+
+    if (t > EPSILON) {
+        time = t;
+        return true;
+    }
+
     return false;
 }

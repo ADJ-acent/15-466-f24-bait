@@ -23,7 +23,8 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *sce
     mesh->rotation = original_mesh_rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
-
+    default_spring_arm_length = glm::length(camera->position);
+    spring_arm_normalized_displacement = camera->position / default_spring_arm_length;
     
     
     { //set up build up animations
@@ -201,43 +202,53 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     {// puffer collision
         bool colliding = false;
+        float best_spring_arm_length = default_spring_arm_length;
         for (Scene::Drawable &d : scene->drawables){
-		assert(d.mesh);
-		if (!colliding) {
-			bool checking_mesh_in_puffer = false;
-			for(std::string name : names){
-				if(name == d.transform->name){
-					checking_mesh_in_puffer = true;
-				}
-			}
-			//check that its not seaweed
-			bool checking_non_colliding_object = false;
-			if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
-				checking_non_colliding_object = true;
-			}
+            assert(d.mesh);
+            if (!colliding) {
+                bool checking_mesh_in_puffer = false;
+                for(std::string name : names){
+                    if(name == d.transform->name){
+                        checking_mesh_in_puffer = true;
+                    }
+                }
+                //check that its not seaweed
+                bool checking_non_colliding_object = false;
+                if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+                    checking_non_colliding_object = true;
+                }
 
-			float bounce_factor = 1.0f;
-			if(d.transform->name.substr(0,4)=="sand"){
-				bounce_factor = 0.1f;
-			}
+                float bounce_factor = 1.0f;
+                if(d.transform->name.substr(0,4)=="sand"){
+                    bounce_factor = 0.1f;
+                }
 
-            if(d.transform->name.substr(0,5)=="water"){
-				checking_non_colliding_object = true;
-				above_water = puffer_collider.check_over_water(d.transform,d.mesh);
-			}
+                if(d.transform->name.substr(0,5)=="water"){
+                    checking_non_colliding_object = true;
+                    above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+                }
 
-			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-					colliding = true;
-				}
-				if (colliding){
-					handle_collision(collision_point,bounce_factor);
-				}
-			}
-		}	
-	}
-
+                if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+                    std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
+                    if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+                        colliding = true;
+                    }
+                    if (colliding){
+                        handle_collision(collision_point,bounce_factor);
+                    }
+                    glm::vec3 p0 = get_position();
+                    glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
+                    glm::vec3 dir = glm::normalize(p0 - camera_pos);
+                    float t;
+                    if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
+                        if (t < best_spring_arm_length) {
+                            best_spring_arm_length = t;
+                        }
+                    }
+                }
+            }	
+        }
+        camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
     }
 
     if (swim_cooldown == 0.0f) {
@@ -352,10 +363,10 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
 {
     glm::vec3 collision_direction = glm::normalize(get_position() - collision_point[0]);
     glm::vec3 n = glm::normalize(collision_point[1]);
-    float radius = current_scale*4.0f;
-    if(velocity.length() < 0.1f){
+    float radius = current_scale*4.3f;
+    if(velocity.length() < 0.01f){
         //if puffing up
-        velocity = n * speed * 0.2f * bounce_factor;
+        velocity = n * speed * 1.0f * bounce_factor;
     } else {
         glm::vec3 v_normal = glm::dot(velocity, n) * n;
         glm::vec3 v_tangent = velocity - v_normal;

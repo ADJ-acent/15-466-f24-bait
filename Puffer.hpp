@@ -35,6 +35,7 @@ struct Puffer {
     float swim_cooldown = 1.0f;
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
+    float default_spring_arm_length;
     uint8_t swimming_side = 0; // 0 is left, 1 is right
 
     bool building_up = false;
@@ -44,6 +45,7 @@ struct Puffer {
 
     glm::vec3 original_mesh_scale = glm::vec3(1.0f);
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
+    glm::vec3 spring_arm_normalized_displacement;
     glm::quat original_mesh_rotation = glm::quat();
     glm::quat original_rotation = glm::quat();
     glm::quat base_rotation = glm::quat();
