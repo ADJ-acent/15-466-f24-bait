@@ -279,11 +279,11 @@ void PlayMode::update(float elapsed) {
 				checking_non_colliding_object = true;
 			}
 
-			float bounce_factor = 0.5f;
+			float bounce_factor = 1.0f;
 			if(d.transform->name.substr(0,4)=="sand"){
-				bounce_factor = 0.05f;
+				bounce_factor = 0.1f;
 			}
-			
+
 			if(!checking_mesh_in_puffer and !checking_non_colliding_object){
 				glm::vec3 collision_point = puffer_collider.check_collision(d.transform,d.mesh);
 				if(collision_point != glm::vec3(0.0f,0.0f,0.0f)){
