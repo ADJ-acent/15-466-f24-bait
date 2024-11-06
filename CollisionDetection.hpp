@@ -1,8 +1,9 @@
 #pragma once
-#include <glm/glm.hpp>
 #include "Scene.hpp"
 #include "Mesh.hpp"
 #include "Puffer.hpp"
+#include <glm/glm.hpp>
+#include <array>
 
 struct CollisionDetector{
     struct AABB{
@@ -26,5 +27,5 @@ struct CollisionDetector{
     void init(Puffer &puffer, Scene::Transform *t, const Mesh &m);
 
     //check collision given the collision detector and another mesh and transform
-    glm::vec3 check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
+    std::array<glm::vec3,2> check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
 };

@@ -86,6 +86,9 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 				triangle.a = data[v_0].Position;
 				triangle.b = data[v_0+1].Position;
 				triangle.c = data[v_0+2].Position;
+				triangle.a_normal = data[v_0].Normal;
+				triangle.b_normal = data[v_0+1].Normal;
+				triangle.c_normal = data[v_0+2].Normal;
 				mesh.triangles.emplace_back(triangle);
 			}
 

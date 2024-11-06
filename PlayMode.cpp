@@ -285,9 +285,9 @@ void PlayMode::update(float elapsed) {
 				bounce_factor = 0.1f;
 			}
 
-			if(!checking_mesh_in_puffer and !checking_non_colliding_object){
-				glm::vec3 collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-				if(collision_point != glm::vec3(0.0f,0.0f,0.0f)){
+			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
+				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
 					colliding = true;
 				}
 				if (colliding){
@@ -433,8 +433,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
-	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
+	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 
 	{ //use DrawLines to overlay some text:
