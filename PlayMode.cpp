@@ -279,9 +279,20 @@ void PlayMode::update(float elapsed) {
 		}
 		if(!in_puffer){
 			glm::vec3 collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-			if (collision_point != glm::vec3(0,0,0)){
+			if (collision_point != glm::vec3(0.0f,0.0f,0.0f)){
 				colliding_test = true;
-				puffer.velocity = puffer.velocity * -1.0f;
+				glm::vec3 direction = glm::normalize(puffer.get_position() - collision_point);
+				if(puffer.building_up){
+					//if puffing up
+					puffer.velocity = direction * puffer.speed * 0.5f;
+				} else if(puffer.velocity!=glm::vec3(0.0f)){
+					//if collided with velocity
+					puffer.velocity = puffer.velocity * -0.5f;
+				} else {
+					//if collided without velocity
+					puffer.main_transform->position = collision_point + (direction*puffer_collider.puffer->current_scale);
+				} 
+				
 			}
 			if (colliding_test) {
 				break;

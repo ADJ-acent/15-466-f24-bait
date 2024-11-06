@@ -65,15 +65,86 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
     assert(other_mesh);
     assert(other_mesh);
 
-    // for(GLuint i = other_mesh->start; i < other_mesh->count+other_mesh->start; i+=3){
-        
-    //     glm::vec3 triangle_a = transform_other->make_local_to_world() * glm::vec4(meshbuffer->data[i].Position, 1.0f);
-    //     glm::vec3 triangle_b = transform_other->make_local_to_world() * glm::vec4(meshbuffer->data[i+1].Position, 1.0f);
-    //     glm::vec3 triangle_c = transform_other->make_local_to_world() * glm::vec4(meshbuffer->data[i+2].Position, 1.0f);
+    glm::vec3 closest = glm::vec3(0);
+	float closest_dis2 = std::numeric_limits< float >::infinity();
+    float radius = puffer->current_scale*4.0f;
+
+	for (Triangle t : other_mesh->triangles) {
+		//find closest point on triangle:
+
+		glm::vec3 const &a = transform_other->make_local_to_world() * glm::vec4(t.a, 1.0f);
+		glm::vec3 const &b = transform_other->make_local_to_world() * glm::vec4(t.b, 1.0f);
+		glm::vec3 const &c = transform_other->make_local_to_world() * glm::vec4(t.c, 1.0f);
+
+		//get barycentric coordinates of closest point in the plane of (a,b,c):
+		glm::vec3 coords = barycentric_weights(a,b,c, center);
+
+        glm::vec3 coords_to_world = (coords.x * a
+		     + coords.y * b
+		     + coords.z * c);
+
+		//is that point inside the triangle?
+		if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
+			//yes, point is inside triangle.
+			float dis2 = glm::length2(center - coords_to_world);
+            if(dis2 < glm::length2(radius)){
+                //collided
+                if (dis2 < closest_dis2) {
+                    closest_dis2 = dis2;
+                    closest = coords_to_world;
+                }
+            }
+		} else {
+			//check triangle vertices and edges:
+			auto check_edge = [&center, &closest, &closest_dis2, &radius](glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+
+				//find closest point on line segment ab:
+				float along = glm::dot(center-a, b-a);
+				float max = glm::dot(b-a, b-a);
+				glm::vec3 pt;
+				glm::vec3 coords;
+				if (along < 0.0f) {
+					pt = a;
+					coords = glm::vec3(1.0f, 0.0f, 0.0f);
+				} else if (along > max) {
+					pt = b;
+					coords = glm::vec3(0.0f, 1.0f, 0.0f);
+				} else {
+					float amt = along / max;
+					pt = glm::mix(a, b, amt);
+					coords = glm::vec3(1.0f - amt, amt, 0.0f);
+				}
+
+				float dis2 = glm::length2(center - pt);
+                if(dis2 < glm::length2(radius)){
+                    //collided
+                    if (dis2 < closest_dis2) {
+                        closest_dis2 = dis2;
+                        closest = pt;
+                    }
+                }
+				
+			};
+			check_edge(a, b, c);
+			check_edge(b, c, a);
+			check_edge(c, a, b);
+		}
+	}
+
+	return closest;
+
+    /////////
+
+    // //loop over triangles in mesh
+    // for(Triangle t : other_mesh->triangles){
+
+    //     glm::vec3 triangle_a = transform_other->make_local_to_world() * glm::vec4(t.a, 1.0f);
+    //     glm::vec3 triangle_b = transform_other->make_local_to_world() * glm::vec4(t.b, 1.0f);
+    //     glm::vec3 triangle_c = transform_other->make_local_to_world() * glm::vec4(t.c, 1.0f);
 
     //     glm::vec3 coords = barycentric_weights(triangle_a,triangle_b,triangle_c,center);
-    //     float radius = puffer->current_scale*4.f;
-
+    //     float radius = puffer->current_scale*4.0f;
+        
     //     //is that point inside the triangle?
 	// 	if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
 	// 		//yes, point is inside triangle.
@@ -82,39 +153,11 @@ glm::vec3 CollisionDetector::check_collision(const Scene::Transform *transform_o
 	// 	     + coords.z * triangle_c);
 
 	// 		float dis = glm::length(center - coords_to_world);
-    //         std::cout<<"dis: " << dis <<std::endl;  
-    //         std::cout<<"radius: " << radius <<std::endl;  
 	// 		if (dis < radius) {
-    //             std::cout<<"Colliding!!"<<std::endl;  
-	// 			return true;
+	// 			return coords_to_world;
 	// 		}
     //     }
-
     // }
 
-    //loop over triangles in mesh
-    for(Triangle t : other_mesh->triangles){
-
-        glm::vec3 triangle_a = transform_other->make_local_to_world() * glm::vec4(t.a, 1.0f);
-        glm::vec3 triangle_b = transform_other->make_local_to_world() * glm::vec4(t.b, 1.0f);
-        glm::vec3 triangle_c = transform_other->make_local_to_world() * glm::vec4(t.c, 1.0f);
-
-        glm::vec3 coords = barycentric_weights(triangle_a,triangle_b,triangle_c,center);
-        float radius = puffer->current_scale*4.f;
-        
-        //is that point inside the triangle?
-		if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
-			//yes, point is inside triangle.
-            glm::vec3 coords_to_world = (coords.x * triangle_a
-		     + coords.y * triangle_b
-		     + coords.z * triangle_c);
-
-			float dis = glm::length(center - coords_to_world);
-			if (dis < radius) {
-				return coords_to_world;
-			}
-        }
-    }
-
-    return glm::vec3(0,0,0);
+    // return glm::vec3(0,0,0);
 }
