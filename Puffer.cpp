@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <iostream>
 
-void Puffer::init(std::vector< Scene::Transform * > transform_vector)
-{
-    
-    assign_mesh_parts(transform_vector);
+extern Load< MeshBuffer > pufferfish_meshes;
 
-    //EXPERIMENTING, WANT TO SEE PUFFERFISH LOOK AT CAMERA
-    //mesh->rotation = glm::vec3(0.0f, 180.0f, 0.0f);
+void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
+{
+    assign_mesh_parts(transform_vector);
+    scene = scene_;
+    puffer_collider.init(this, main_transform,pufferfish_meshes->lookup("PuffBody")); 
 
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
@@ -24,8 +24,6 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
 
-    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
-    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
     
     
     { //set up build up animations
@@ -201,10 +199,41 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     constexpr float swim_cooldown_threshold = 0.8f;
 
-    //EXPERIMENTING!! -- hello Taylor here ^^
-    //I thought it might look cooler and would make more sense if you see the pufferfish's face
-    //while he expands and releases and the backside of him when he's swimming - especially since
-    //he moves in the direction of the "slingshot"
+    {// puffer collision
+        bool colliding = false;
+        for (Scene::Drawable &d : scene->drawables){
+		assert(d.mesh);
+		if (!colliding) {
+			bool checking_mesh_in_puffer = false;
+			for(std::string name : names){
+				if(name == d.transform->name){
+					checking_mesh_in_puffer = true;
+				}
+			}
+			//check that its not seaweed
+			bool checking_non_colliding_object = false;
+			if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+				checking_non_colliding_object = true;
+			}
+
+			float bounce_factor = 1.0f;
+			if(d.transform->name.substr(0,4)=="sand"){
+				bounce_factor = 0.1f;
+			}
+
+			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
+				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+					colliding = true;
+				}
+				if (colliding){
+					handle_collision(collision_point,bounce_factor);
+				}
+			}
+		}	
+	}
+
+    }
 
     if (swim_cooldown == 0.0f) {
         if (swim_direction != 0) {

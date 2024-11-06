@@ -3,6 +3,7 @@
 #include "Scene.hpp"
 #include "Animation.hpp"
 #include "CollisionDetection.hpp"
+#include "CollisionDetection.hpp"
 #include <vector>
 #include <array>
 
@@ -47,6 +48,9 @@ struct Puffer {
     glm::quat base_rotation = glm::quat();
     glm::vec3 velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
+    Scene *scene;
+
+    CollisionDetector puffer_collider;
 
     inline static constexpr float puffer_scale_decay_halflife = .02f;
     inline static constexpr float puffer_scale_recover_halflife = .1f;
@@ -57,7 +61,7 @@ struct Puffer {
 
     std::vector<std::string> names = {"PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
 
-    void init(std::vector<Scene::Transform * > transform_vector);
+    void init(std::vector<Scene::Transform * > transform_vector, Scene *scene);
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void start_build_up();
     void release();

@@ -8,7 +8,6 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
-#include "CollisionDetection.hpp"
 
 #include <vector>
 #include <deque>
@@ -40,9 +39,6 @@ struct PlayMode : Mode {
 
 	std::shared_ptr< Puffer > shared_puffer_ptr;
 	std::shared_ptr< Bait > shared_bait_ptr;
-
-	CollisionDetector puffer_collider;
-	bool colliding;
 
 	bool bait_in_eating_range = false;
 	

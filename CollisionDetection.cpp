@@ -1,4 +1,5 @@
 #include "CollisionDetection.hpp"
+#include "Puffer.hpp"
 #include "iostream"
 #include <glm/gtx/norm.hpp>
 
@@ -36,11 +37,11 @@ void CollisionDetector::calculate_AABB(const Mesh &mesh)
     aabb.min = world_min;
 }
 
-void CollisionDetector::init(Puffer &p, Scene::Transform *t, const Mesh &m)
+void CollisionDetector::init(Puffer *p, Scene::Transform *t, const Mesh &m)
 {
     //get radius
     transform = t; //store pointer to transform
-    puffer = &p;
+    puffer = p;
 
     calculate_AABB(m);
 

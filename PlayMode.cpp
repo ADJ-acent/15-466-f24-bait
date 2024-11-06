@@ -153,7 +153,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	scene.add(*waterplane_scene);
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
-	puffer.init(puffer_transforms);
+	puffer.init(puffer_transforms, &scene);
 	
 
 	Bait bait_1 = Bait();
@@ -161,8 +161,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	bait_1.init(bait_1_transforms, Circle);
 
 	QTE::active_baits.emplace_back(bait_1);
-
-	puffer_collider.init(puffer, puffer.main_transform,pufferfish_meshes->lookup("PuffBody")); 
 
 	for(Bait b : QTE::active_baits){
     	
@@ -260,47 +258,6 @@ void PlayMode::update(float elapsed) {
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
-
-	//collision check with puffer
-
-	colliding = false;
-
-	for (Scene::Drawable &d : scene.drawables){
-		assert(d.mesh);
-		if (!colliding) {
-			bool checking_mesh_in_puffer = false;
-			for(std::string name : puffer.names){
-				if(name == d.transform->name){
-					checking_mesh_in_puffer = true;
-				}
-			}
-			//check that its not seaweed
-			bool checking_non_colliding_object = false;
-			if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
-				checking_non_colliding_object = true;
-			}
-
-			float bounce_factor = 1.0f;
-			if(d.transform->name.substr(0,4)=="sand"){
-				bounce_factor = 0.1f;
-			}
-
-			if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-				std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-				if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-					colliding = true;
-				}
-				if (colliding){
-					puffer.handle_collision(collision_point,bounce_factor);
-				}
-			}
-		}	
-	}
-
-	
-
-	
-	
 
 	
 	//collision check:
