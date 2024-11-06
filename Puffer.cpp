@@ -215,7 +215,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     else {
         swim_cooldown += elapsed;
         swim_animation[swimming_side].update(swim_cooldown);
-        swim_animation[swimming_side +2 ].update(swim_cooldown);
+        swim_animation[swimming_side + 2].update(swim_cooldown);
         if (swim_cooldown > swim_cooldown_threshold) {
             swim_cooldown = 0.0f;
         }
@@ -279,7 +279,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        if (release_rotate_angle > 1.0f || building_up) {
+        if (release_rotate_angle > 1.0f) {
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
             if (building_up) { // experimental...conflicted on how this feels
                 mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
@@ -312,7 +312,7 @@ void Puffer::handle_collision(glm::vec3 collision_point,float bounce_factor)
     glm::vec3 direction = glm::normalize(get_position() - collision_point);
     if(building_up){
         //if puffing up
-        velocity = direction * speed * 0.5f * bounce_factor;
+        velocity = direction * speed * 0.2f * bounce_factor;
     } else if(velocity!=glm::vec3(0.0f)){
         //if collided with velocity
         // glm::vec3 velocity_direction = glm::normalize(velocity);
@@ -334,16 +334,9 @@ void Puffer::swim(int8_t swim_direction)
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
-    base_rotation = mesh->rotation;
-    
-}
-
-void Puffer::enter_QTE(glm::vec3 position)
-{
-    glm::vec3 direction = glm::normalize(main_transform->position - position);
-
-    // Create a quaternion that rotates the source object to look at the target
-    main_transform->rotation = glm::quatLookAt(direction, glm::vec3(0,0,1));
+    if (building_up) {
+        base_rotation = mesh->rotation;
+    }
 }
 
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)

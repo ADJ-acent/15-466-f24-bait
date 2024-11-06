@@ -44,7 +44,6 @@ struct Puffer {
     glm::quat original_mesh_rotation = glm::quat();
     glm::quat original_rotation = glm::quat();
     glm::quat base_rotation = glm::quat();
-    glm::quat original_swim_rotation = glm::quat(); //original rotation for swimming with flippers
     glm::vec3 velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
 
@@ -65,8 +64,6 @@ struct Puffer {
     void handle_collision(glm::vec3 collision_point,float bounce_factor);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
-    void enter_QTE(glm::vec3 position);
-    void end_QTE();
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 

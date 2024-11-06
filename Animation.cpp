@@ -1,4 +1,7 @@
 #include "Animation.hpp"
+#include "Texture.hpp"
+
+#include <algorithm>
 
 void LinearAnimation::update(float t) // set animation to current time
 {
@@ -42,4 +45,11 @@ void SlerpAnimation::update(float t)
     float factor = (t - frame1.time) / (frame2.time - frame1.time);
 
     *target = glm::slerp(frame1.value, frame2.value, factor);
+}
+
+Texture SpriteAnimation::get_current_frame(float t)
+{
+    t = std::clamp(t, 0.0f, 1.0f);
+    uint32_t frame_number = uint32_t(t * float(frames.size()));
+    return frames[frame_number];
 }
