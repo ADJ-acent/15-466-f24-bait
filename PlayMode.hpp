@@ -22,7 +22,7 @@ struct PlayMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	//----- game state -----
-	static bool qte_active;
+	bool qte_active = false;
 
 	//input tracking:
 	struct Button {
@@ -44,5 +44,7 @@ struct PlayMode : Mode {
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
+
+	Texture cur_texture;
 
 };

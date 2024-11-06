@@ -6,15 +6,13 @@
 #include "Mesh.hpp"
 #include "Load.hpp"
 #include "Texture.hpp"
+#include "UIRenderProgram.hpp"
 #include "gl_errors.hpp"
 #include "data_path.hpp"
-#include "UIRenderProgram.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
-
-bool PlayMode::qte_active = false;
 
 GLuint main_scene_for_lit_color_texture_program = 0;
 GLuint puffer_scene_for_lit_color_texture_program = 0;
@@ -300,7 +298,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
 		float aspect = float(drawable_size.x) / float(drawable_size.y);
