@@ -64,6 +64,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		"out vec2 texCoord;\n"
         "out mat4 objclip;\n"
 		"out vec4 postrans;\n"
+		"out vec4 clipspace;\n"
 
         //noise function 
         "	vec2 noise2x2(vec2 p) {\n"
@@ -117,6 +118,7 @@ WaveTextureProgram::WaveTextureProgram() {
         "	texCoord = TexCoord;\n"
         "	objclip = OBJECT_TO_CLIP;\n"
 		"	postrans = Position;\n"
+		"	clipspace = gl_Position;\n"
 		"}\n"
 	,
 		//fragment shader:
@@ -130,7 +132,10 @@ WaveTextureProgram::WaveTextureProgram() {
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
 		"uniform float TIME;\n"
+		"uniform sampler2D REFLECT_TEX;\n"
+		"uniform sampler2D REFRACT_TEX;\n"
 		"in vec3 position;\n"
+		"in vec4 clipspace;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
 		"in vec2 texCoord;\n"
@@ -152,14 +157,7 @@ WaveTextureProgram::WaveTextureProgram() {
 
 
 		"void main() {\n"
-        "   float threshold = 200.0f;\n" //the viewing threshold for the fog
-		"	vec3 n = normalize(normal);\n" //normalized vector of the normal from the fragment
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n" //shade of the ocean being used
-
-		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
-		"	float fresnelcoeff = abs(dot(n,normalize(camtowatervec)));\n"//fresnal coefficient
 		
-
 		//create the grid
 		"	vec2 uv = texCoord * 24.0;\n" //get the uv coordinate, create the grid, get the points
 		"	vec2 currgridid = floor(uv);\n"
@@ -188,12 +186,27 @@ WaveTextureProgram::WaveTextureProgram() {
 		"}\n"
 		
 		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
+		"   float threshold = 200.0f;\n" //the viewing threshold for the fog
+		"	vec3 n = normalize(normal);\n" //normalized vector of the normal from the fragment
+		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n" //shade of the ocean being used
+
+		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
+		"	float fresnelcoeff = abs(dot(n,normalize(camtowatervec)));\n"//fresnal coefficient
+
+		"	vec2 ndc = (clipspace.xy/clipspace.w)/2.0 + 0.5;\n"
+
+		"	vec4 reflectColor = texture(REFLECT_TEX, vec2(ndc.x,ndc.y));\n"
+		"	vec4 refractColor = texture(REFRACT_TEX, vec2(ndc.x,ndc.y));\n"
 		
 		"	vec3 oceanoverlay = vec3(smoothstep(0.0,1.0,mindist)) * vec3(1.0,0.9,0.4);\n" //the wave overlay color
+
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n" //create the fog
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
-		"	fragColor = vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) * fresnelcoeff , oceanshade,fog), 1.0);\n"
-		"	fragColor = vec4(vec3(fresnelcoeff),1.0f);"
+		"	if(CAMPOS.z > position.z)\n"
+		"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,refractColor, fresnelcoeff);\n"
+		"	else"
+		"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,reflectColor, fresnelcoeff);\n"
+
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -220,15 +233,23 @@ WaveTextureProgram::WaveTextureProgram() {
 	CAMPOS_vec3 = glGetUniformLocation(program, "CAMPOS");
 	CAMROT_vec3 = glGetUniformLocation(program, "CAMROT");
 	TIME_float =  glGetUniformLocation(program, "TIME");
+
+	GLuint REFLECT_TEX_sampler2D = glGetUniformLocation(program, "REFLECT_TEX");
+	GLuint REFRACT_TEX_sampler2D = glGetUniformLocation(program, "REFRACT_TEX");
 	
 
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
+	
 
 	//set TEX to always refer to texture binding zero:
 	glUseProgram(program); //bind program -- glUniform* calls refer to this program now
 
 	glUniform1i(TEX_sampler2D, 0); //set TEX to sample from GL_TEXTURE0
+
+	glUniform1i(REFLECT_TEX_sampler2D, 1); //set REFLECT_TEX to sample from GL_TEXTURE1
+
+	glUniform1i(REFRACT_TEX_sampler2D, 2); //set REFRACT_TEX to sample from GL_TEXTURE2
 
 	glUseProgram(0); //unbind program -- glUniform* calls refer to ??? now
 

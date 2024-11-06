@@ -21,12 +21,18 @@ struct Framebuffers {
 	//for the "bloom" effect:
 	GLuint blur_x_tex = 0; //GL_RGB16F color texture for first pass of blur
 	GLuint blur_x_fb = 0; // color0: blur_x_tex
-    
-    GLuint ocean_depth_tex = 0;
-    GLuint ocean_depth_fb = 0; //Color texture for ocean depth
+
+
+	GLuint refract_tex = 0; //GL_RGB16F refract texture for water
+	GLuint refract_depth_rb = 0;
+	GLuint refract_fb = 0; // color0: refract_tex
+
+	GLuint reflect_tex = 0; //GL_RGB16F reflect texture for water
+	GLuint reflect_depth_rb = 0;
+	GLuint reflect_fb = 0; // color0: reflect_tex
+
 
 	void add_bloom(); //do a basic bloom effect on the hdr.color_tex
-    void add_oceandepth();
 };
 
 //the actual storage:

@@ -74,7 +74,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		{
 			scene.drawables.emplace_front(transform);
 			Scene::Drawable &drawable = scene.drawables.front();
-			drawable.pipeline.trans = 1; //set transparency to 1
+			drawable.pipeline.trans = 0; //set transparency to 1
 			drawable.pipeline = wave_texture_program_pipeline;
 			drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
 			drawable.pipeline.type = mesh.type;
@@ -167,6 +167,14 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	for (auto& cam : scene.cameras) {
 		if (cam.transform->name == "PuffCam") {
 			camera = &cam;
+		}
+	}
+
+
+	for (auto& transform : scene.transforms) {
+		if (transform.name.find("waterplane") != -1) {
+			Scene::Transform*temp = &transform;
+			waterheight = temp->position.z;
 		}
 	}
 
@@ -334,8 +342,11 @@ void PlayMode::update(float elapsed) {
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//update camera aspect ratio for drawable:
-	//framebuffers.realloc(drawable_size);
+	framebuffers.realloc(drawable_size);
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
+
+	glm::vec2 waterheight_direction = glm::vec2(waterheight,1.0f);
+	glm::vec4 xyzvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	//set up light type and position for depth_texture_program:
 	// all the shaders
@@ -346,23 +357,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(depth_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform1f(depth_texture_program->TIME_float, elapsedtime);
-		glUseProgram(0);
-
-
-		glUseProgram(lit_color_texture_program->program);
-		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
-		glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f,1.0f)));
-		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-		glUseProgram(0);
-
-		glm::vec4 xyzvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-		glUseProgram(wave_texture_program->program);
-		glUniform1i(wave_texture_program->LIGHT_TYPE_int, 1);
-		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
-		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
-		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
-		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
-		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0);
 		
 
@@ -378,16 +372,113 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	}
 
 	
-	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+	// WRITE TO REFRACT FRAME BUFFER
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.refract_fb);
+		waterheight_direction.y = 1.0f;
 
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(lit_color_texture_program->program);
+		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f,1.0f)));
+		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform2fv(lit_color_texture_program->WATER_HEIGHT_DIRECTION_vec2, 1, glm::value_ptr(waterheight_direction));
+		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
+		glUseProgram(0);
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
-	scene.draw(*camera);
-	//glDisable(GL_BLEND);
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CLIP_DISTANCE0);
+		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
+		scene.draw(*camera);
+	}
+
+	// WRITE TO REFLECT FRAME BUFFER
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.reflect_fb);
+		
+		waterheight_direction.y = -1.0f;
+
+		glUseProgram(lit_color_texture_program->program);
+		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f,1.0f)));
+		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform2fv(lit_color_texture_program->WATER_HEIGHT_DIRECTION_vec2, 1, glm::value_ptr(waterheight_direction));
+		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
+		glUseProgram(0);
+
+		glm::vec3 reflectcam = camera->transform->make_local_to_world() * xyzvec;
+		float dist = 2.0f * abs(reflectcam.z - waterheight);
+		
+		camera->transform->position.z += dist;
+		camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
+
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CLIP_DISTANCE0);
+		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
+		scene.draw(*camera);
+
+		camera->transform->position.z -= dist;
+		camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
+
+	}
+	
+	{
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, framebuffers.reflect_tex);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, framebuffers.refract_tex);
+
+
+		glUseProgram(wave_texture_program->program);
+		glUniform1i(wave_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
+		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
+		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
+		glUseProgram(0);
+
+		waterheight_direction.y = 0.0f;
+
+		glUseProgram(lit_color_texture_program->program);
+		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f,1.0f)));
+		glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform2fv(lit_color_texture_program->WATER_HEIGHT_DIRECTION_vec2, 1, glm::value_ptr(waterheight_direction));
+		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
+		glUseProgram(0);
+
+	}
+
+
+	{
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
+		scene.draw(*camera);
+
+		std::cout << (camera->transform->make_local_to_world() * xyzvec).z << std::endl;
+
+		std::cout << waterheight << std::endl;
+
+		//framebuffers.tone_map();
+
+	}
+	
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

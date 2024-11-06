@@ -12,6 +12,7 @@ Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> L
 	lit_color_texture_program_pipeline.program = ret->program;
 
 	lit_color_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
+	lit_color_texture_program_pipeline.OBJECT_TO_WORLD_mat4 = ret->OBJECT_TO_WORLD_mat4;
 	lit_color_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
 	lit_color_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
@@ -49,8 +50,10 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		//vertex shader:
 		"#version 330\n"
 		"uniform mat4 OBJECT_TO_CLIP;\n"
+		"uniform mat4 OBJECT_TO_WORLD;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
+		"uniform vec2 WATER_HEIGHT_DIRECTION;\n"
 		"in vec4 Position;\n"
 		"in vec3 Normal;\n"
 		"in vec4 Color;\n"
@@ -63,6 +66,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"out vec4 postrans;\n"
 		"void main() {\n"
 		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
+		"	gl_ClipDistance[0] = (WATER_HEIGHT_DIRECTION.x - (OBJECT_TO_WORLD * Position).z) * WATER_HEIGHT_DIRECTION.y;\n"
 		"	position = OBJECT_TO_LIGHT * Position;\n"
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
@@ -80,6 +84,8 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
 		"uniform float HIGHLIGHT;\n"
+		"uniform vec3 CAM_POS;\n"
+		"uniform vec2 WATER_HEIGHT_DIRECTION;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
@@ -93,7 +99,9 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
-		"	vec3 base = mix( albedo.xyz , oceanshade,fog);\n"
+		"	vec3 base;\n"
+		"	if(CAM_POS.z > WATER_HEIGHT_DIRECTION.x){ base =  albedo.xyz;}\n"
+		"	else {base = mix( albedo.xyz , oceanshade,fog);}\n"
 		"	fragColor = vec4( base, 1.0);\n"
 		"}\n"
 	);
@@ -109,6 +117,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	//look up the locations of uniforms:
 	OBJECT_TO_CLIP_mat4 = glGetUniformLocation(program, "OBJECT_TO_CLIP");
 	OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(program, "OBJECT_TO_LIGHT");
+	OBJECT_TO_WORLD_mat4 = glGetUniformLocation(program, "OBJECT_TO_WORLD");
 	NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(program, "NORMAL_TO_LIGHT");
 
 	LIGHT_TYPE_int = glGetUniformLocation(program, "LIGHT_TYPE");
@@ -116,6 +125,8 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_DIRECTION_vec3 = glGetUniformLocation(program, "LIGHT_DIRECTION");
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
+	WATER_HEIGHT_DIRECTION_vec2 = glGetUniformLocation(program, "WATER_HEIGHT_DIRECTION");
+	CAMPOS_vec3 = glGetUniformLocation(program, "CAMPOS");
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 

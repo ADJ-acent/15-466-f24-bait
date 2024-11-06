@@ -51,7 +51,7 @@ struct PlayMode : Mode {
 	//camera:
 	Scene::Camera *camera = nullptr;
 
-	//float waterdepth = 0;
+	float waterheight = 0;
 
 	float elapsedtime = 0.0f;
 

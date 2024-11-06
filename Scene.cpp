@@ -102,16 +102,7 @@ void Scene::draw(glm::mat4 const &world_to_clip, glm::mat4x3 const &world_to_lig
 		//skip any drawables that don't contain any vertices:
 		if (pipeline.count == 0) continue;
 
-		if(pipeline.trans == 1) //if the transparency bit is set
-		{
-			glDisable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		}
-		else
-		{
-			glEnable(GL_DEPTH_TEST);
-		}
+		glEnable(GL_DEPTH_TEST);
 
 		//Set shader program:
 		glUseProgram(pipeline.program);
