@@ -287,11 +287,12 @@ void PlayMode::update(float elapsed) {
 					puffer.velocity = direction * puffer.speed * 0.5f;
 				} else if(puffer.velocity!=glm::vec3(0.0f)){
 					//if collided with velocity
-					puffer.velocity = puffer.velocity * -0.5f;
-				} else {
-					//if collided without velocity
-					puffer.main_transform->position = collision_point + (direction*puffer_collider.puffer->current_scale);
-				} 
+					puffer.velocity = glm::mix(puffer.velocity * -0.5f,direction,0.2f);
+				}
+				// } else {
+				// 	//if collided without velocity
+				// 	puffer.main_transform->position = collision_point + (direction*puffer_collider.puffer->current_scale);
+				// } 
 				
 			}
 			if (colliding_test) {
