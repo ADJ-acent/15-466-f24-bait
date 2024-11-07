@@ -42,9 +42,9 @@ void QTEMode::update(float elapsed) {
 
     eat_bait_QTE->update(elapsed);
     if(!eat_bait_QTE->active){
-		if(eat_bait_QTE->failure) {
-			QTE::score = 0;
-		}
+		// if(eat_bait_QTE->failure){
+		// 	Mode::set_current(std::make_shared< PlayMode >());
+		// }
 
         Mode::set_current(background);
     }
@@ -105,7 +105,7 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 				}
 			}
 		}
-		else {
+		else if(eat_bait_QTE->failure) {
 			lines.draw_text("Baited!!! FINAL SCORE: " + std::to_string(QTE::score),
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),

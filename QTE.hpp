@@ -12,7 +12,7 @@ struct QTE {
     static int score;
     static std::vector< Bait > active_baits;
 
-    bool active = false, success = false, failure = false, correct_key_pressed = false;            
+    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false;            
     float timer = 0.0f, hook_up_timer = 0.0f, red_percentage = 0.0f;         
     float time_limit = 3.0f;    
     float input_delay = 0.0f;
@@ -21,6 +21,7 @@ struct QTE {
     Bait* bait;
     
     SDL_Keycode required_key;   
+    SDL_Keycode trap_key;
 
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };

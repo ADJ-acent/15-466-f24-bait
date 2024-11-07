@@ -11,12 +11,14 @@ void QTE::start() {
     success = false;
     failure = false;
     correct_key_pressed = false;
+    trap_key_on = false;
 
     timer = 0.0f;
     red_percentage = 0.0f;
     input_delay = 2.0f;
 
     bait->is_active = false;
+    bait->currently_in_qte = true;
 
     int random_index = dist_index(gen);
     required_key = possible_keys[random_index];
@@ -105,6 +107,12 @@ void QTE::reset(){
 
     int random_index = dist_index(gen);
     required_key = possible_keys[random_index];
+    int random_trap_index = dist_index(gen);
+    trap_key = possible_keys[random_index];
+
+    if(random_trap_index == random_index){
+        trap_key_on = true;
+    }
 }
 
 void QTE::bait_hook_up(float elapsed){
