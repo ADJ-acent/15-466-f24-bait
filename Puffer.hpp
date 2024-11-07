@@ -33,6 +33,7 @@ struct Puffer {
     float current_scale = 1.0f;
     float overshoot_target = 0.5f;
     float swim_cooldown = 1.0f;
+    float idletime = 0.0f;
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
     float default_spring_arm_length;

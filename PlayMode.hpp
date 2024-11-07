@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
+#include "BaitManager.hpp"
 
 #include <vector>
 #include <deque>
@@ -36,9 +37,7 @@ struct PlayMode : Mode {
 	Scene scene;
 
 	Puffer puffer = Puffer();
-
-	std::shared_ptr< Puffer > shared_puffer_ptr;
-	std::shared_ptr< Bait > shared_bait_ptr;
+	BaitManager bait_manager = BaitManager();
 
 	bool bait_in_eating_range = false;
 	

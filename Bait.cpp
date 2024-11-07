@@ -3,10 +3,16 @@
 
 void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
 {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist_lifetime(20.0f, 60.0f);
+
+    total_life_time = dist_lifetime(gen);
     assign_mesh_parts(transform_vector);
+
     type_of_bait = tob;
 
-    if(type_of_bait == Circle){
+    if(type_of_bait == CIRCLE){
         bait_bites_left = 3;
     }
     else{
@@ -14,6 +20,26 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
     }
 
     main_transform->scale = glm::vec3(3.0f);
+    original_bait_scale = mesh_parts.bait_base->scale;
+}
+
+void Bait::reset(){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist_lifetime(20.0f, 60.0f);
+
+    current_life_time = 0.0f;
+    total_life_time = dist_lifetime(gen);
+    reel_up_timer = 0.0f;
+
+    if(type_of_bait == CIRCLE){
+        bait_bites_left = 3;
+    }
+    else{
+        bait_bites_left = 5;
+    }
+
+    mesh_parts.bait_base->scale = original_bait_scale;
 }
 
 void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
@@ -35,11 +61,24 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
     }
 }
 
-void Bait::update(float elapsed)
+void Bait::reel_up(float elapsed, float reel_up_speed)
 {
     assert(main_transform);
-    float velocity_amt = 1.0f;
-    main_transform->position += velocity_amt*elapsed;
+
+    is_active = false;
+    reel_up_timer += elapsed;
+    if(reel_up_timer <= 5.0f){
+        main_transform->position.z += reel_up_speed * elapsed;
+    }
+    else{
+        to_siberia();
+    }
+}
+
+void Bait::to_siberia(){
+    assert(main_transform);
+    main_transform->position = glm::vec3(5000.0f, 0.0f, 0.0f);
+    reset();
 }
 
 glm::vec3 Bait::get_position()
@@ -48,14 +87,17 @@ glm::vec3 Bait::get_position()
 }
 
 void Bait::random_respawn_location(){
-    float x_min = -50.0f, x_max = 50.0f;
-    float y_min = -50.0f, y_max = 50.0f;
-    float z_min = -10.0f, z_max = 10.0f;
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    
-    float random_x = x_min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (x_max - x_min)));
-    float random_y = y_min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (y_max - y_min)));
-    float random_z = z_min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (z_max - z_min)));
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist_x(-150.0f, 150.0f);
+    std::uniform_real_distribution<float> dist_y(-150.0f, 150.0f);
+    std::uniform_real_distribution<float> dist_z(0.0f, 50.0f);
 
+
+    float random_x = dist_x(gen);
+    float random_y = dist_y(gen);
+    float random_z = dist_z(gen);
+
+    is_active = true;
     main_transform->position = glm::vec3(random_x, random_y, random_z);
 }

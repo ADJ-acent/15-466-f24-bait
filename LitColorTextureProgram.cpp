@@ -4,6 +4,7 @@
 #include "gl_errors.hpp"
 
 Scene::Drawable::Pipeline lit_color_texture_program_pipeline;
+//SOURCE:: CLIPPING PLANE https://www.youtube.com/watch?v=0NH9k4zTAqk&list=PLRIWtICgwaX23jiqVByUs0bqhnalNTNZh&index=3
 
 Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> LitColorTextureProgram const * {
 	LitColorTextureProgram *ret = new LitColorTextureProgram();
@@ -96,7 +97,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
 		"   float threshold = 200.0f;\n"
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
+		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n"
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
 		"	vec3 base;\n"
