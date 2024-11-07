@@ -128,5 +128,6 @@ void QTE::bait_hook_up(float elapsed){
 
 void QTE::end() {
     bait->is_active = true;
+    bait->currently_in_qte = false;
     active = false;
 }
