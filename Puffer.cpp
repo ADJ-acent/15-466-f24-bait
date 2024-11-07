@@ -370,7 +370,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
     float radius = current_scale*4.3f;
     if(glm::length(velocity) <= 0.01f){
         //if puffing up
-        velocity = n * .4f * speed * bounce_factor;
+        velocity = n * .01f * speed * bounce_factor;
     } else {
         glm::vec3 v_normal = glm::dot(velocity, n) * n;
         glm::vec3 v_tangent = (velocity - v_normal) * 0.7f;
