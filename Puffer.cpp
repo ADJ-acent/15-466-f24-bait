@@ -232,6 +232,10 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
                     if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
                         colliding = true;
+                        std::cout << "collision point x: " << collision_point[0].x << std::endl;
+                        std::cout << "collision point y: " << collision_point[0].y << std::endl;
+                        std::cout << "collision point z: " << collision_point[0].z << std::endl;
+                        std::cout << std::endl;
                     }
                     if (colliding){
                         handle_collision(collision_point,bounce_factor);
@@ -364,17 +368,17 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
     glm::vec3 collision_direction = glm::normalize(get_position() - collision_point[0]);
     glm::vec3 n = glm::normalize(collision_point[1]);
     float radius = current_scale*4.3f;
-    if(velocity.length() < 0.01f){
+    if(glm::length(velocity) <= 0.01f){
         //if puffing up
-        velocity = n * speed * 1.0f * bounce_factor;
+        velocity = n * .01f * speed * bounce_factor;
     } else {
         glm::vec3 v_normal = glm::dot(velocity, n) * n;
-        glm::vec3 v_tangent = velocity - v_normal;
+        glm::vec3 v_tangent = (velocity - v_normal);
         glm::vec3 v_normal_reflected = -bounce_factor * v_normal;
         glm::vec3 v_final = v_normal_reflected + v_tangent;
         velocity = v_final;
     }
-    main_transform->position = collision_point[0] + collision_direction * radius;
+    main_transform->position = collision_point[0] + collision_direction * (radius+ 0.2f);
 
 }
 
