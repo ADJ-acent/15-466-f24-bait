@@ -11,6 +11,7 @@
  */
 
 #include "GL.hpp"
+#include "Mesh.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -61,6 +62,8 @@ struct Scene {
 		//a 'Drawable' attaches attribute data to a transform:
 		Drawable(Transform *transform_) : transform(transform_) { assert(transform); }
 		Transform * transform;
+		const MeshBuffer * meshbuffer;
+		const Mesh * mesh;
 
 		bool hidden = false; //hidden bit
 

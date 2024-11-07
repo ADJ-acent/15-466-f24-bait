@@ -5,12 +5,19 @@
 #include "Collide.hpp"
 #include <vector>
 
+enum BaitType {
+    Circle,
+    Square
+};
+
 struct Bait {
     Scene::Transform* main_transform = nullptr;
     Scene::Transform* mesh = nullptr;
     Collider bait_collider;
     Collider string_collider;
-    int type_of_bait; //FIX THIS add enum
+    BaitType type_of_bait;
+
+    int bait_bites_left = 0;
     
     struct {
         Scene::Transform* bait_base;
@@ -19,7 +26,7 @@ struct Bait {
 
     static constexpr float eat_distance_threshold_squared = 625.0f; //25.0f
 
-    void init(std::vector<Scene::Transform * > transform_vector, int type_of_bait);
+    void init(std::vector<Scene::Transform * > transform_vector, BaitType type_of_bait);
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
     

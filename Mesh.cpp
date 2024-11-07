@@ -18,14 +18,13 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 
 	GLuint total = 0;
 
-	struct Vertex {
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::u8vec4 Color;
-		glm::vec2 TexCoord;
-	};
+	// struct Vertex {
+	// 	glm::vec3 Position;
+	// 	glm::vec3 Normal;
+	// 	glm::u8vec4 Color;
+	// 	glm::vec2 TexCoord;
+	// };
 	static_assert(sizeof(Vertex) == 3*4+3*4+4*1+2*4, "Vertex is packed.");
-	std::vector< Vertex > data;
 
 	//read + upload data chunk:
 	if (filename.size() >= 5 && filename.substr(filename.size()-5) == ".pnct") {
@@ -45,6 +44,10 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		TexCoord = Attrib(2, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, TexCoord));
 	} else {
 		throw std::runtime_error("Unknown file type '" + filename + "'");
+	}
+
+	for (Vertex v : data){
+		vertexes.emplace_back(v);
 	}
 
 	std::vector< char > strings;
@@ -75,7 +78,20 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 			for (uint32_t v = entry.vertex_begin; v < entry.vertex_end; ++v) {
 				mesh.min = glm::min(mesh.min, data[v].Position);
 				mesh.max = glm::max(mesh.max, data[v].Position);
+				mesh.vertexes.emplace_back(data[v].Position);
 			}
+
+			for (uint32_t v_0 = mesh.start; v_0 < mesh.start + mesh.count; v_0+=3) {
+				Triangle triangle;
+				triangle.a = data[v_0].Position;
+				triangle.b = data[v_0+1].Position;
+				triangle.c = data[v_0+2].Position;
+				triangle.a_normal = data[v_0].Normal;
+				triangle.b_normal = data[v_0+1].Normal;
+				triangle.c_normal = data[v_0+2].Normal;
+				mesh.triangles.emplace_back(triangle);
+			}
+
 			bool inserted = meshes.insert(std::make_pair(name, mesh)).second;
 			if (!inserted) {
 				std::cerr << "WARNING: mesh name '" + name + "' in filename '" + filename + "' collides with existing mesh." << std::endl;

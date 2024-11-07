@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <iostream>
 
-void Puffer::init(std::vector< Scene::Transform * > transform_vector)
-{
-    
-    assign_mesh_parts(transform_vector);
+extern Load< MeshBuffer > pufferfish_meshes;
 
-    //EXPERIMENTING, WANT TO SEE PUFFERFISH LOOK AT CAMERA
-    //mesh->rotation = glm::vec3(0.0f, 180.0f, 0.0f);
+void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
+{
+    assign_mesh_parts(transform_vector);
+    scene = scene_;
+    puffer_collider.init(this, main_transform,pufferfish_meshes->lookup("PuffBody")); 
 
     original_mesh_scale = mesh->scale;
     original_mesh_position = mesh->position;
@@ -23,9 +23,8 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector)
     mesh->rotation = original_mesh_rotation;
     base_rotation = original_mesh_rotation;
     original_rotation = main_transform->rotation;
-
-    // std::cout << "DEBUG -- ORIGINAL MESH ROTATION" << glm::to_string(original_mesh_rotation) << std::endl;
-    // std::cout << "DEBUG -- ORIGINAL SWIM ROTATION" << glm::to_string(original_swim_rotation) << std::endl;
+    default_spring_arm_length = glm::length(camera->position);
+    spring_arm_normalized_displacement = camera->position / default_spring_arm_length;
     
     
     { //set up build up animations
@@ -201,10 +200,56 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     constexpr float swim_cooldown_threshold = 0.8f;
 
-    //EXPERIMENTING!! -- hello Taylor here ^^
-    //I thought it might look cooler and would make more sense if you see the pufferfish's face
-    //while he expands and releases and the backside of him when he's swimming - especially since
-    //he moves in the direction of the "slingshot"
+    {// puffer collision
+        bool colliding = false;
+        float best_spring_arm_length = default_spring_arm_length;
+        for (Scene::Drawable &d : scene->drawables){
+            assert(d.mesh);
+            if (!colliding) {
+                bool checking_mesh_in_puffer = false;
+                for(std::string name : names){
+                    if(name == d.transform->name){
+                        checking_mesh_in_puffer = true;
+                    }
+                }
+                //check that its not seaweed
+                bool checking_non_colliding_object = false;
+                if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+                    checking_non_colliding_object = true;
+                }
+
+                float bounce_factor = 1.0f;
+                if(d.transform->name.substr(0,4)=="sand"){
+                    bounce_factor = 0.1f;
+                }
+
+                if(d.transform->name.substr(0,5)=="water"){
+                    checking_non_colliding_object = true;
+                    above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+                }
+
+                if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+                    std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
+                    if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+                        colliding = true;
+                    }
+                    if (colliding){
+                        handle_collision(collision_point,bounce_factor);
+                    }
+                    glm::vec3 p0 = get_position();
+                    glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
+                    glm::vec3 dir = glm::normalize(p0 - camera_pos);
+                    float t;
+                    if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
+                        if (t < best_spring_arm_length) {
+                            best_spring_arm_length = t;
+                        }
+                    }
+                }
+            }	
+        }
+        camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
+    }
 
     if (swim_cooldown == 0.0f) {
         if (swim_direction != 0) {
@@ -215,7 +260,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     else {
         swim_cooldown += elapsed;
         swim_animation[swimming_side].update(swim_cooldown);
-        swim_animation[swimming_side +2 ].update(swim_cooldown);
+        swim_animation[swimming_side + 2].update(swim_cooldown);
         if (swim_cooldown > swim_cooldown_threshold) {
             swim_cooldown = 0.0f;
         }
@@ -226,8 +271,15 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     {// handle movement
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
-        velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+        if(above_water){
+            velocity -= glm::vec3(0.0f,0.0f,gravity)*elapsed;
+        } else {
+            velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+        }
+        
+        
         main_transform->position += velocity;
+        
         if (building_up) {
             build_up_time += elapsed * 0.5f;
             // grow
@@ -279,7 +331,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        if (release_rotate_angle > 1.0f || building_up) {
+        if (release_rotate_angle > 1.0f) {
             float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
             if (building_up) { // experimental...conflicted on how this feels
                 mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
@@ -307,6 +359,25 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
 }
 
+void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor)
+{
+    glm::vec3 collision_direction = glm::normalize(get_position() - collision_point[0]);
+    glm::vec3 n = glm::normalize(collision_point[1]);
+    float radius = current_scale*4.3f;
+    if(velocity.length() < 0.01f){
+        //if puffing up
+        velocity = n * speed * 1.0f * bounce_factor;
+    } else {
+        glm::vec3 v_normal = glm::dot(velocity, n) * n;
+        glm::vec3 v_tangent = velocity - v_normal;
+        glm::vec3 v_normal_reflected = -bounce_factor * v_normal;
+        glm::vec3 v_final = v_normal_reflected + v_tangent;
+        velocity = v_final;
+    }
+    main_transform->position = collision_point[0] + collision_direction * radius;
+
+}
+
 void Puffer::update_build_up_animations(float t)
 {
     for (LinearAnimation& animation : build_up_animations) {
@@ -320,16 +391,9 @@ void Puffer::swim(int8_t swim_direction)
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
-    base_rotation = mesh->rotation;
-    
-}
-
-void Puffer::enter_QTE(glm::vec3 position)
-{
-    glm::vec3 direction = glm::normalize(main_transform->position - position);
-
-    // Create a quaternion that rotates the source object to look at the target
-    main_transform->rotation = glm::quatLookAt(direction, glm::vec3(0,0,1));
+    if (building_up) {
+        base_rotation = mesh->rotation;
+    }
 }
 
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)
