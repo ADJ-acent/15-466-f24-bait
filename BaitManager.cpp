@@ -28,7 +28,7 @@ void BaitManager::update_bait_lifetime(float elapsed){
 
 void BaitManager::bait_respawn(){
     for(Bait &b : baits_in_use){
-        if(!b.is_active){
+        if(!b.is_active && !b.currently_in_qte){
             b.random_respawn_location();
             return;
         }

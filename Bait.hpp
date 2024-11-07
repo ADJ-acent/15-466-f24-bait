@@ -24,6 +24,7 @@ struct Bait {
     float reel_up_timer = 0.0f;
     
     bool is_active = false;
+    bool currently_in_qte = false;
     int bait_bites_left = 0;
 
     glm::vec3 original_bait_scale;
