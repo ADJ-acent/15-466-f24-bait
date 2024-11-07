@@ -65,12 +65,15 @@ struct Scene {
 		const MeshBuffer * meshbuffer;
 		const Mesh * mesh;
 
+		bool hidden = false; //hidden bit
+
 		//Contains all the data needed to run the OpenGL pipeline:
 		struct Pipeline {
 			GLuint program = 0; //shader program; passed to glUseProgram
 
 			//attributes:
 			GLuint vao = 0; //attrib->buffer mapping; passed to glBindVertexArray
+			
 
 			GLenum type = GL_TRIANGLES; //what sort of primitive to draw; passed to glDrawArrays
 			GLuint start = 0; //first vertex to draw; passed to glDrawArrays

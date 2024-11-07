@@ -9,6 +9,7 @@
 Framebuffers framebuffers;
 
 void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
+	//https://github.com/15-466/15-466-f20-framebuffer/blob/master/PlayMode.cpp
 	if (drawable_size == size) return;
 	size = drawable_size;
 
@@ -82,17 +83,15 @@ void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
 	gl_check_fb(); //<-- helper function to check framebuffer completeness
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
-
-    if (ocean_depth_tex == 0) glGenTextures(1, &ocean_depth_tex);
+	//REFRACTION OF THE WATER//
+	if (refract_tex == 0) glGenTextures(1, &refract_tex);
 
 	//resize texture:
-	glBindTexture(GL_TEXTURE_2D, ocean_depth_tex);
+	glBindTexture(GL_TEXTURE_2D, refract_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0,
-		GL_R16F, //<-- storage will be RGB 16-bit half-float
+		GL_RGB16F, //<-- storage will be RGB 16-bit half-float
 		size.x, size.y, 0, //width, height, border
-		GL_DEPTH_COMPONENT16, GL_FLOAT, //<-- source data (if we were uploading it) would be floating point RGB
+		GL_RGB, GL_FLOAT, //<-- source data (if we were uploading it) would be floating point RGB
 		nullptr //<-- don't upload data, just allocate on-GPU storage
 	);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -102,16 +101,74 @@ void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//set up framebuffer if not yet named:
-	if (ocean_depth_fb == 0) {
-		glGenFramebuffers(1, &ocean_depth_fb);
-		glBindFramebuffer(GL_FRAMEBUFFER, ocean_depth_fb);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ocean_depth_tex, 0);
+	if (refract_depth_rb == 0) glGenRenderbuffers(1, &refract_depth_rb);
+
+	//resize renderbuffer:
+	glBindRenderbuffer(GL_RENDERBUFFER, refract_depth_rb);
+	glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_DEPTH_COMPONENT24, //<-- storage will be 24-bit fixed point depth values
+		size.x, size.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	//set up framebuffer if not yet named:
+	if (refract_fb == 0) {
+		glGenFramebuffers(1, &refract_fb);
+		glBindFramebuffer(GL_FRAMEBUFFER, refract_fb);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, refract_tex, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, refract_depth_rb);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, ocean_depth_fb);
+	glBindFramebuffer(GL_FRAMEBUFFER, refract_fb);
 	gl_check_fb(); //<-- helper function to check framebuffer completeness
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//REFRACTION OF THE WATER//
+
+
+
+	//REFLECTION OF THE WATER//
+	if (reflect_tex == 0) glGenTextures(1, &reflect_tex);
+
+	//resize texture:
+	glBindTexture(GL_TEXTURE_2D, reflect_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0,
+		GL_RGB16F, //<-- storage will be RGB 16-bit half-float
+		size.x, size.y, 0, //width, height, border
+		GL_RGB, GL_FLOAT, //<-- source data (if we were uploading it) would be floating point RGB
+		nullptr //<-- don't upload data, just allocate on-GPU storage
+	);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//set up framebuffer if not yet named:
+	if (reflect_depth_rb == 0) glGenRenderbuffers(1, &reflect_depth_rb);
+
+	//resize renderbuffer:
+	glBindRenderbuffer(GL_RENDERBUFFER, reflect_depth_rb);
+	glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_DEPTH_COMPONENT24, //<-- storage will be 24-bit fixed point depth values
+		size.x, size.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	//set up framebuffer if not yet named:
+	if (reflect_fb == 0) {
+		glGenFramebuffers(1, &reflect_fb);
+		glBindFramebuffer(GL_FRAMEBUFFER, reflect_fb);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, reflect_tex, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, reflect_depth_rb);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, reflect_fb);
+	gl_check_fb(); //<-- helper function to check framebuffer completeness
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//reflectION OF THE WATER//
+
+
+
 
 
 	GL_ERRORS();
@@ -132,7 +189,6 @@ struct ToneMapProgram {
 			"out vec4 fragColor;\n"
 			"void main() {\n"
 			"	vec3 color = texelFetch(TEX, ivec2(gl_FragCoord.xy), 0).rgb;\n"
-            //"   vec3 oceanshade = vec3(0.65,0.95, 0.96);\n"
 			//exposure-correction-style range compression:
 			//		color = vec3(log(color.r + 1.0), log(color.g + 1.0), log(color.b + 1.0)) / log(2.0 + 1.0);\n"
 			//weird color effect:
@@ -140,7 +196,7 @@ struct ToneMapProgram {
 			//basic gamma-style range compression:
 			//"		color = vec3(pow(color.r, 0.45), pow(color.g, 0.45), pow(color.b, 0.45));\n"
 			//raw values:
-			//"		color = color;\n"
+			"		color = color;\n"
 			"	fragColor = vec4(color, 1.0);\n"
 			"}\n"
 		);
@@ -217,7 +273,7 @@ std::array< float, KERNEL_RADIUS > bloom_kernel = ([](){
 })();
 
 
-constexpr uint32_t DEPTH_LENGTH = 15;
+
 
 struct BlurXProgram {
 	BlurXProgram() {
@@ -330,37 +386,39 @@ struct BlurYProgram {
 
 Load< BlurYProgram > blur_y_program(LoadTagEarly);
 
-
-struct OceanDepthProgram {
-	OceanDepthProgram() {
+struct RefractProgram {
+	RefractProgram() {
 		program = gl_compile_program(
 			//vertex shader -- draws a fullscreen triangle using no attribute streams
 			"#version 330\n"
 			"void main() {\n"
-			"	gl_Position = vec4(4 * (gl_VertexID & 1) - 1,  2 * (gl_VertexID & 2) - 1, 0.0, 1.0);\n" //just make sure there is a triangle to draw to
+			"	gl_Position = vec4(4 * (gl_VertexID & 1) - 1,  2 * (gl_VertexID & 2) - 1, 0.0, 1.0);\n"
 			"}\n"
 		,
 			//fragment shader -- blur in X direction with a given kernel
 			"#version 330\n"
 			"uniform sampler2D TEX;\n"
+			"const int KERNEL_RADIUS = " + std::to_string(KERNEL_RADIUS) + ";\n"
+			"uniform float KERNEL[KERNEL_RADIUS];\n"
 			"out vec4 fragColor;\n"
-            "const int DEPTH_LENGTH = " + std::to_string(DEPTH_LENGTH) + ";\n"
 			"void main() {\n"
-			"	float depthcoord = gl_FragCoord.z;\n"
-            "	vec3 oceanshade = vec3(0.65,0.95, 0.96);\n" //a nice blue
-            //"	ivec2 screencoord = ivec2(gl_FragCoord.xy);\n"
-            //"	vec3 base = texelFetch(TEX, screencoord, 0).rgb;\n"
-            //"   if(depthcoord > DEPTH_LENGTH)\n"
-            //"   fragColor = vec4(base * oceanshade , 0.2);\n"
-            //"   else\n"
-			"	fragColor = vec4(oceanshade,min((depthcoord/DEPTH_LENGTH), 1.0));\n" //<-- alpha here controls strength of effect, because blending used on this pass
+			"	ivec2 c = ivec2(gl_FragCoord.xy);\n"
+			"	int limit = textureSize(TEX, 0).y-1;\n"
+			"	vec3 acc = KERNEL[0] * texelFetch(TEX, c, 0).rgb;\n"
+			"	for (int ofs = 1; ofs < KERNEL_RADIUS; ++ofs) {\n"
+			"		acc += KERNEL[ofs] * (\n"
+			"			  texelFetch(TEX, ivec2(c.x, min(c.y+ofs, limit)), 0).rgb\n"
+			"			+ texelFetch(TEX, ivec2(c.x, max(c.y-ofs, 0)), 0).rgb\n"
+			"		);\n"
+			"	}\n"
+			"	fragColor = vec4(acc,0.1);\n" //<-- alpha here controls strength of effect, because blending used on this pass
 			"}\n"
 		);
 
 		glUseProgram(program);
 		//set KERNEL:
-		//GLuint KERNEL_float_array = glGetUniformLocation(program, "KERNEL");
-		//glUniform1fv(KERNEL_float_array, KERNEL_RADIUS, bloom_kernel.data());
+		GLuint KERNEL_float_array = glGetUniformLocation(program, "KERNEL");
+		glUniform1fv(KERNEL_float_array, KERNEL_RADIUS, bloom_kernel.data());
 
 		
 		//set TEX to texture unit 0:
@@ -379,12 +437,9 @@ struct OceanDepthProgram {
 
 	//textures:
 	//texture0 -- texture to copy
-
 };
 
-Load< OceanDepthProgram > ocean_depth_program(LoadTagEarly);
-
-
+Load< RefractProgram > refract_program(LoadTagEarly);
 
 void Framebuffers::add_bloom() {
 	glDisable(GL_BLEND);
@@ -434,27 +489,3 @@ void Framebuffers::add_bloom() {
 }
 
 
-void Framebuffers::add_oceandepth() {
-	glDisable(GL_BLEND); //disabling blend mode
-	glDisable(GL_DEPTH_TEST); //disabling depth test
-
-
-    glBindFramebuffer(GL_FRAMEBUFFER, ocean_depth_fb); //bind the ocean depth frame buffer to read texture to
-    glBindTexture(GL_TEXTURE_2D, ocean_depth_tex);
-
-	glUseProgram(ocean_depth_program->program); //use the ocean depth program
-	glBindVertexArray(empty_vao);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdr_color_tex);
-
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glBindVertexArray(0);
-	glUseProgram(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	GL_ERRORS();
-}

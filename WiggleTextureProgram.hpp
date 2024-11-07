@@ -33,6 +33,7 @@ struct WiggleTextureProgram {
 	GLuint LIGHT_CUTOFF_float = -1U;
 	GLuint TIME_float = -1U;
     GLuint PLAYERPOS_vec3 = -1U;
+    GLuint PLAYERSCALE_float = -1U;
 	
 	//Textures:
 	//TEXTURE0 - texture that is accessed by TexCoord
