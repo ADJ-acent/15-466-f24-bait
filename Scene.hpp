@@ -62,13 +62,15 @@ struct Scene {
 		Drawable(Transform *transform_) : transform(transform_) { assert(transform); }
 		Transform * transform;
 
+		bool hidden = false; //hidden bit
+
 		//Contains all the data needed to run the OpenGL pipeline:
 		struct Pipeline {
 			GLuint program = 0; //shader program; passed to glUseProgram
 
 			//attributes:
 			GLuint vao = 0; //attrib->buffer mapping; passed to glBindVertexArray
-			GLuint trans = 0; //transparent bit
+			
 
 			GLenum type = GL_TRIANGLES; //what sort of primitive to draw; passed to glDrawArrays
 			GLuint start = 0; //first vertex to draw; passed to glDrawArrays

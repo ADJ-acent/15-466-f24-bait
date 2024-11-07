@@ -9,6 +9,7 @@
 Framebuffers framebuffers;
 
 void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
+	//https://github.com/15-466/15-466-f20-framebuffer/blob/master/PlayMode.cpp
 	if (drawable_size == size) return;
 	size = drawable_size;
 
@@ -100,10 +101,21 @@ void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//set up framebuffer if not yet named:
+	if (refract_depth_rb == 0) glGenRenderbuffers(1, &refract_depth_rb);
+
+	//resize renderbuffer:
+	glBindRenderbuffer(GL_RENDERBUFFER, refract_depth_rb);
+	glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_DEPTH_COMPONENT24, //<-- storage will be 24-bit fixed point depth values
+		size.x, size.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	//set up framebuffer if not yet named:
 	if (refract_fb == 0) {
 		glGenFramebuffers(1, &refract_fb);
 		glBindFramebuffer(GL_FRAMEBUFFER, refract_fb);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, refract_tex, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, refract_depth_rb);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -132,17 +144,29 @@ void Framebuffers::realloc(glm::uvec2 const &drawable_size) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//set up framebuffer if not yet named:
+	if (reflect_depth_rb == 0) glGenRenderbuffers(1, &reflect_depth_rb);
+
+	//resize renderbuffer:
+	glBindRenderbuffer(GL_RENDERBUFFER, reflect_depth_rb);
+	glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_DEPTH_COMPONENT24, //<-- storage will be 24-bit fixed point depth values
+		size.x, size.y);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	//set up framebuffer if not yet named:
 	if (reflect_fb == 0) {
 		glGenFramebuffers(1, &reflect_fb);
 		glBindFramebuffer(GL_FRAMEBUFFER, reflect_fb);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, reflect_tex, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, reflect_depth_rb);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, reflect_fb);
 	gl_check_fb(); //<-- helper function to check framebuffer completeness
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//REFLECTION OF THE WATER//
+	//reflectION OF THE WATER//
+
 
 
 

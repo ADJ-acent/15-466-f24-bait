@@ -89,6 +89,8 @@ WaveTextureProgram::WaveTextureProgram() {
 		
 		"	float pointsongrid = 0.0;\n"
 		"	float mindist = 100.0;\n"
+
+		"	vec3 worldnormal = (OBJECT_TO_WORLD * vec4(Normal,1.0)).xyz;\n"
 		
 		//"	vec3 redgridcolor = vec3(smoothstep(0.9,1.0,distedge),0.0,0.0);\n"//SHOWS THE GRIDLINE
 
@@ -112,8 +114,9 @@ WaveTextureProgram::WaveTextureProgram() {
 
 		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
         "   gl_Position.y += 5.0 * oceanwave;\n"
+		"	worldnormal.y += 5.0 * oceanwave;\n"
 		"	position = (OBJECT_TO_WORLD * Position).xyz;\n"
-		"	normal = Normal;\n"
+		"	normal = worldnormal - Normal;\n"
 		"	color = Color;\n"
         "	texCoord = TexCoord;\n"
         "	objclip = OBJECT_TO_CLIP;\n"
@@ -203,10 +206,10 @@ WaveTextureProgram::WaveTextureProgram() {
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n" //create the fog
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
 		"	if(CAMPOS.z > position.z)\n"
-		"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,refractColor, fresnelcoeff);\n"
+			"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,refractColor, fresnelcoeff);\n"
 		"	else"
-		"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,reflectColor, fresnelcoeff);\n"
-
+			"	fragColor = mix(vec4( mix( 1 - (1 - oceanoverlay)*(1 - albedo.xyz) , oceanshade,fog), 1.0) ,reflectColor, fresnelcoeff);\n"
+		
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.

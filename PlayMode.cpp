@@ -22,6 +22,8 @@ GLuint bait_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 
+Scene::Drawable *waterplane_drawable = nullptr;
+
 Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/ocean_scene.pnct"));
 	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
@@ -72,14 +74,16 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		}
 		else if(mesh_name.find("waterplane") != -1)
 		{
-			scene.drawables.emplace_front(transform);
-			Scene::Drawable &drawable = scene.drawables.front();
-			drawable.pipeline.trans = 0; //set transparency to 1
+			scene.drawables.emplace_back(transform);
+			Scene::Drawable &drawable = scene.drawables.back();
+			//drawable.hidden = true;
+			//waterplane_drawable = &scene.drawables.back();
 			drawable.pipeline = wave_texture_program_pipeline;
 			drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
 			drawable.pipeline.type = mesh.type;
 			drawable.pipeline.start = mesh.start;
 			drawable.pipeline.count = mesh.count;
+			
 			
 		}
 		else
@@ -174,7 +178,9 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
+			waterplane_size = temp;
 			waterheight = temp->position.z;
+
 		}
 	}
 
@@ -347,6 +353,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	glm::vec2 waterheight_direction = glm::vec2(waterheight,1.0f);
 	glm::vec4 xyzvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec3 scale = waterplane_size->scale; 
 
 	//set up light type and position for depth_texture_program:
 	// all the shaders
@@ -376,6 +383,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.refract_fb);
 		waterheight_direction.y = 1.0f;
+		//waterplane_drawable->hidden = false;
+		
+		waterplane_size->scale = glm::vec3(0.0f);
 
 		glUseProgram(lit_color_texture_program->program);
 		glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
@@ -393,10 +403,15 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glEnable(GL_CLIP_DISTANCE0);
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
+		//waterplane_drawable->hidden = false;
+		
+
+
 	}
 
 	// WRITE TO REFLECT FRAME BUFFER
 	{
+
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.reflect_fb);
 		
 		waterheight_direction.y = -1.0f;
@@ -427,10 +442,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		//camera->transform->position.z -= dist;
 		//camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
 
+		waterplane_size->scale = scale;
 	}
 	
 	{
-
+		
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, framebuffers.reflect_tex);
 
@@ -445,7 +461,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
 		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
-		glUseProgram(0);
+		glUseProgram(0); 
 
 		waterheight_direction.y = 0.0f;
 
@@ -457,13 +473,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
 		glUseProgram(0);
 
-	}
-
-
-	{
+		//std::cout << (camera->transform->make_local_to_world() * xyzvec).z << std::endl;
+		//std::cout << (waterheight_direction).x << std::endl;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearColor(0.0f, 2.0f, 8.0f, 1.0f);
 		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -471,9 +485,14 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
 
-		std::cout << (camera->transform->make_local_to_world() * xyzvec).z << std::endl;
+	}
 
-		std::cout << waterheight << std::endl;
+
+	{
+
+
+
+
 
 		//framebuffers.tone_map();
 

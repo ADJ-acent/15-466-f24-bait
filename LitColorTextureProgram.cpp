@@ -67,7 +67,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"void main() {\n"
 		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
 		"	gl_ClipDistance[0] = (WATER_HEIGHT_DIRECTION.x - (OBJECT_TO_WORLD * Position).z) * WATER_HEIGHT_DIRECTION.y;\n"
-		"	position = OBJECT_TO_LIGHT * Position;\n"
+		"	position =  (OBJECT_TO_WORLD * Position).xyz;\n"
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
 		"	objclip = OBJECT_TO_CLIP;\n"
@@ -84,7 +84,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
 		"uniform float HIGHLIGHT;\n"
-		"uniform vec3 CAM_POS;\n"
+		"uniform vec3 CAMPOS;\n"
 		"uniform vec2 WATER_HEIGHT_DIRECTION;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
@@ -100,9 +100,12 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
 		"	vec3 base;\n"
-		"	if(CAM_POS.z > WATER_HEIGHT_DIRECTION.x){ base =  albedo.xyz;}\n"
-		"	else {base = mix( albedo.xyz , oceanshade,fog);}\n"
-		"	fragColor = vec4( base, 1.0);\n"
+		"	base = mix( albedo.xyz , oceanshade,fog);\n"
+		"	if(CAMPOS.z > WATER_HEIGHT_DIRECTION.x)\n"
+			"	if(position.z > WATER_HEIGHT_DIRECTION.x)\n"
+				" 	base =  albedo.xyz;\n"
+		
+		"	fragColor = vec4(base, 1.0);\n"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
