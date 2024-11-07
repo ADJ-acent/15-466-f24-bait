@@ -29,15 +29,11 @@ void QTE::update(float elapsed) {
     red_percentage = timer/time_limit;
 
     if(failure){
-        if(timer >= time_limit) {
-            bait_hook_up(elapsed);
-            return;
-        }
-        else{
-            return;
-        }
+        bait_hook_up(elapsed);
+        return;
     }
-    else if(success){
+
+    if(success){
         if(timer >= time_limit) {
             end();
             return;
@@ -94,7 +90,6 @@ void QTE::update(float elapsed) {
     }
     else{
         if(timer >= time_limit && !success){
-            std::cout << "reset" << std::endl;
             input_delay = 2.0f;
             reset();
             return;
@@ -113,8 +108,9 @@ void QTE::reset(){
 }
 
 void QTE::bait_hook_up(float elapsed){
-    if(hook_up_timer < 5.0f) {
-        // puffer->main_transform->position.z = elapsed * 10.0f;
+    bait->reel_up(elapsed);
+    if(hook_up_timer < 3.0f) {
+        puffer->main_transform->position.z += elapsed * 30.0f;
         hook_up_timer += elapsed;
     }
     else{

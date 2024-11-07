@@ -67,7 +67,7 @@ void Bait::reel_up(float elapsed, float reel_up_speed)
 
     is_active = false;
     reel_up_timer += elapsed;
-    if(reel_up_timer <= 5.0f){
+    if(reel_up_timer <= 3.0f){
         main_transform->position.z += reel_up_speed * elapsed;
     }
     else{
@@ -89,9 +89,9 @@ glm::vec3 Bait::get_position()
 void Bait::random_respawn_location(){
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dist_x(-150.0f, 150.0f);
-    std::uniform_real_distribution<float> dist_y(-150.0f, 150.0f);
-    std::uniform_real_distribution<float> dist_z(0.0f, 50.0f);
+    std::uniform_real_distribution<float> dist_x(-120.0f, 120.0f);
+    std::uniform_real_distribution<float> dist_y(-120.0f, 120.0f);
+    std::uniform_real_distribution<float> dist_z(-15.0f, 5.0f);
 
 
     float random_x = dist_x(gen);
