@@ -404,8 +404,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
 		glUseProgram(0);
 
-		//CHARVI NOTE: this below line is causing compilation unused errors on my mac. commenting out for now
-		// glm::vec3 reflectcam = camera->transform->make_local_to_world() * xyzvec;
+		//glm::vec3 reflectcam = camera->transform->make_local_to_world() * xyzvec;
 		//float dist = 2.0f * abs(reflectcam.z - waterheight);
 		
 		//camera->transform->position.z += dist;

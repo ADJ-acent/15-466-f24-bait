@@ -44,6 +44,6 @@ struct Bait {
 
     glm::vec3 get_position();
 
-    void reel_up(float elapsed, float reel_up_speed = 50.0f);
+    void reel_up(float elapsed, float reel_up_speed = 30.0f);
     void to_siberia();
 };
