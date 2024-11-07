@@ -1,13 +1,14 @@
 #pragma once
 #include "Mode.hpp"
 #include "QTE.hpp"
+#include "PlayMode.hpp"
 
 #include <functional>
 #include <vector>
 #include <string>
 
 struct QTEMode : public Mode {
-    QTEMode(std::shared_ptr< Puffer > puffer, std::shared_ptr< Bait > bait);
+    QTEMode(Puffer *puffer, Bait *bait);
 	virtual ~QTEMode() { }
 
 	virtual bool handle_event(SDL_Event const &event, glm::uvec2 const &window_size) override;
@@ -19,7 +20,9 @@ struct QTEMode : public Mode {
 		uint8_t pressed = 0;
 	} left, right, down, up, quit;
 
-    QTE eat_bait_QTE;
+    QTE *eat_bait_QTE;
+	
+	Texture cur_texture;
 
 	//will render this mode in the background if not null:
 	std::shared_ptr< Mode > background;
