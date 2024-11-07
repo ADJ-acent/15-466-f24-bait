@@ -191,7 +191,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
 		"   float threshold = 200.0f;\n" //the viewing threshold for the fog
 		"	vec3 n = normalize(normal);\n" //normalized vector of the normal from the fragment
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n" //shade of the ocean being used
+		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n" //shade of the ocean being used
 
 		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
 		"	float fresnelcoeff = abs(dot(n,normalize(camtowatervec)));\n"//fresnal coefficient

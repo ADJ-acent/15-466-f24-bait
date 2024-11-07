@@ -404,7 +404,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(lit_color_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
 		glUseProgram(0);
 
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearColor(0.0f, 2.0f, 8.0f, 1.0f);
 		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -439,7 +439,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		//camera->transform->position.z += dist;
 		//camera->transform->rotation.x = camera->transform->rotation.x * -1.0f;
 
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearColor(0.0f, 2.0f, 8.0f, 1.0f);
 		glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

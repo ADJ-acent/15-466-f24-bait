@@ -104,7 +104,7 @@ DepthTextureProgram::DepthTextureProgram() {
 		"void main() {\n"
         "   float threshold = 200.0f;\n"
 		"	vec3 n = normalize(normal);\n"
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
+		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n"
 		
 		"	vec3 e;\n"
 		"	if (LIGHT_TYPE == 0) { //point light \n"

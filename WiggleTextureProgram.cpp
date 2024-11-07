@@ -122,7 +122,7 @@ WiggleTextureProgram::WiggleTextureProgram() {
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
 		"   float threshold = 150.0f;\n"
-		"	vec3 oceanshade = vec3(0.2,0.6, 0.7);\n"
+		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n"
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
 		"	vec3 base = mix( albedo.xyz , oceanshade,fog);\n"
