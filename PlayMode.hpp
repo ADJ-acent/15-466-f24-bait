@@ -25,6 +25,8 @@ struct PlayMode : Mode {
 	//----- game state -----
 	bool qte_active = false;
 
+	float score_decrement_counter = 0.0f;
+
 	//input tracking:
 	struct Button {
 		uint8_t downs = 0;

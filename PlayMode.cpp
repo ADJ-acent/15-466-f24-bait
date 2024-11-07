@@ -316,6 +316,12 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
+	score_decrement_counter += elapsed;
+    if(score_decrement_counter>5.0f){
+        score_decrement_counter = 0.0f;
+        QTE::score -= 1;
+    }
+
 
 	//reset button press counters:
 	left.downs = 0;

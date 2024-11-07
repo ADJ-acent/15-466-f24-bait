@@ -1,6 +1,6 @@
 #include "QTE.hpp"
 
-int QTE::score = 0;
+int QTE::score = 100;
 
 std::random_device rd;
 std::mt19937 gen(rd());
