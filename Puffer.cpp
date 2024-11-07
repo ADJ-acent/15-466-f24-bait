@@ -373,7 +373,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
         velocity = n * .01f * speed * bounce_factor;
     } else {
         glm::vec3 v_normal = glm::dot(velocity, n) * n;
-        glm::vec3 v_tangent = (velocity - v_normal) * 0.7f;
+        glm::vec3 v_tangent = (velocity - v_normal);
         glm::vec3 v_normal_reflected = -bounce_factor * v_normal;
         glm::vec3 v_final = v_normal_reflected + v_tangent;
         velocity = v_final;
