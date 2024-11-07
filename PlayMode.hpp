@@ -44,10 +44,14 @@ struct PlayMode : Mode {
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
+	
+
+	float waterheight = 0;
 
 	Texture cur_texture;
 
-	//TESTINGGG!
 	float elapsedtime = 0.0f;
+
+	Scene::Transform *waterplane_size = nullptr;
 
 };

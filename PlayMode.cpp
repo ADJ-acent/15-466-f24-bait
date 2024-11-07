@@ -99,7 +99,13 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 			drawable.pipeline.count = mesh.count;
 		}
 
-		
+		Scene::Drawable &drawable = scene.drawables.back();
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*main_meshes);
+		//NOTE: add this to other scenes
 
 	});
 });
@@ -144,7 +150,6 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 
-
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 
@@ -152,8 +157,9 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
+
 	puffer.init(puffer_transforms, &scene);
-	
+
 
 	Bait bait_1 = Bait();
 	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
