@@ -10,6 +10,6 @@ struct BaitManager {
     BaitManager() = default;
 
     void update_bait_lifetime(float elapsed);
-    void bait_respawn(Scene scene, Scene const *other);
+    void bait_respawn();
     void check_bait_in_range(glm::vec3 puffer_position, glm::vec3 puffer_view);
 };

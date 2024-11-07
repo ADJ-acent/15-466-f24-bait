@@ -6,10 +6,11 @@
 
 #include <iostream>
 #include <vector>
+#include <random>
 
 enum BaitType {
-    Circle,
-    Square
+    CIRCLE,
+    SQUARE
 };
 
 struct Bait {
@@ -18,9 +19,9 @@ struct Bait {
     Collider bait_collider;
     Collider string_collider;
     BaitType type_of_bait;
-    float total_life_time = 15.0f;
+    float total_life_time = 0.0f;
     float current_life_time = 0.0f;
-    bool is_active = false;
+    bool is_active = true;
 
     int bait_bites_left = 0;
     

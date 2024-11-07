@@ -3,43 +3,16 @@
 #include "Load.hpp"
 #include "DrawLines.hpp"
 #include "gl_compile_program.hpp"
+#include "UIRenderProgram.hpp"
+#include "Animation.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
 #include <iostream>
 
-GLint fade_program_color = -1;
-
-Load< GLuint > fade_program(LoadTagEarly, [](){
-	GLuint *ret = new GLuint(gl_compile_program(
-		"#version 330\n"
-		"void main() {\n"
-		"	gl_Position = vec4(4 * (gl_VertexID & 1) - 1,  2 * (gl_VertexID & 2) - 1, 0.0, 1.0);\n"
-		"}\n"
-	,
-		"#version 330\n"
-		"uniform vec4 color;\n"
-		"out vec4 fragColor;\n"
-		"void main() {\n"
-		"	fragColor = color;\n"
-		"}\n"
-	));
-
-	fade_program_color = glGetUniformLocation(*ret, "color");
-
-	return ret;
-});
-
-
-
-
-
-
-
-
-
-
-
+extern SpriteAnimation qte_timer_animation;
+extern UIElements ui_elements;
+extern Load< UIRenderProgram > ui_render_program;
 
 //-------------------------------------
 
@@ -65,8 +38,14 @@ void QTEMode::update(float elapsed) {
         background->update(elapsed * background_time_scale);
     }
 
+	cur_texture = qte_timer_animation.get_current_frame(eat_bait_QTE->timer/eat_bait_QTE->time_limit);
+
     eat_bait_QTE->update(elapsed);
     if(!eat_bait_QTE->active){
+		// if(eat_bait_QTE->failure){
+		// 	Mode::set_current(std::make_shared< PlayMode >());
+		// }
+
         Mode::set_current(background);
     }
 }
@@ -74,22 +53,9 @@ void QTEMode::update(float elapsed) {
 void QTEMode::draw(glm::uvec2 const &drawable_size) {
 	if (background && background_fade < 1.0f) {
 	    background->draw(drawable_size);
-
-	// 	glDisable(GL_DEPTH_TEST);
-	// 	if (background_fade > 0.0f) {
-	// 		glEnable(GL_BLEND);
-	// 		glBlendEquation(GL_FUNC_ADD);
-	// 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// 		glUseProgram(*fade_program);
-	// 		glUniform4fv(fade_program_color, 1, glm::value_ptr(glm::vec4(0.0f, 0.0f, 0.0f, background_fade)));
-	// 		glDrawArrays(GL_TRIANGLES, 0, 3);
-	// 		glUseProgram(0);
-	// 		glDisable(GL_BLEND);
-	// 	}
 	}
-	// glDisable(GL_DEPTH_TEST);
 
-    { //use DrawLines to overlay some text:
+	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
 		float aspect = float(drawable_size.x) / float(drawable_size.y);
 		DrawLines lines(glm::mat4(
@@ -101,20 +67,45 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.3f;
 
-		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0 && !eat_bait_QTE->failure){
-			lines.draw_text(eat_bait_QTE->get_prompt(),
-				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text(eat_bait_QTE->get_prompt(),
-				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff * (eat_bait_QTE->red_text_percentage / eat_bait_QTE->time_limit), 
-							0x00, 
-							0x00, 0x00));
+		if(eat_bait_QTE->active && !eat_bait_QTE->failure) {
+			if(eat_bait_QTE->required_key == SDLK_w){
+				if(eat_bait_QTE->correct_key_pressed) {
+					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				}
+				else{
+					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+				}
+			}
+			else if(eat_bait_QTE->required_key == SDLK_a){
+				if(eat_bait_QTE->correct_key_pressed) {
+					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				}
+				else{
+					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+				}
+			}
+			else if(eat_bait_QTE->required_key == SDLK_s){
+				if(eat_bait_QTE->correct_key_pressed) {
+					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				}
+				else{
+					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+				}
+			}
+			else if(eat_bait_QTE->required_key == SDLK_d){
+				if(eat_bait_QTE->correct_key_pressed) {
+					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				}
+				else{
+					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+				}
+			}
 		}
-		else if(eat_bait_QTE->failure){
+		else {
 			lines.draw_text("Baited!!! FINAL SCORE: " + std::to_string(QTE::score),
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
@@ -124,6 +115,6 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		} 
+		}
 	}
 }

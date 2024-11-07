@@ -82,7 +82,6 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.type = mesh.type;
 		drawable.pipeline.start = mesh.start;
 		drawable.pipeline.count = mesh.count;
-
 	});
 });
 
@@ -94,17 +93,21 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
-	Bait bait_1 = Bait();
-	std::vector<Scene::Transform *> bait_1_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
-	bait_1.init(bait_1_transforms, Circle);
+	for(int i = 0; i < 2; i++){
+		Bait new_bait = Bait();
+		std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
+		new_bait.init(new_bait_transforms, CIRCLE);
+		new_bait.random_respawn_location();
+		bait_manager.baits_in_use.push_back(new_bait);
+	}
 
-	bait_manager.baits_in_use.emplace_back(bait_1);
-
-	// Bait bait_2 = Bait();
-	// std::vector<Scene::Transform *> bait_2_transforms = scene.spawn(*bait_scene,FISH_BAIT);
-	// bait_2.init(bait_2_transforms, Square);
-
-	// bait_manager.baits_in_use.emplace_back(bait_2);
+	for(int i = 0; i < 1; i++){
+		Bait new_bait = Bait();
+		std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene,FISH_BAIT);
+		new_bait.init(new_bait_transforms, SQUARE);
+		new_bait.random_respawn_location();
+		bait_manager.baits_in_use.push_back(new_bait);
+	}
 
 	for(Bait b : bait_manager.baits_in_use){
     	
@@ -206,7 +209,10 @@ void PlayMode::update(float elapsed) {
 		//check if there is bait in range
 		bait_manager.check_bait_in_range(puffer.get_position(), puffer.get_forward());
 
-		if (bait_manager.best_bait_index >= 0 && !qte_active) {
+		if (bait_manager.best_bait_index >= 0 
+		&& bait_manager.baits_in_use[bait_manager.best_bait_index].is_active 
+		&& !qte_active) 
+		{
 			bait_in_eating_range = true;
 
 			if(eat.pressed) {
@@ -218,34 +224,11 @@ void PlayMode::update(float elapsed) {
 				Mode::set_current(std::make_shared< QTEMode >(qte_mode));
 			}
 		}
-		else{
+		else {
 			bait_in_eating_range = false;
 		}
 
-		if(bait_manager.best_bait_index >= 0){
-			std::cout << "best_bait bytes left: " << bait_manager.baits_in_use[bait_manager.best_bait_index].bait_bites_left << std::endl;
-		}
-
-		bait_manager.bait_respawn(scene, bait_scene);
-
-		// //respawn new bait if the bait is eaten up
-		// if(shared_bait_ptr != nullptr && shared_bait_ptr->bait_bites_left == 0){
-		// 	shared_bait_ptr = nullptr;
-		// 	BaitManager::baits_in_use.pop_back();
-		// 	Bait new_bait = Bait();
-		// 	//pick either square or circle
-		// 	std::srand(static_cast<unsigned int>(std::time(nullptr)));
-		// 	auto circle_or_square = static_cast<BaitType>(std::rand() % 2);
-		// 	std::vector<Scene::Transform *> new_bait_transforms;
-		// 	if(circle_or_square==0){
-		// 		new_bait_transforms = scene.spawn(*bait_scene, CARROT_BAIT);
-		// 	} else {
-		// 		new_bait_transforms = scene.spawn(*bait_scene, FISH_BAIT);
-		// 	}
-		// 	new_bait.init(new_bait_transforms, circle_or_square);
-		// 	BaitManager::baits_in_use.push_back(new_bait);
-		// 	new_bait.random_respawn_location();
-		// } 
+		bait_manager.bait_respawn();
 	}
 
 	if(Mode::current == shared_from_this()){
@@ -282,8 +265,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
-	ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
 		float aspect = float(drawable_size.x) / float(drawable_size.y);

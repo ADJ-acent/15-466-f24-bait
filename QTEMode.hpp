@@ -1,6 +1,7 @@
 #pragma once
 #include "Mode.hpp"
 #include "QTE.hpp"
+#include "PlayMode.hpp"
 
 #include <functional>
 #include <vector>
@@ -20,6 +21,8 @@ struct QTEMode : public Mode {
 	} left, right, down, up, quit;
 
     QTE *eat_bait_QTE;
+	
+	Texture cur_texture;
 
 	//will render this mode in the background if not null:
 	std::shared_ptr< Mode > background;
