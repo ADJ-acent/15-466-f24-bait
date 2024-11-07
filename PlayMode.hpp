@@ -39,8 +39,6 @@ struct PlayMode : Mode {
 	Puffer puffer = Puffer();
 	BaitManager bait_manager = BaitManager();
 
-	std::shared_ptr< Puffer > shared_puffer_ptr;
-
 	bool bait_in_eating_range = false;
 	
 	//camera:

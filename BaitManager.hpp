@@ -4,8 +4,8 @@
 
 struct BaitManager {
     std::vector<Bait> baits_in_use;
-    std::shared_ptr<Bait> best_bait;
-    int best_bait_index = 0;
+    std::vector<Bait> baits_unused;
+    int best_bait_index = -1;
 
     BaitManager() = default;
 

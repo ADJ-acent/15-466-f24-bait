@@ -97,7 +97,6 @@ void QTE::bait_hook_up(float elapsed){
 
 void QTE::bait_eaten(){
     bait->mesh_parts.bait_base->scale *= 0;
-    bait = nullptr;
     end();
 }
 

@@ -43,16 +43,16 @@ Load< GLuint > fade_program(LoadTagEarly, [](){
 
 //-------------------------------------
 
-QTEMode::QTEMode(std::shared_ptr< Puffer > puffer, std::shared_ptr< Bait > bait) {
+QTEMode::QTEMode(Puffer *puffer, Bait *bait) {
     std::cout << "eat_bait_QTE starts" << std::endl;
-	eat_bait_QTE = QTE(puffer, bait);
-    eat_bait_QTE.start();
+	eat_bait_QTE = new QTE(puffer, bait);
+    eat_bait_QTE->start();
 }
 
 bool QTEMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-            eat_bait_QTE.end();
+            eat_bait_QTE->end();
             Mode::set_current(background);
 			return true;
 		} 
@@ -65,8 +65,8 @@ void QTEMode::update(float elapsed) {
         background->update(elapsed * background_time_scale);
     }
 
-    eat_bait_QTE.update(elapsed);
-    if(!eat_bait_QTE.active){
+    eat_bait_QTE->update(elapsed);
+    if(!eat_bait_QTE->active){
         Mode::set_current(background);
     }
 }
@@ -101,20 +101,20 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.3f;
 
-		if(eat_bait_QTE.active && eat_bait_QTE.input_delay <= 0 && !eat_bait_QTE.failure){
-			lines.draw_text(eat_bait_QTE.get_prompt(),
+		if(eat_bait_QTE->active && eat_bait_QTE->input_delay <= 0 && !eat_bait_QTE->failure){
+			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text(eat_bait_QTE.get_prompt(),
+			lines.draw_text(eat_bait_QTE->get_prompt(),
 				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff * (eat_bait_QTE.red_text_percentage / eat_bait_QTE.time_limit), 
+				glm::u8vec4(0xff * (eat_bait_QTE->red_text_percentage / eat_bait_QTE->time_limit), 
 							0x00, 
 							0x00, 0x00));
 		}
-		else if(eat_bait_QTE.failure){
+		else if(eat_bait_QTE->failure){
 			lines.draw_text("Baited!!! FINAL SCORE: " + std::to_string(QTE::score),
 				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
 				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),

@@ -206,16 +206,14 @@ void PlayMode::update(float elapsed) {
 		//check if there is bait in range
 		bait_manager.check_bait_in_range(puffer.get_position(), puffer.get_forward());
 
-		if (bait_manager.best_bait != nullptr && !qte_active) {
+		if (bait_manager.best_bait_index >= 0 && !qte_active) {
 			bait_in_eating_range = true;
 
 			if(eat.pressed) {
 				eat.pressed = false;
 				qte_active = true;
-				
-				shared_puffer_ptr = std::make_shared< Puffer >(puffer);
 
-				QTEMode qte_mode = QTEMode(shared_puffer_ptr, bait_manager.best_bait);
+				QTEMode qte_mode = QTEMode(&puffer, &bait_manager.baits_in_use[bait_manager.best_bait_index]);
 				qte_mode.background = shared_from_this();
 				Mode::set_current(std::make_shared< QTEMode >(qte_mode));
 			}
@@ -224,8 +222,8 @@ void PlayMode::update(float elapsed) {
 			bait_in_eating_range = false;
 		}
 
-		if(bait_manager.best_bait != nullptr){
-			std::cout << "best_bait use count: " << bait_manager.best_bait.use_count() << std::endl;
+		if(bait_manager.best_bait_index >= 0){
+			std::cout << "best_bait bytes left: " << bait_manager.baits_in_use[bait_manager.best_bait_index].bait_bites_left << std::endl;
 		}
 
 		bait_manager.bait_respawn(scene, bait_scene);

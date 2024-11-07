@@ -10,17 +10,12 @@ void BaitManager::update_bait_lifetime(float elapsed){
 }
 
 void BaitManager::bait_respawn(Scene scene, Scene const *other){
-    // std::cout << (best_bait == nullptr) << std::endl;
-    // if(best_bait != nullptr){
-    //     std::cout << best_bait->bait_bites_left << std::endl;
-    // }
-    
+    if( best_bait_index >= 0 && baits_in_use[best_bait_index].bait_bites_left == 0){
 
-    if( best_bait!= nullptr && best_bait->bait_bites_left == 0){
-
-        std::cout << "Hello" << std::endl;
-        // best_bait = nullptr;
-        // baits_in_use.pop_back();
+        std::cout << "Respawn!!!" << std::endl;
+        baits_unused.push_back(baits_in_use[best_bait_index]);
+        baits_in_use.erase(baits_in_use.begin() + best_bait_index); 
+        best_bait_index = -1;
 
         // Bait new_bait = Bait();
         // //pick either square or circle
@@ -35,11 +30,12 @@ void BaitManager::bait_respawn(Scene scene, Scene const *other){
         // new_bait.init(new_bait_transforms, circle_or_square);
         // BaitManager::baits_in_use.push_back(new_bait);
         // new_bait.random_respawn_location();
+
     } 
 }
 
 void BaitManager::check_bait_in_range(glm::vec3 puffer_position, glm::vec3 puffer_view){
-    best_bait_index = 0;
+    int bait_index = 0;
     float closest_in_view_bait = 1000.0f;
 
     for(Bait b : BaitManager::baits_in_use){
@@ -54,12 +50,12 @@ void BaitManager::check_bait_in_range(glm::vec3 puffer_position, glm::vec3 puffe
 
         if(distance_squared <= Bait::eat_distance_threshold_squared && bait_in_view){
             if (distance_squared < closest_in_view_bait) {
-                best_bait = std::make_shared< Bait >(b);
+                best_bait_index = bait_index;
                 closest_in_view_bait = distance_squared;
                 break;
             }
         }
-
-        best_bait_index++;
+        best_bait_index = -1;
+        bait_index++;
     }
 }

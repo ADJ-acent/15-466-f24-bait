@@ -17,18 +17,15 @@ struct QTE {
     float time_limit = 3.0f;    
     float input_delay = 0.0f;
     
-    std::shared_ptr< Puffer > puffer;
-    std::shared_ptr< Bait > bait;
+    Puffer* puffer;
+    Bait* bait;
+    
     SDL_Keycode required_key;   
 
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };
 
-    QTE(std::shared_ptr< Puffer > puffer_, std::shared_ptr< Bait > bait_): puffer(puffer_), bait(bait_) {
-        if (!puffer || !bait) {
-            throw std::invalid_argument("Puffer or Bait cannot be null");
-        }
-    };
+    QTE(Puffer *puffer_, Bait *bait_): puffer(puffer_), bait(bait_) {};
     QTE() = default;
 
     void start(); 
