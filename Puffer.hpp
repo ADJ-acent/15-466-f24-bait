@@ -74,6 +74,7 @@ struct Puffer {
     void handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
+    void see_through_meshes(std::vector<Scene::Transform *> transforms, std::vector<std::string> meshnames,MeshBuffer* meshes);
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 

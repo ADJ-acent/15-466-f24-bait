@@ -452,6 +452,70 @@ void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vecto
     
 }
 
+void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
+{
+    glm::vec4 transvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec3 origin = camera->make_local_to_world() * transvec;
+    glm::vec3 ray = glm::normalize(mesh->position - (origin));
+
+
+    glm::vec3 point; //start at origin
+    float step = 0.1f;
+    float t = 0.0f;
+    bool inbetween = false;
+
+
+    auto inside = [](glm::vec3 point,  glm::vec3 bboxmin, glm::vec3 bboxmax)
+    {
+        
+        glm::vec3 cent = (bboxmin + bboxmax)/2.0f; //get the center of bbox
+        glm::vec3 dx = glm::normalize(bboxmax - glm::vec3(bboxmin.x,bboxmax.y,bboxmax.z)); //unit vectors in direction of bbox sides for 
+        glm::vec3 dy = glm::normalize(bboxmax - glm::vec3(bboxmax.x,bboxmin.y,bboxmax.z)); //x, y, & z
+        glm::vec3 dz = glm::normalize(bboxmax - glm::vec3(bboxmax.x,bboxmax.y,bboxmin.z));
+        glm::vec3 half = glm::vec3(glm::length(bboxmin.x-cent.x), glm::length(bboxmin.y-cent.y), glm::length(bboxmin.z-cent.z));
+
+        return(abs(dot(point - cent,dx)) <= half.x && abs(dot(point - cent,dy)) <= half.y && abs(dot(point - cent,dz)) <= half.z );
+
+    };
+
+
+    for (int i = 0; i <transforms.size(); i++) //loop through the vector of transforms, check if the ray intersects them
+	{
+        inbetween = false;
+        t = 0.0f;
+        point  = origin;
+        while (abs(point - origin).x  < abs(mesh->position - origin).x &&
+			   abs(point - origin).y  < abs(mesh->position - origin).y && 
+			   abs(point - origin).z  < abs(mesh->position - origin).z && !inbetween)  
+        {
+            
+            point = origin + t * ray;
+
+            if (inside(point, meshes->lookup(meshnames[i]).min + transforms[i]->position, 
+                meshes->lookup(meshnames[i]).max + transforms[i]->position))
+            {
+                //set mesh render flag 
+                inbetween = true;
+                
+            }
+            t += step;
+
+        }
+
+        if(inbetween)
+        {
+            transforms[i]->scale = glm::vec3(0.0f);
+            //std::cout << "wall name " << wallpos[i] ->name << std::endl;
+        }
+        else
+        {
+            transforms[i]->scale = glm::vec3(1.0f);
+            //std::cout << "wall name " << wallpos[i] ->name << std::endl;
+        }
+    }
+
+}
+
 glm::vec3 Puffer::calculate_jitter(float elapsed)
 {
     static float time = 0.0f;
