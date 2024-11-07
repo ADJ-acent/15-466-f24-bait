@@ -193,8 +193,6 @@ CollisionPoint CollisionDetector::get_average_collision_point(std::vector<Collis
         count++;
     }
 
-    
-
     CollisionPoint average_collision_point;
     average_collision_point.point = total_position/count;
     average_collision_point.normal = total_normal/count;
