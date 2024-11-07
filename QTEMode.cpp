@@ -42,9 +42,9 @@ void QTEMode::update(float elapsed) {
 
     eat_bait_QTE->update(elapsed);
     if(!eat_bait_QTE->active){
-		// if(eat_bait_QTE->failure){
-		// 	Mode::set_current(std::make_shared< PlayMode >());
-		// }
+		if(eat_bait_QTE->failure){
+			QTE::score = 100;
+		}
 
         Mode::set_current(background);
     }
