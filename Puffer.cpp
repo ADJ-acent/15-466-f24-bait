@@ -366,12 +366,12 @@ void Puffer::handle_collision(CollisionPoint collision_point,float bounce_factor
     glm::vec3 collision_direction = glm::normalize(get_position() - collision_point.point);
     glm::vec3 n = glm::normalize(collision_point.normal);
     float radius = current_scale*4.3f;
-    if(velocity.length() < 0.01f){
+    if(glm::length(velocity) <= 0.01f){
         //if puffing up
-        velocity = n * speed * 1.0f * bounce_factor;
+        velocity = n * .4f * speed * bounce_factor;
     } else {
         glm::vec3 v_normal = glm::dot(velocity, n) * n;
-        glm::vec3 v_tangent = velocity - v_normal;
+        glm::vec3 v_tangent = (velocity - v_normal) * 0.7f;
         glm::vec3 v_normal_reflected = -bounce_factor * v_normal;
         glm::vec3 v_final = v_normal_reflected + v_tangent;
         velocity = v_final;
