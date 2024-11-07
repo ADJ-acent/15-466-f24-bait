@@ -195,6 +195,7 @@ void Puffer::release()
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
     assert(main_transform);
+    idletime += elapsed;
 
     rotate_from_mouse(mouse_motion);
 
@@ -232,10 +233,10 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
                     if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
                         colliding = true;
-                        std::cout << "collision point x: " << collision_point[0].x << std::endl;
-                        std::cout << "collision point y: " << collision_point[0].y << std::endl;
-                        std::cout << "collision point z: " << collision_point[0].z << std::endl;
-                        std::cout << std::endl;
+                        //std::cout << "collision point x: " << collision_point[0].x << std::endl;
+                       // std::cout << "collision point y: " << collision_point[0].y << std::endl;
+                       // std::cout << "collision point z: " << collision_point[0].z << std::endl;
+                       // std::cout << std::endl;
                     }
                     if (colliding){
                         handle_collision(collision_point,bounce_factor);
@@ -285,6 +286,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         main_transform->position += velocity;
         
         if (building_up) {
+            
             build_up_time += elapsed * 0.5f;
             // grow
             if (build_up_time <= 1.0f) {
@@ -318,7 +320,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             }
             else {
                 float amt = 1.0f - std::pow(0.5f, elapsed / (puffer_scale_decay_halflife * 2.0f));
-                
+               
                 current_scale = glm::mix(current_scale, overshoot_target, amt);
                 if (current_scale < overshoot_target + 0.01f) {
                     overshoot = false;
@@ -335,25 +337,27 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
     {// mesh rotation
-        if (release_rotate_angle > 1.0f) {
-            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
-            if (building_up) { // experimental...conflicted on how this feels
-                mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
-            }
-            else {
+        float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
+        //THIS ONE IF FOR ROTATE TOWARDS CAMERA
+        if (building_up) { // experimental...conflicted on how this feels
+            mesh->rotation = glm::slerp(mesh->rotation,  glm::angleAxis(glm::radians(180.0f),glm::vec3(0.0f,1.0f,0.0f)) * original_mesh_rotation, rotation_amt);
+        }
+        //THIS ONE IF FOR ROTATE TOWARDS CAMERA
+        else if (release_rotate_angle > 1.0f) {
+                rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
                 total_release_angle += elapsed * release_rotate_angle;
                 mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
                 release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
                 if (release_rotate_angle <= 1.0f) {
                     base_rotation = mesh->rotation;
                 }
-            }
+            
         }
         else {//only return to tail view when we aren't rolling
             // update mesh rotation to return to normal (if we rotated camera recently)
-            
-            float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
+            mesh->position.y = original_mesh_position.y + sin(idletime * 2.0f);
+            rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
+            mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(glm::radians(15.0f) * sin(idletime * 2.0f) ,glm::vec3(1.0f,0.0f,0.0f)) *  original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
             if (swim_cooldown == 0.0f) {
                 base_rotation = mesh->rotation;

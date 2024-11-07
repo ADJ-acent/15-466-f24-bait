@@ -4,6 +4,7 @@
 #include "gl_errors.hpp"
 
 Scene::Drawable::Pipeline lit_color_texture_program_pipeline;
+//SOURCE:: CLIPPING PLANE https://www.youtube.com/watch?v=0NH9k4zTAqk&list=PLRIWtICgwaX23jiqVByUs0bqhnalNTNZh&index=3
 
 Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> LitColorTextureProgram const * {
 	LitColorTextureProgram *ret = new LitColorTextureProgram();

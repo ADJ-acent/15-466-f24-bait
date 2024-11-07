@@ -4,6 +4,9 @@
 #include "gl_errors.hpp"
 
 Scene::Drawable::Pipeline wave_texture_program_pipeline;
+//SOURCE:: VORONOI NOISE https://www.youtube.com/watch?v=vcfIJ5Uu6Qw
+//SOURCE:: PROJECTIVE TEXTURE MAPPING https://www.youtube.com/watch?v=GADTasvDOX4&list=PLRIWtICgwaX23jiqVByUs0bqhnalNTNZh&index=4
+
 
 Load< WaveTextureProgram > wave_texture_program(LoadTagEarly, []() -> WaveTextureProgram const * {
 	WaveTextureProgram *ret = new WaveTextureProgram();
@@ -116,7 +119,7 @@ WaveTextureProgram::WaveTextureProgram() {
         "   gl_Position.y += 5.0 * oceanwave;\n"
 		"	worldnormal.y += 5.0 * oceanwave;\n"
 		"	position = (OBJECT_TO_WORLD * Position).xyz;\n"
-		"	normal = worldnormal - Normal;\n"
+		"	normal = Normal;\n"
 		"	color = Color;\n"
         "	texCoord = TexCoord;\n"
         "	objclip = OBJECT_TO_CLIP;\n"
@@ -190,7 +193,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		
 		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
 		"   float threshold = 200.0f;\n" //the viewing threshold for the fog
-		"	vec3 n = normalize(normal);\n" //normalized vector of the normal from the fragment
+		"	vec3 n = normal;\n" //normalized vector of the normal from the fragment
 		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n" //shade of the ocean being used
 
 		"	vec3 camtowatervec =  CAMPOS - position;\n" //make the vector from the position of the fragment to cam pos
