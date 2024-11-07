@@ -6,11 +6,18 @@
 
 struct Puffer;
 
+struct CollisionPoint{
+    glm::vec3 point;
+    glm::vec3 normal;
+};
+
 struct CollisionDetector{
     struct AABB{
         glm::vec3 min;
         glm::vec3 max;
     };
+
+    
 
     // glm::vec3 center;
     AABB aabb = {glm::vec3(0),glm::vec3(0)};
@@ -24,7 +31,9 @@ struct CollisionDetector{
     void init(Puffer *puffer, Scene::Transform *t, const Mesh &m);
 
     //check collision given the collision detector and another mesh and transform
-    std::array<glm::vec3,2> check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
+    std::vector<CollisionPoint> check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh);
+
+    CollisionPoint get_average_collision_point(std::vector<CollisionPoint> collision_point_vector);
 
     bool check_ray_mesh_collision(const glm::vec3 p0, const glm::vec3 dir, const Scene::Transform *transform_other, const Mesh *other_mesh, float& t);
 

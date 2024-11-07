@@ -47,7 +47,7 @@ void CollisionDetector::init(Puffer *p, Scene::Transform *t, const Mesh &m)
 
 }
 
-std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
+std::vector<CollisionPoint> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
 {
     // find barycentric coordinates of center of sphere on the triangle 
     // then checking distance
@@ -57,6 +57,8 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     // calculate_AABB(transform,mesh);
     glm::vec3 center = transform->position;
     assert(other_mesh);
+
+    std::vector< CollisionPoint > collided_points;
 
     glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
     glm::vec3 closest_point_normal = glm::vec3(0);
@@ -86,16 +88,23 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
 		     + coords.y * b
 		     + coords.z * c);
 
+        glm::vec3 current_point_normal = get_world_normal(t, coords, world_from_local);
+
 		//is that point inside the triangle?
 		if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
 			//yes, point is inside triangle.
 			float dis2 = glm::length2(center - coords_to_world);
+            
             if(dis2 < glm::length2(radius)){
                 //collided
+                CollisionPoint new_point;
+                new_point.point = coords_to_world;
+                new_point.normal = current_point_normal;
+                collided_points.emplace_back(new_point);
                 if (dis2 < closest_dis2) {
                     closest_dis2 = dis2;
                     closest = coords_to_world;
-                    closest_point_normal = get_world_normal(t, coords, world_from_local);
+                    closest_point_normal = current_point_normal;
                 }
             }
 		} else {
@@ -122,10 +131,15 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
 				float dis2 = glm::length2(center - pt);
                 if(dis2 < glm::length2(radius)){
                     //collided
+                    glm::vec3 edge_pt_normal = get_world_normal(t, coords, world_from_local);
+                    CollisionPoint new_point;
+                    new_point.point = pt;
+                    new_point.normal = edge_pt_normal;
+                    collided_points.emplace_back(new_point);
                     if (dis2 < closest_dis2) {
                         closest_dis2 = dis2;
                         closest = pt;
-                        closest_point_normal = get_world_normal(t, coords, world_from_local);
+                        closest_point_normal = edge_pt_normal;
                     }
                 }
 				
@@ -136,7 +150,8 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
 		}
 	}
 
-	return {closest, closest_point_normal};
+	// return {closest, closest_point_normal};
+    return collided_points;
 
     /////////
 
@@ -165,6 +180,24 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     // }
 
     // return glm::vec3(0,0,0);
+}
+
+CollisionPoint CollisionDetector::get_average_collision_point(std::vector<CollisionPoint> collision_point_vector)
+{
+    float count = 0;
+    glm::vec3 total_position = glm::vec3(0.0f);
+    glm::vec3 total_normal = glm::vec3(0.0f);
+    for(CollisionPoint &collision_point : collision_point_vector){
+        total_position += collision_point.point;
+        total_normal += collision_point.normal;
+        count++;
+    }
+
+    CollisionPoint average_collision_point;
+    average_collision_point.point = total_position/count;
+    average_collision_point.normal = total_normal/count;
+
+    return average_collision_point;
 }
 
 bool CollisionDetector::check_ray_mesh_collision(const glm::vec3 p0, const glm::vec3 dir, const Scene::Transform *transform_other, const Mesh *other_mesh, float& t)

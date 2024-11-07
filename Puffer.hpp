@@ -70,7 +70,7 @@ struct Puffer {
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
-    void handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor);
+    void handle_collision(CollisionPoint collision_point,float bounce_factor);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
 
