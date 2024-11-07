@@ -70,38 +70,38 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 		if(eat_bait_QTE->active && !eat_bait_QTE->failure) {
 			if(eat_bait_QTE->required_key == SDLK_w){
 				if(eat_bait_QTE->correct_key_pressed) {
-					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				}
 				else{
-					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
-					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
 				}
 			}
 			else if(eat_bait_QTE->required_key == SDLK_a){
 				if(eat_bait_QTE->correct_key_pressed) {
-					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				}
 				else{
-					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
-					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterLeft, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(ui_elements.a_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
 				}
 			}
 			else if(eat_bait_QTE->required_key == SDLK_s){
 				if(eat_bait_QTE->correct_key_pressed) {
-					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				}
 				else{
-					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
-					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(ui_elements.s_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
 				}
 			}
 			else if(eat_bait_QTE->required_key == SDLK_d){
 				if(eat_bait_QTE->correct_key_pressed) {
-					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				}
 				else{
-					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
-					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::CenterRight, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(ui_elements.d_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
+					ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
 				}
 			}
 		}

@@ -93,20 +93,22 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 	puffer.init(puffer_transforms);
 
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
 		std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
 		new_bait.init(new_bait_transforms, CIRCLE);
 		new_bait.random_respawn_location();
 		bait_manager.baits_in_use.push_back(new_bait);
+		bait_manager.active_baits_num++;
 	}
 
-	for(int i = 0; i < 1; i++){
+	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
 		std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene,FISH_BAIT);
 		new_bait.init(new_bait_transforms, SQUARE);
 		new_bait.random_respawn_location();
 		bait_manager.baits_in_use.push_back(new_bait);
+		bait_manager.active_baits_num++;
 	}
 
 	for(Bait b : bait_manager.baits_in_use){
@@ -205,13 +207,14 @@ void PlayMode::update(float elapsed) {
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
 
+	bait_manager.update_bait_lifetime(elapsed);
 	{		
 		//check if there is bait in range
 		bait_manager.check_bait_in_range(puffer.get_position(), puffer.get_forward());
 
 		if (bait_manager.best_bait_index >= 0 
 		&& bait_manager.baits_in_use[bait_manager.best_bait_index].is_active 
-		&& !qte_active) 
+		&& !qte_active && bait_manager.baits_in_use[bait_manager.best_bait_index].bait_bites_left > 0) 
 		{
 			bait_in_eating_range = true;
 
@@ -227,13 +230,12 @@ void PlayMode::update(float elapsed) {
 		else {
 			bait_in_eating_range = false;
 		}
-
-		bait_manager.bait_respawn();
 	}
 
 	if(Mode::current == shared_from_this()){
 		qte_active = false;
 	}
+
 
 	//reset button press counters:
 	left.downs = 0;

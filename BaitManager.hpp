@@ -6,6 +6,9 @@ struct BaitManager {
     std::vector<Bait> baits_in_use;
     std::vector<Bait> baits_unused;
     int best_bait_index = -1;
+    int active_baits_num;
+
+    float respawn_interval_timer = 0.0f;
 
     BaitManager() = default;
 

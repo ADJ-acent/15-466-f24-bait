@@ -21,9 +21,12 @@ struct Bait {
     BaitType type_of_bait;
     float total_life_time = 0.0f;
     float current_life_time = 0.0f;
-    bool is_active = true;
-
+    float reel_up_timer = 0.0f;
+    
+    bool is_active = false;
     int bait_bites_left = 0;
+
+    glm::vec3 original_bait_scale;
     
     struct {
         Scene::Transform* bait_base;
@@ -33,6 +36,7 @@ struct Bait {
     static constexpr float eat_distance_threshold_squared = 625.0f; //25.0f
 
     void init(std::vector<Scene::Transform * > transform_vector, BaitType type_of_bait);
+    void reset();
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
@@ -40,5 +44,6 @@ struct Bait {
 
     glm::vec3 get_position();
 
-    void reel_up(float elapsed);
+    void reel_up(float elapsed, float reel_up_speed = 50.0f);
+    void to_siberia();
 };
