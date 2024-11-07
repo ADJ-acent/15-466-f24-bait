@@ -193,9 +193,16 @@ CollisionPoint CollisionDetector::get_average_collision_point(std::vector<Collis
         count++;
     }
 
+    
+
     CollisionPoint average_collision_point;
     average_collision_point.point = total_position/count;
     average_collision_point.normal = total_normal/count;
+
+    // if(count == 0){
+    //    average_collision_point.point = glm::vec3(std::numeric_limits<float>::infinity());
+    //    average_collision_point.normal = glm::vec3(std::numeric_limits<float>::infinity());
+    // }
 
     return average_collision_point;
 }
