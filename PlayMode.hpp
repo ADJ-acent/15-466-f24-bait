@@ -31,7 +31,7 @@ struct PlayMode : Mode {
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up, eat;
+	} left, right, down, up, eat, debug;
 
 	glm::vec2 mouse_motion = glm::vec2(0);
 

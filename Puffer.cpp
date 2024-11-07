@@ -1,4 +1,5 @@
 #include "Puffer.hpp"
+#include "GameConfig.hpp"
 #include "math_helpers.hpp"
 
 #include <glm/glm.hpp>
@@ -10,6 +11,7 @@
 #include <iostream>
 
 extern Load< MeshBuffer > pufferfish_meshes;
+extern GameConfig game_config;
 
 void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
 {
@@ -340,9 +342,14 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         float rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
         //THIS ONE IF FOR ROTATE TOWARDS CAMERA
         if (building_up) { // experimental...conflicted on how this feels
-            mesh->rotation = glm::slerp(mesh->rotation,  glm::angleAxis(glm::radians(180.0f),glm::vec3(0.0f,1.0f,0.0f)) * original_mesh_rotation, rotation_amt);
+            if (game_config.charge_face_camera) {
+                mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(glm::radians(180.0f),glm::vec3(0.0f,1.0f,0.0f)) * original_mesh_rotation, rotation_amt);
+            }
+            else {
+                mesh->rotation = glm::slerp(mesh->rotation, original_mesh_rotation, rotation_amt);
+            }
         }
-        //THIS ONE IF FOR ROTATE TOWARDS CAMERA
+
         else if (release_rotate_angle > 1.0f) {
                 rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_release_halflife * 2.0f));
                 total_release_angle += elapsed * release_rotate_angle;

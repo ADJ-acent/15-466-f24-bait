@@ -13,6 +13,7 @@
 #include "gl_errors.hpp"
 #include "data_path.hpp"
 #include "Framebuffers.hpp"
+#include "GameConfig.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -152,6 +153,7 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
+GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
 
@@ -242,6 +244,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			eat.downs += 1;
 			eat.pressed = true;
 			return true;
+		} else if (evt.key.keysym.sym == SDLK_0) {
+			debug.downs += 1;
+			debug.pressed = true;
+			return true;
 		}
 	} else if (evt.type == SDL_KEYUP) {
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -258,6 +264,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_e) {
 			eat.pressed = false;
+			return true;
+		} else if (evt.key.keysym.sym == SDLK_0) {
+			debug.pressed = false;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_SPACE) {
 			puffer.release();
@@ -281,6 +290,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
+	if (debug.downs != 0) {
+		game_config.charge_face_camera = !game_config.charge_face_camera;
+	}
 	
 	elapsedtime += elapsed;
 
@@ -330,6 +342,7 @@ void PlayMode::update(float elapsed) {
 	down.downs = 0;
 	mouse_motion = glm::vec2(0);
 	eat.downs = 0;
+	debug.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
