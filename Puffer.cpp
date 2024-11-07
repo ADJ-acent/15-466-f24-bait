@@ -234,10 +234,6 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     if(!collision_point_vector.empty()){
                         colliding = true;
                         collision_point = puffer_collider.get_average_collision_point(collision_point_vector);  
-                        std::cout << "collision point x: " << collision_point.point.x << std::endl;
-                        std::cout << "collision point y: " << collision_point.point.y << std::endl;
-                        std::cout << "collision point z: " << collision_point.point.z << std::endl;
-                        std::cout << std::endl;
                     }
                     if (colliding){
                         handle_collision(collision_point,bounce_factor);
