@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
+#include "BaitManager.hpp"
 
 #include <vector>
 #include <deque>
@@ -24,11 +25,13 @@ struct PlayMode : Mode {
 	//----- game state -----
 	bool qte_active = false;
 
+	float score_decrement_counter = 0.0f;
+
 	//input tracking:
 	struct Button {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up, eat;
+	} left, right, down, up, eat, debug;
 
 	glm::vec2 mouse_motion = glm::vec2(0);
 
@@ -36,9 +39,7 @@ struct PlayMode : Mode {
 	Scene scene;
 
 	Puffer puffer = Puffer();
-
-	std::shared_ptr< Puffer > shared_puffer_ptr;
-	std::shared_ptr< Bait > shared_bait_ptr;
+	BaitManager bait_manager = BaitManager();
 
 	bool bait_in_eating_range = false;
 	

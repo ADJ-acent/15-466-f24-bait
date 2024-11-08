@@ -39,6 +39,13 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
     // health_UI_fill = load_tex_to_GL(data_path("ui/HamsterHealthFill.png"));
 	ui_elements.w = load_tex_to_GL(data_path("ui/keyboard_w_outline.png"));
 	ui_elements.w_pressed = load_tex_to_GL(data_path("ui/keyboard_w.png"));
+	ui_elements.a = load_tex_to_GL(data_path("ui/keyboard_a_outline.png"));
+	ui_elements.a_pressed = load_tex_to_GL(data_path("ui/keyboard_a.png"));
+	ui_elements.s = load_tex_to_GL(data_path("ui/keyboard_s_outline.png"));
+	ui_elements.s_pressed = load_tex_to_GL(data_path("ui/keyboard_s.png"));
+	ui_elements.d = load_tex_to_GL(data_path("ui/keyboard_d_outline.png"));
+	ui_elements.d_pressed = load_tex_to_GL(data_path("ui/keyboard_d.png"));
+
 
 	//load qte timer textures
 	{

@@ -12,30 +12,27 @@ struct QTE {
     static int score;
     static std::vector< Bait > active_baits;
 
-    bool active = false, success = false, failure = false;            
-    float timer = 0.0f, hook_up_timer = 0.0f, red_text_percentage = 0.0f;         
-    float time_limit = 3.0f;    
+    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false;            
+    float timer = 0.0f, hook_up_timer = 0.0f, red_percentage = 0.0f;         
+    float time_limit = 1.0f;    
     float input_delay = 0.0f;
     
-    std::shared_ptr< Puffer > puffer;
-    std::shared_ptr< Bait > bait;
+    Puffer* puffer;
+    Bait* bait;
+    
     SDL_Keycode required_key;   
+    SDL_Keycode trap_key;
 
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };
 
-    QTE(std::shared_ptr< Puffer > puffer_, std::shared_ptr< Bait > bait_): puffer(puffer_), bait(bait_) {
-        if (!puffer || !bait) {
-            throw std::invalid_argument("Puffer or Bait cannot be null");
-        }
-    };
+    QTE(Puffer *puffer_, Bait *bait_): puffer(puffer_), bait(bait_) {};
     QTE() = default;
 
     void start(); 
     void update(float elapsed); 
     void reset();
     void bait_hook_up(float elapsed);
-    void bait_eaten();
     void end();
 
     std::string get_prompt() {
