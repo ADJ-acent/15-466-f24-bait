@@ -14,6 +14,7 @@
 #include "data_path.hpp"
 #include "Framebuffers.hpp"
 #include "GameConfig.hpp"
+#include "Font.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -153,6 +154,7 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
+extern Load< Font > font;
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
@@ -497,7 +499,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	}
 	
-
+	ui_render_program->draw_ui(font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
+	ui_render_program->draw_ui(font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 

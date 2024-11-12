@@ -12,6 +12,8 @@ struct UIRenderProgram {
 
 	GLuint program = 0;
 
+	GLuint text_program = 0;
+
 	//Attribute (per-vertex variable) locations:
 	GLuint PosTex_vec4 = -1U;
 
@@ -31,7 +33,7 @@ struct UIRenderProgram {
 		BottomRight,
 	};
 	
-	void draw_ui(Texture& texture, glm::vec2 position, glm::uvec2 drawable_size, AlignMode align = BottomLeft, glm::vec2 scale = glm::vec2(1.0f), glm::vec3 tint = glm::vec3(1.0f)) const;
+	void draw_ui(const Texture& texture, glm::vec2 position, glm::uvec2 drawable_size, AlignMode align = BottomLeft, glm::vec2 scale = glm::vec2(1.0f), glm::vec3 tint = glm::vec3(1.0f), bool single_channel = false) const;
 	// returns the relative offset to the width and height of the ui element
 	static glm::vec2 get_align_offset(AlignMode align);
 };
