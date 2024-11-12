@@ -60,10 +60,6 @@ Font::Font(std::string font_path)
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
-
-    // initialize your texts here (or during loops when we need it I suppose):
-    std::string test = "this is a test, do not panic";
-    texts.insert({test, create_text(test, characters)});
 }
 
 Texture Font::create_text(const std::string & string_, std::unordered_map<char, Character> &) const 
