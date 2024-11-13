@@ -5,19 +5,42 @@
 #include <vector>
 #include <string>
 
+template <typename T>
 struct LinearFrame { // only translation and scale
     float time;
-    glm::vec3 value;
+    T value;
 };
 
+template <typename T>
 struct LinearAnimation {
-    std::vector<LinearFrame> frames;
-    glm::vec3 *target;
+    std::vector<LinearFrame<T>> frames;
+    T *target;
 
-    void update(float t);
+    void LinearAnimation<T>::update(float t) // set animation to current time
+    {
+        auto it = std::lower_bound(frames.begin(), frames.end(), t,
+            [](const LinearFrame<T>& frame, float t) {
+                return frame.time < t;
+            });
 
-    LinearAnimation(std::vector<LinearFrame> frames_, glm::vec3 *target_) : frames(frames_), target(target_){};
-    LinearAnimation() = delete;
+        if (it == frames.begin()) {
+            *target = it->value;
+            return;
+        } else if (it == frames.end()) {
+            *target = (it - 1)->value;
+            return;
+        }
+
+        auto& frame1 = *(it - 1);
+        auto& frame2 = *it;
+
+        float factor = (t - frame1.time) / (frame2.time - frame1.time);
+
+        *target = glm::mix(frame1.value, frame2.value, factor);
+    }
+
+    LinearAnimation(std::vector<LinearFrame<T>> frames_, T *target_) : frames(frames_), target(target_) {};
+    LinearAnimation() : target(nullptr) {};
 };
 
 struct SlerpFrame { // only translation and scale

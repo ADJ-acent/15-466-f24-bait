@@ -24,7 +24,7 @@ struct Puffer {
         Scene::Transform* puff_tail;
     } mesh_parts;
 
-    std::vector<LinearAnimation> build_up_animations;
+    std::vector<LinearAnimation<glm::vec3>> build_up_animations;
     std::vector<SlerpAnimation> swim_animation;
 
     float current_pitch = 0.0f;

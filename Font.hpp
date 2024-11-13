@@ -30,7 +30,7 @@ struct Font {
 
     static std::unordered_map<std::string, Texture> texts;
 
-    Texture& get_text(const std::string &) const;
+    Texture* get_text(const std::string &) const;
 
     Font(std::string font_path);
 };

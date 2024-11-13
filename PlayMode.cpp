@@ -159,6 +159,17 @@ GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
 
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	//replace nullptr with function name to get a callback when the button is pressed and released
+	//search up all use cases of example buttons when seeing usage and removing, there are references to it in draw, update, and handle events in this file
+	//I also removed the ability to enter relative mouse mode by commenting it out in the handle events function, feel free to uncomment when you
+	//understand how to set up buttons. We probably would like to directly enter relative mouse mode when entering this mode, and exit when
+	// we switch to menu and setting modes
+
+	example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,nullptr));
+	example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+	example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
@@ -218,6 +229,9 @@ PlayMode::~PlayMode() {
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.handle_event(evt, window_size);
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
@@ -274,10 +288,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			puffer.release();
 		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			return true;
-		}
+		// if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
+		// 	SDL_SetRelativeMouseMode(SDL_TRUE);
+		// 	return true;
+		// }
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			mouse_motion = glm::vec2(
@@ -292,6 +306,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.update(elapsed);
+
 	if (debug.downs != 0) {
 		game_config.charge_face_camera = !game_config.charge_face_camera;
 	}
@@ -498,9 +516,13 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		//framebuffers.tone_map();
 
 	}
-	
-	ui_render_program->draw_ui(font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
-	ui_render_program->draw_ui(font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
+
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.draw(drawable_size);
+
+	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
+	ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 

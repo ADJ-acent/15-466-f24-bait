@@ -121,13 +121,12 @@ Texture Font::create_text(const std::string & string_, std::unordered_map<char, 
     return texture;
 }
 
-Texture &Font::get_text(const std::string &string_) const
+Texture* Font::get_text(const std::string &string_) const
 {
     if (auto res = texts.find(string_); res != texts.end()) {
-        return res->second;
+        return &res->second; // Return a pointer to the existing texture
     }
 
     auto inserted_res = texts.insert({string_, create_text(string_, characters)});
-    return inserted_res.first->second;
-    
+    return &inserted_res.first->second; // Return a pointer to the newly inserted texture
 }

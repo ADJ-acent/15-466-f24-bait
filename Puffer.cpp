@@ -32,68 +32,68 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *sce
     { //set up build up animations
         build_up_animations.reserve(10);
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(2.0f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(2.0f)},
             }, 
             &mesh_parts.puff_body->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.1608f, -0.18379f, 2.8906f)},
-                LinearFrame{1.0f, glm::vec3(-5.3108f, -0.18379f, 7.19066f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.1608f, -0.18379f, 2.8906f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-5.3108f, -0.18379f, 7.19066f)},
             }, 
             &mesh_parts.puff_l_blush->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.1889f, 0.16394f, 2.919f)},
-                LinearFrame{1.0f, glm::vec3(-5.3389f, 0.16394f, 7.204f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.1889f, 0.16394f, 2.919f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-5.3389f, 0.16394f, 7.204f)},
             }, 
             &mesh_parts.puff_l_eye->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.9862f,-0.005412f, -0.30636f)},
-                LinearFrame{1.0f, glm::vec3(-7.4861f, -0.005412f, -3.3064f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.9862f,-0.005412f, -0.30636f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-7.4861f, -0.005412f, -3.3064f)},
             }, 
             &mesh_parts.puff_l_fin->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(0.0f,0.0f, 4.8114f)},
-                LinearFrame{1.0f, glm::vec3(0.0f,0.0f, 9.4984f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(0.0f,0.0f, 4.8114f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(0.0f,0.0f, 9.4984f)},
             }, 
             &mesh_parts.puff_mouth->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(0.6f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(0.6f)},
             }, 
             &mesh_parts.puff_mouth->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.1608f, -0.18379f, 2.8906f)},
-                LinearFrame{1.0f, glm::vec3(5.3108f, -0.18379f, 7.19066f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.1608f, -0.18379f, 2.8906f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(5.3108f, -0.18379f, 7.19066f)},
             }, 
             &mesh_parts.puff_r_blush->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.1889f, 0.16394f, 2.919f)},
-                LinearFrame{1.0f, glm::vec3(5.3389f, 0.16394f, 7.204f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.1889f, 0.16394f, 2.919f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(5.3389f, 0.16394f, 7.204f)},
             }, 
             &mesh_parts.puff_r_eye->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.9862f,-0.005412f, -0.30636f)},
-                LinearFrame{1.0f, glm::vec3(7.4861f, -0.005412f, -3.3064f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.9862f,-0.005412f, -0.30636f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(7.4861f, -0.005412f, -3.3064f)},
             }, 
             &mesh_parts.puff_r_fin->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(2.0f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(2.0f)},
             }, 
             &mesh_parts.puff_spikes->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-0.02516f, -0.045457f, -4.4023f)},
-                LinearFrame{1.0f, glm::vec3(-0.02516f, -0.045457f, -8.9023f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-0.02516f, -0.045457f, -4.4023f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-0.02516f, -0.045457f, -8.9023f)},
             }, 
             &mesh_parts.puff_tail->position)
         );
@@ -395,7 +395,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
 
 void Puffer::update_build_up_animations(float t)
 {
-    for (LinearAnimation& animation : build_up_animations) {
+    for (LinearAnimation<glm::vec3>& animation : build_up_animations) {
         animation.update(t);
     }
 }
