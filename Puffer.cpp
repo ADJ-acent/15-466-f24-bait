@@ -202,59 +202,66 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     rotate_from_mouse(mouse_motion);
 
     constexpr float swim_cooldown_threshold = 0.5f;
+    std::array<glm::vec3, 2> closest_collision_point = {glm::vec3(std::numeric_limits<float>::infinity()),glm::vec3(0)};
 
     {// puffer collision
         bool colliding = false;
         float best_spring_arm_length = default_spring_arm_length;
+        float bounce_factor = 1.0f;
         for (Scene::Drawable &d : scene->drawables){
             assert(d.mesh);
-            if (!colliding) {
-                bool checking_mesh_in_puffer = false;
-                for(std::string name : names){
-                    if(name == d.transform->name){
-                        checking_mesh_in_puffer = true;
-                    }
+            float current_bounce_factor = 1.0f;
+            bool checking_mesh_in_puffer = false;
+            for(std::string name : names){
+                if(name == d.transform->name){
+                    checking_mesh_in_puffer = true;
                 }
-                //check that its not seaweed
-                bool checking_non_colliding_object = false;
-                if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
-                    checking_non_colliding_object = true;
-                }
+            }
+            //check that its not seaweed
+            bool checking_non_colliding_object = false;
+            if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+                checking_non_colliding_object = true;
+            }
 
-                float bounce_factor = 1.0f;
-                if(d.transform->name.substr(0,4)=="sand"){
-                    bounce_factor = 0.1f;
-                }
+            if(d.transform->name.substr(0,4)=="sand"){
+                current_bounce_factor = 0.1f;
+            }
 
-                if(d.transform->name.substr(0,5)=="water"){
-                    checking_non_colliding_object = true;
-                    above_water = puffer_collider.check_over_water(d.transform,d.mesh);
-                }
+            if(d.transform->name.substr(0,5)=="water"){
+                checking_non_colliding_object = true;
+                above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+            }
 
-                if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-                    std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-                    if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-                        colliding = true;
-                        //std::cout << "collision point x: " << collision_point[0].x << std::endl;
-                       // std::cout << "collision point y: " << collision_point[0].y << std::endl;
-                       // std::cout << "collision point z: " << collision_point[0].z << std::endl;
-                       // std::cout << std::endl;
-                    }
-                    if (colliding){
-                        handle_collision(collision_point,bounce_factor);
-                    }
-                    glm::vec3 p0 = get_position();
-                    glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
-                    glm::vec3 dir = glm::normalize(p0 - camera_pos);
-                    float t;
-                    if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
-                        if (t < best_spring_arm_length) {
-                            best_spring_arm_length = t;
-                        }
+            if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_collision(d.transform,d.mesh,closest_collision_point);
+                if (closest_collision_point != new_collision_point){
+                    //it changed, so update bounce factor for new closest mesh
+                    bounce_factor = current_bounce_factor;
+                }
+                closest_collision_point = new_collision_point;
+                //camera code:
+                glm::vec3 p0 = get_position();
+                glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
+                glm::vec3 dir = glm::normalize(p0 - camera_pos);
+                float t;
+                if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
+                    if (t < best_spring_arm_length) {
+                        best_spring_arm_length = t;
                     }
                 }
-            }	
+            }
         }
+        if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+            colliding = true;
+            //std::cout << "collision point x: " << collision_point[0].x << std::endl;
+            // std::cout << "collision point y: " << collision_point[0].y << std::endl;
+            // std::cout << "collision point z: " << collision_point[0].z << std::endl;
+            // std::cout << std::endl;
+        }
+        if (colliding){
+            handle_collision(closest_collision_point,bounce_factor);
+        }
+        
         camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
     }
 

@@ -16,7 +16,8 @@ struct LinearAnimation {
     std::vector<LinearFrame<T>> frames;
     T *target;
 
-    void LinearAnimation<T>::update(float t) // set animation to current time
+    // void LinearAnimation<T>::update(float t) // set animation to current time
+    void update(float t) // set animation to current time
     {
         auto it = std::lower_bound(frames.begin(), frames.end(), t,
             [](const LinearFrame<T>& frame, float t) {
