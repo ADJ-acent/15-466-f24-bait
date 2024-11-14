@@ -244,7 +244,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
                 glm::vec3 dir = glm::normalize(p0 - camera_pos);
                 float t;
-                if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
+                if (!in_menu && puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
                     if (t < best_spring_arm_length) {
                         best_spring_arm_length = t;
                     }
@@ -261,8 +261,9 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if (colliding){
             handle_collision(closest_collision_point,bounce_factor);
         }
-        
-        camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
+        if (!in_menu) {
+            camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
+        }
     }
 
     if (swim_cooldown == 0.0f) {
@@ -420,11 +421,13 @@ void Puffer::swim(int8_t swim_direction)
 
 void Puffer::switch_to_main_menu_camera()
 {
+    in_menu = true;
     camera->position = spring_arm_normalized_displacement * 5.0f;
 }
 
 void Puffer::switch_to_default_camera()
 {
+    in_menu = false;
     camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
 }
 
