@@ -2,6 +2,7 @@
 #include "Scene.hpp"
 #include "Bait.hpp"
 #include "Puffer.hpp"
+#include "math_helpers.hpp"
 
 #include <vector>
 #include <string>
@@ -12,10 +13,14 @@ struct QTE {
     static int score;
     static std::vector< Bait > active_baits;
 
-    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false;            
+    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false, key_reset = false;            
     float timer = 0.0f, hook_up_timer = 0.0f, red_percentage = 0.0f;         
     float time_limit = 1.0f;    
-    float input_delay = 0.0f;
+    float input_delay, input_delay_time = 3.0f;
+
+    int flashing_key_index = 0, flash_times = 0;
+
+    float key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 1.0f) / 10.0f;
     
     Puffer* puffer;
     Bait* bait;
@@ -31,6 +36,7 @@ struct QTE {
 
     void start(); 
     void update(float elapsed); 
+    void key_flashing_reset();
     void reset();
     void bait_hook_up(float elapsed);
     void end();
