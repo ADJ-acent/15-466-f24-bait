@@ -62,19 +62,10 @@ void Button::handle_event(SDL_Event const &event, glm::uvec2 const &window_size)
                 }
             }
         }
-        else if (button_state != Pressing) {
+        else {
             button_state = Base;
         }
-        else {
-            // out of button but still pressing
-            if (event.type == SDL_MOUSEBUTTONUP) {
-                // pressed the button
-                if (on_click_function != nullptr) {
-                    on_click_function();
-                }
-                button_state = Base;
-            }
-        }
+    
 
         if (button_state != old_state) {
             state_switch_timer = 0.01f;
