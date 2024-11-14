@@ -166,15 +166,15 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		//understand how to set up buttons. We probably would like to directly enter relative mouse mode when entering playmode, and exit when
 		// we switch to menu and setting modes
 
-		auto example_function = []() {
-			// you can set boolean here, or do other operations, but the function should return type void and take no parameters
-			// you can also use capture & in lambdas or have static functions of the mode passed into the button constructor
-			std::cout<<"button pressed, function triggered!\n"<<std::endl;
-		};
+		// auto example_function = []() {
+		// 	// you can set boolean here, or do other operations, but the function should return type void and take no parameters
+		// 	// you can also use capture & in lambdas or have static functions of the mode passed into the button constructor
+		// 	std::cout<<"button pressed, function triggered!\n"<<std::endl;
+		// };
 
-		example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,example_function));
-		example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
-		example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+		// example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,example_function));
+		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 	}
 
 
@@ -529,47 +529,19 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		button.draw(drawable_size);
 
 	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
-	ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
+	// ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
-		float aspect = float(drawable_size.x) / float(drawable_size.y);
-		DrawLines lines(glm::mat4(
-			1.0f / aspect, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		));
-
-		DrawLines lines_mesh(camera->make_projection() * glm::mat4(camera->transform->make_world_to_local()));
-
-		constexpr float H = 0.3f;
-		
 
 		if(bait_in_eating_range && !qte_active){
-			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 		}
 
-		lines.draw_text("Hunger: " + std::to_string(QTE::score),
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-        lines.draw_text("Hunger: " + std::to_string(QTE::score),
-            glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
-            glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-            glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	}
 
 	GL_ERRORS();
