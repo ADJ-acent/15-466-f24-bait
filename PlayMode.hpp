@@ -9,6 +9,7 @@
 #include "Puffer.hpp"
 #include "Bait.hpp"
 #include "BaitManager.hpp"
+#include "Button.hpp"
 
 #include <vector>
 #include <deque>
@@ -28,7 +29,7 @@ struct PlayMode : Mode {
 	float score_decrement_counter = 0.0f;
 
 	//input tracking:
-	struct Button {
+	struct ButtonInput {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
 	} left, right, down, up, eat, debug;
@@ -55,4 +56,5 @@ struct PlayMode : Mode {
 
 	Scene::Transform *waterplane_size = nullptr;
 
+	std::vector<Button> example_buttons;
 };

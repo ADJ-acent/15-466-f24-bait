@@ -47,7 +47,7 @@ void CollisionDetector::init(Puffer *p, Scene::Transform *t, const Mesh &m)
 
 }
 
-std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
+std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh, std::array<glm::vec3, 2> closest_collision_point)
 {
     // find barycentric coordinates of center of sphere on the triangle 
     // then checking distance
@@ -58,9 +58,12 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     glm::vec3 center = transform->position;
     assert(other_mesh);
 
-    glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
-    glm::vec3 closest_point_normal = glm::vec3(0);
-	float closest_dis2 = std::numeric_limits< float >::infinity();
+    // glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
+    glm::vec3 closest = closest_collision_point[0];
+    // glm::vec3 closest_point_normal = glm::vec3(0);
+    glm::vec3 closest_point_normal = closest_collision_point[1];
+    float closest_dis2 = glm::length2(center - closest); //starts with the
+	// float closest_dis2 = std::numeric_limits< float >::infinity();
     float radius = puffer->current_scale*4.5f;
 
     auto get_world_normal = [&](Triangle triangle, glm::vec3 barycentric_coord, glm::mat4x4 world_from_local) {
