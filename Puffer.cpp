@@ -411,6 +411,16 @@ void Puffer::swim(int8_t swim_direction)
     }
 }
 
+void Puffer::switch_to_main_menu_camera()
+{
+    camera->position = spring_arm_normalized_displacement * 5.0f;
+}
+
+void Puffer::switch_to_default_camera()
+{
+    camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
+}
+
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)
 {
     for (auto t : transform_vector){
