@@ -3,7 +3,7 @@
 
 extern Load< UIRenderProgram > ui_render_program;
 
-Button::Button(Texture *texture_, glm::uvec2 padding_, glm::vec2 position_, glm::vec2 scale_, UIRenderProgram::AlignMode align_, glm::vec3 tint_, bool single_channel_, void (*on_click_function_)()) :
+Button::Button(Texture *texture_, glm::uvec2 padding_, glm::vec2 position_, glm::vec2 scale_, UIRenderProgram::AlignMode align_, glm::vec3 tint_, bool single_channel_,  std::function<void()> on_click_function_) :
 texture(texture_), padding(padding_), position(position_), scale(scale_), align(align_), tint(tint_), single_channel(single_channel_), on_click_function(on_click_function_),
 base_scale(scale_), base_tint(tint_)
 {

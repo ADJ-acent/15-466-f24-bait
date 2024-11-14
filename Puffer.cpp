@@ -201,7 +201,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     rotate_from_mouse(mouse_motion);
 
-    constexpr float swim_cooldown_threshold = 0.8f;
+    constexpr float swim_cooldown_threshold = 0.5f;
 
     {// puffer collision
         bool colliding = false;

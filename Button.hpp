@@ -24,7 +24,7 @@ struct Button {
         Pressing = 2,
     } button_state = Base, last_state = Base;
 
-    void (*on_click_function) ();
+    std::function<void()> on_click_function;
 
     glm::vec2 hover_scale = glm::vec2(-1.0f);
     glm::vec2 pressing_scale = glm::vec2(-1.0f);
@@ -37,7 +37,7 @@ struct Button {
     static constexpr float hover_animation_speed = 5.0f;
     static constexpr float pressing_animation_speed = 5.0f;
 
-    Button(Texture *texture, glm::uvec2 padding, glm::vec2 position, glm::vec2 scale, UIRenderProgram::AlignMode align, glm::vec3 tint, bool single_channel, void (*on_click_function)());
+    Button(Texture *texture, glm::uvec2 padding, glm::vec2 position, glm::vec2 scale, UIRenderProgram::AlignMode align, glm::vec3 tint, bool single_channel,  std::function<void()> on_click_function);
 
     void set_hover_state(glm::vec2 scale, glm::vec3 tint);
     void set_pressing_state(glm::vec2 scale, glm::vec3 tint);
