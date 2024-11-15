@@ -1,8 +1,6 @@
 #include "QTEMode.hpp"
 
 #include "Load.hpp"
-#include "DrawLines.hpp"
-#include "gl_compile_program.hpp"
 #include "UIRenderProgram.hpp"
 #include "Animation.hpp"
 #include "Font.hpp"
@@ -36,7 +34,7 @@ bool QTEMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) 
 
 void QTEMode::update(float elapsed) {
     if(background){
-        background->update(elapsed * background_time_scale);
+        background->update(elapsed);
     }
 
 	cur_texture = qte_timer_animation.get_current_frame(eat_bait_QTE->timer/eat_bait_QTE->time_limit);
@@ -52,7 +50,7 @@ void QTEMode::update(float elapsed) {
 }
 
 void QTEMode::draw(glm::uvec2 const &drawable_size) {
-	if (background && background_fade < 1.0f) {
+	if (background) {
 	    background->draw(drawable_size);
 	}
  

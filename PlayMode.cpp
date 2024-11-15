@@ -1,4 +1,5 @@
 #include "PlayMode.hpp"
+#include "MenuMode.hpp"
 
 #include "DepthTextureProgram.hpp"
 #include "LitColorTextureProgram.hpp"
@@ -19,6 +20,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+
+extern std::shared_ptr< MenuMode > menu;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
@@ -182,7 +185,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	puffer.init(puffer_transforms, &scene);
 
-
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
 		std::vector<Scene::Transform *> new_bait_transforms = scene.spawn(*bait_scene,CARROT_BAIT);
@@ -220,13 +222,11 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
-
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
-
 		}
 	}
 
@@ -314,6 +314,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+
 	for (Button& button : example_buttons)
 		button.update(elapsed);
 
@@ -355,12 +356,15 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
+	if(Mode::current == menu){
+		puffer.switch_to_main_menu_camera();
+	}
+
 	score_decrement_counter += elapsed;
     if(score_decrement_counter>5.0f){
         score_decrement_counter = 0.0f;
         QTE::score -= 1;
     }
-
 
 	//reset button press counters:
 	left.downs = 0;
@@ -536,12 +540,14 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
+	
+		if(Mode::current == shared_from_this()) {
+			if(bait_in_eating_range && !qte_active){
+				ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			}
 
-		if(bait_in_eating_range && !qte_active){
-			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 		}
-
-		ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	}
 
 	GL_ERRORS();

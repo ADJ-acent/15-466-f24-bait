@@ -57,4 +57,7 @@ struct PlayMode : Mode {
 	Scene::Transform *waterplane_size = nullptr;
 
 	std::vector<Button> example_buttons;
+
+	//Menu Mode shared ptr
+	std::shared_ptr< Mode > background;
 };

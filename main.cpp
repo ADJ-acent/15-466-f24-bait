@@ -3,6 +3,7 @@
 
 //The 'PlayMode' mode plays the game:
 #include "PlayMode.hpp"
+#include "MenuMode.hpp"
 
 //For asset loading:
 #include "Load.hpp"
@@ -25,6 +26,9 @@
 #include <stdexcept>
 #include <memory>
 #include <algorithm>
+
+std::shared_ptr< MenuMode > menu;
+std::shared_ptr< PlayMode > play;
 
 #ifdef _WIN32
 extern "C" { uint32_t GetACP(); }
@@ -115,7 +119,23 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlayMode >());
+
+	menu = std::make_shared< MenuMode >();
+	play = std::make_shared< PlayMode >();
+	menu->background = play;
+
+	menu->choices.emplace_back("Select Scene");
+	menu->choices.emplace_back("Play", [&](){
+		Mode::set_current(play);
+	});
+	menu->choices.emplace_back("Exit", [&](){
+		Mode::set_current(nullptr);
+	});
+	menu->selected = 1;
+
+	Mode::set_current(menu);
+
+	// Mode::set_current(std::make_shared< PlayMode >());
 
 	//------------ main loop ------------
 

@@ -36,6 +36,6 @@ struct QTEMode : public Mode {
 
 	//will render this mode in the background if not null:
 	std::shared_ptr< Mode > background;
-	float background_time_scale = 1.0f;
-	float background_fade = 0.5f;
+	// float background_time_scale = 1.0f;
+	// float background_fade = 0.5f;
 };
