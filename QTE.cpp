@@ -5,6 +5,7 @@ int QTE::score = 100;
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_int_distribution<int> dist_index(0, 3);
+std::uniform_int_distribution<int> dist_trap_index(0, 2);
 
 void QTE::start() {
     active = true;
@@ -50,21 +51,18 @@ void QTE::update(float elapsed) {
         key_flash_reset_timer -= elapsed;
 
         if(key_flash_reset_timer <= 0.0f) {
-            flash_times += 1;
-
             key_flashing_reset();
             if(input_delay > 1.5f) {
-                key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 0.5f) / 10.0f;
+                key_flash_reset_timer = 0.046f;
             }
             else if(input_delay > 0.8f){
-                key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 0.5f) / 5.0f;
+                key_flash_reset_timer = 0.092f;
             }
             else{
-                key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 0.0f) / 2.5f;
+                key_flash_reset_timer = 0.28f;
             }
 
             std::cout << key_flash_reset_timer << std::endl;
-
         }
         return;
     }
@@ -107,15 +105,21 @@ void QTE::update(float elapsed) {
         }
 
         if (timer >= time_limit && !correct_key_pressed) {
-            std::cout << "QTE Failed! Time's up!" << std::endl;
-            failure = true;
+            if(!trap_key_on){
+                std::cout << "QTE Failed! Time's up!" << std::endl;
+                failure = true;
+                return;
+            }
+
+            input_delay = input_delay_time;
+            reset();
+            key_reset = false;
             return;
         }
     }
     else{
         if(timer >= time_limit && !success){
             input_delay = input_delay_time;
-            key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 1.0f) / 10.0f;
             reset();
             key_reset = false;
             return;
@@ -127,15 +131,24 @@ void QTE::reset(){
     correct_key_pressed = false;
     timer = 0.0f;
     red_percentage = 0.0f;
-    flash_times = 0;
+    key_flash_reset_timer = 0.046f;
+    trap_keys = possible_keys;
 
     int random_index = dist_index(gen);
     required_key = possible_keys[random_index];
     int random_trap_index = dist_index(gen);
-    trap_key = possible_keys[random_index];
 
     if(random_trap_index == random_index){
         trap_key_on = true;
+        trap_keys.erase(trap_keys.begin() + random_index);
+        random_trap_index = dist_trap_index(gen);
+        trap_key = trap_keys[random_trap_index];
+
+        std::cout << "trap key is on" << std::endl;
+        std::cout << trap_key << std::endl;
+    }
+    else{
+        trap_key_on = false;
     }
 }
 
