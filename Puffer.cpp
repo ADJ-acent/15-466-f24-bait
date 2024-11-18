@@ -233,7 +233,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             }
 
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_collision(d.transform,d.mesh,closest_collision_point);
+                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_puffer_collision(d.transform,d.mesh,closest_collision_point);
                 if (closest_collision_point != new_collision_point){
                     //it changed, so update bounce factor for new closest mesh
                     bounce_factor = current_bounce_factor;

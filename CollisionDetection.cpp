@@ -48,7 +48,7 @@ void CollisionDetector::init(Puffer *p, Scene::Transform *t, const Mesh &m)
 
 }
 
-std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh, std::array<glm::vec3, 2> closest_collision_point)
+std::array<glm::vec3,2> CollisionDetector::check_puffer_collision(const Scene::Transform *transform_other, const Mesh *other_mesh, std::array<glm::vec3, 2> closest_collision_point)
 {
     // find barycentric coordinates of center of sphere on the triangle 
     // then checking distance
