@@ -163,7 +163,6 @@ const common_names = [
 	maek.CPP('Mode.cpp'),
 	maek.CPP('GL.cpp'),
 	maek.CPP('Load.cpp'),
-	maek.CPP('Collide.cpp'),
 	maek.CPP('CollisionDetection.cpp'),
 ];
 

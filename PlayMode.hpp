@@ -5,12 +5,12 @@
 #include "Scene.hpp"
 #include "Sound.hpp"
 
-#include <glm/glm.hpp>
 #include "Puffer.hpp"
 #include "Bait.hpp"
 #include "BaitManager.hpp"
 #include "Button.hpp"
 
+#include <glm/glm.hpp>
 #include <vector>
 #include <deque>
 

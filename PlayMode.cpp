@@ -201,17 +201,17 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		bait_manager.active_baits_num++;
 	}
 
-	for(Bait b : bait_manager.baits_in_use){
+	// for(Bait b : bait_manager.baits_in_use){
     	
-		if(b.type_of_bait == 0){
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
-		} else {
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
-		}
+	// 	if(b.type_of_bait == 0){
+	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
+	// 	} else {
+	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
+	// 	}
 
-	}
+	// }
 
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
