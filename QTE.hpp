@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <cstdlib> // For rand()
+#include <cstdlib> 
 
 struct QTE {
     static int score;
@@ -18,9 +18,9 @@ struct QTE {
     float time_limit = 1.0f;    
     float input_delay, input_delay_time = 3.0f;
 
-    int flashing_key_index = 0, flash_times = 0;
+    int flashing_key_index = 0;
 
-    float key_flash_reset_timer = cubic_bezier(0.7f, 0.03f, 0.92f, 0.13f, 1.0f) / 10.0f;
+    float key_flash_reset_timer = 0.046f;
     
     Puffer* puffer;
     Bait* bait;
@@ -30,6 +30,7 @@ struct QTE {
 
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };
+    std::vector<SDL_Keycode> trap_keys = possible_keys;
 
     QTE(Puffer *puffer_, Bait *bait_): puffer(puffer_), bait(bait_) {};
     QTE() = default;
