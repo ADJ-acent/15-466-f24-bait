@@ -24,7 +24,7 @@ struct Puffer {
         Scene::Transform* puff_tail;
     } mesh_parts;
 
-    std::vector<LinearAnimation> build_up_animations;
+    std::vector<LinearAnimation<glm::vec3>> build_up_animations;
     std::vector<SlerpAnimation> swim_animation;
 
     float current_pitch = 0.0f;
@@ -32,7 +32,7 @@ struct Puffer {
     float build_up_time = 0.0f;
     float current_scale = 1.0f;
     float overshoot_target = 0.5f;
-    float swim_cooldown = 1.0f;
+    float swim_cooldown = 0.0f;
     float idletime = 0.0f;
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
@@ -43,6 +43,7 @@ struct Puffer {
     bool recovered = true;
     bool overshoot = false;
     bool above_water = false;
+    bool in_menu = false;
 
     glm::vec3 original_mesh_scale = glm::vec3(1.0f);
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
@@ -74,7 +75,8 @@ struct Puffer {
     void handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor);
     void update_build_up_animations(float t);
     void swim(int8_t swim_direction);
-    void see_through_meshes(std::vector<Scene::Transform *> transforms, std::vector<std::string> meshnames,MeshBuffer* meshes);
+    void switch_to_main_menu_camera();
+    void switch_to_default_camera();
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 

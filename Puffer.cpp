@@ -32,68 +32,68 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *sce
     { //set up build up animations
         build_up_animations.reserve(10);
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(2.0f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(2.0f)},
             }, 
             &mesh_parts.puff_body->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.1608f, -0.18379f, 2.8906f)},
-                LinearFrame{1.0f, glm::vec3(-5.3108f, -0.18379f, 7.19066f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.1608f, -0.18379f, 2.8906f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-5.3108f, -0.18379f, 7.19066f)},
             }, 
             &mesh_parts.puff_l_blush->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.1889f, 0.16394f, 2.919f)},
-                LinearFrame{1.0f, glm::vec3(-5.3389f, 0.16394f, 7.204f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.1889f, 0.16394f, 2.919f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-5.3389f, 0.16394f, 7.204f)},
             }, 
             &mesh_parts.puff_l_eye->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-3.9862f,-0.005412f, -0.30636f)},
-                LinearFrame{1.0f, glm::vec3(-7.4861f, -0.005412f, -3.3064f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-3.9862f,-0.005412f, -0.30636f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-7.4861f, -0.005412f, -3.3064f)},
             }, 
             &mesh_parts.puff_l_fin->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(0.0f,0.0f, 4.8114f)},
-                LinearFrame{1.0f, glm::vec3(0.0f,0.0f, 9.4984f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(0.0f,0.0f, 4.8114f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(0.0f,0.0f, 9.4984f)},
             }, 
             &mesh_parts.puff_mouth->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(0.6f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(0.6f)},
             }, 
             &mesh_parts.puff_mouth->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.1608f, -0.18379f, 2.8906f)},
-                LinearFrame{1.0f, glm::vec3(5.3108f, -0.18379f, 7.19066f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.1608f, -0.18379f, 2.8906f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(5.3108f, -0.18379f, 7.19066f)},
             }, 
             &mesh_parts.puff_r_blush->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.1889f, 0.16394f, 2.919f)},
-                LinearFrame{1.0f, glm::vec3(5.3389f, 0.16394f, 7.204f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.1889f, 0.16394f, 2.919f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(5.3389f, 0.16394f, 7.204f)},
             }, 
             &mesh_parts.puff_r_eye->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(3.9862f,-0.005412f, -0.30636f)},
-                LinearFrame{1.0f, glm::vec3(7.4861f, -0.005412f, -3.3064f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(3.9862f,-0.005412f, -0.30636f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(7.4861f, -0.005412f, -3.3064f)},
             }, 
             &mesh_parts.puff_r_fin->position)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(1.0f)},
-                LinearFrame{1.0f, glm::vec3(2.0f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(1.0f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(2.0f)},
             }, 
             &mesh_parts.puff_spikes->scale)
         );
         build_up_animations.push_back(LinearAnimation({
-                LinearFrame{0.0f, glm::vec3(-0.02516f, -0.045457f, -4.4023f)},
-                LinearFrame{1.0f, glm::vec3(-0.02516f, -0.045457f, -8.9023f)},
+                LinearFrame<glm::vec3>{0.0f, glm::vec3(-0.02516f, -0.045457f, -4.4023f)},
+                LinearFrame<glm::vec3>{1.0f, glm::vec3(-0.02516f, -0.045457f, -8.9023f)},
             }, 
             &mesh_parts.puff_tail->position)
         );
@@ -201,61 +201,69 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
     rotate_from_mouse(mouse_motion);
 
-    constexpr float swim_cooldown_threshold = 0.8f;
+    constexpr float swim_cooldown_threshold = 0.5f;
+    std::array<glm::vec3, 2> closest_collision_point = {glm::vec3(std::numeric_limits<float>::infinity()),glm::vec3(0)};
 
     {// puffer collision
         bool colliding = false;
         float best_spring_arm_length = default_spring_arm_length;
+        float bounce_factor = 1.0f;
         for (Scene::Drawable &d : scene->drawables){
             assert(d.mesh);
-            if (!colliding) {
-                bool checking_mesh_in_puffer = false;
-                for(std::string name : names){
-                    if(name == d.transform->name){
-                        checking_mesh_in_puffer = true;
-                    }
+            float current_bounce_factor = 1.0f;
+            bool checking_mesh_in_puffer = false;
+            for(std::string name : names){
+                if(name == d.transform->name){
+                    checking_mesh_in_puffer = true;
                 }
-                //check that its not seaweed
-                bool checking_non_colliding_object = false;
-                if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
-                    checking_non_colliding_object = true;
-                }
+            }
+            //check that its not seaweed
+            bool checking_non_colliding_object = false;
+            if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
+                checking_non_colliding_object = true;
+            }
 
-                float bounce_factor = 1.0f;
-                if(d.transform->name.substr(0,4)=="sand"){
-                    bounce_factor = 0.1f;
-                }
+            if(d.transform->name.substr(0,4)=="sand"){
+                current_bounce_factor = 0.1f;
+            }
 
-                if(d.transform->name.substr(0,5)=="water"){
-                    checking_non_colliding_object = true;
-                    above_water = puffer_collider.check_over_water(d.transform,d.mesh);
-                }
+            if(d.transform->name.substr(0,5)=="water"){
+                checking_non_colliding_object = true;
+                above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+            }
 
-                if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-                    std::array<glm::vec3, 2> collision_point = puffer_collider.check_collision(d.transform,d.mesh);
-                    if(collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-                        colliding = true;
-                        //std::cout << "collision point x: " << collision_point[0].x << std::endl;
-                       // std::cout << "collision point y: " << collision_point[0].y << std::endl;
-                       // std::cout << "collision point z: " << collision_point[0].z << std::endl;
-                       // std::cout << std::endl;
-                    }
-                    if (colliding){
-                        handle_collision(collision_point,bounce_factor);
-                    }
-                    glm::vec3 p0 = get_position();
-                    glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
-                    glm::vec3 dir = glm::normalize(p0 - camera_pos);
-                    float t;
-                    if (puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
-                        if (t < best_spring_arm_length) {
-                            best_spring_arm_length = t;
-                        }
+            if(!checking_mesh_in_puffer && !checking_non_colliding_object){
+                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_collision(d.transform,d.mesh,closest_collision_point);
+                if (closest_collision_point != new_collision_point){
+                    //it changed, so update bounce factor for new closest mesh
+                    bounce_factor = current_bounce_factor;
+                }
+                closest_collision_point = new_collision_point;
+                //camera code:
+                glm::vec3 p0 = get_position();
+                glm::vec3 camera_pos = camera->make_local_to_world() * glm::vec4(camera->position,1.0f);
+                glm::vec3 dir = glm::normalize(p0 - camera_pos);
+                float t;
+                if (!in_menu && puffer_collider.check_ray_mesh_collision(p0,dir,d.transform,d.mesh, t)) {
+                    if (t < best_spring_arm_length) {
+                        best_spring_arm_length = t;
                     }
                 }
-            }	
+            }
         }
-        camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
+        if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+            colliding = true;
+            //std::cout << "collision point x: " << collision_point[0].x << std::endl;
+            // std::cout << "collision point y: " << collision_point[0].y << std::endl;
+            // std::cout << "collision point z: " << collision_point[0].z << std::endl;
+            // std::cout << std::endl;
+        }
+        if (colliding){
+            handle_collision(closest_collision_point,bounce_factor);
+        }
+        if (!in_menu) {
+            camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
+        }
     }
 
     if (swim_cooldown == 0.0f) {
@@ -395,7 +403,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
 
 void Puffer::update_build_up_animations(float t)
 {
-    for (LinearAnimation& animation : build_up_animations) {
+    for (LinearAnimation<glm::vec3>& animation : build_up_animations) {
         animation.update(t);
     }
 }
@@ -409,6 +417,18 @@ void Puffer::swim(int8_t swim_direction)
     if (building_up) {
         base_rotation = mesh->rotation;
     }
+}
+
+void Puffer::switch_to_main_menu_camera()
+{
+    in_menu = true;
+    camera->position = spring_arm_normalized_displacement * 5.0f;
+}
+
+void Puffer::switch_to_default_camera()
+{
+    in_menu = false;
+    camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
 }
 
 void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vector)

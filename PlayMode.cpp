@@ -14,6 +14,7 @@
 #include "data_path.hpp"
 #include "Framebuffers.hpp"
 #include "GameConfig.hpp"
+#include "Font.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -153,9 +154,28 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
+extern Load< Font > font;
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
+	{
+		//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+		//replace nullptr with function name to get a callback when the button is pressed and released
+		//search up all use cases of example buttons when seeing usage and removing, there are references to it in draw, update, and handle events in this file
+		//I also removed the ability to enter relative mouse mode by commenting it out in the handle events function, feel free to uncomment when you
+		//understand how to set up buttons. We probably would like to directly enter relative mouse mode when entering playmode, and exit when
+		// we switch to menu and setting modes
+
+		// auto example_function = []() {
+		// 	// you can set boolean here, or do other operations, but the function should return type void and take no parameters
+		// 	// you can also use capture & in lambdas or have static functions of the mode passed into the button constructor
+		// 	std::cout<<"button pressed, function triggered!\n"<<std::endl;
+		// };
+
+		// example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,example_function));
+		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+	}
 
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
@@ -181,17 +201,17 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		bait_manager.active_baits_num++;
 	}
 
-	for(Bait b : bait_manager.baits_in_use){
+	// for(Bait b : bait_manager.baits_in_use){
     	
-		if(b.type_of_bait == 0){
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
-		} else {
-			b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
-			b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
-		}
+	// 	if(b.type_of_bait == 0){
+	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
+	// 	} else {
+	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
+	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
+	// 	}
 
-	}
+	// }
 
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
@@ -216,6 +236,9 @@ PlayMode::~PlayMode() {
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.handle_event(evt, window_size);
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
@@ -290,6 +313,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PlayMode::update(float elapsed) {
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.update(elapsed);
+
 	if (debug.downs != 0) {
 		game_config.charge_face_camera = !game_config.charge_face_camera;
 	}
@@ -458,13 +485,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
-		glUniform3fv(wave_texture_program->PLAYER_POS_vec3, 1, glm::value_ptr( puffer.get_position()));
-		glUniform3fv(wave_texture_program->PLAYER_VEL_vec3, 1, glm::value_ptr( puffer.velocity ));
-		glUniform1f(wave_texture_program->PLAYER_SCALE_float, puffer.current_scale);
+		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0); 
-
-		//std::cout << puffer.velocity.z << std::endl;
 
 		waterheight_direction.y = 0.0f;
 
@@ -490,46 +513,35 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	}
 
+
+	{
+
+
+
+
+
+		//framebuffers.tone_map();
+
+	}
+
+	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
+	for (Button& button : example_buttons)
+		button.draw(drawable_size);
+
+	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
+	// ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
-		float aspect = float(drawable_size.x) / float(drawable_size.y);
-		DrawLines lines(glm::mat4(
-			1.0f / aspect, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		));
-
-		DrawLines lines_mesh(camera->make_projection() * glm::mat4(camera->transform->make_world_to_local()));
-
-		constexpr float H = 0.3f;
-		
 
 		if(bait_in_eating_range && !qte_active){
-			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 2.0f * H, -1.0 + 2.0f * H, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-			float ofs = 2.0f / drawable_size.y;
-			lines.draw_text("Press E to eat the bait",
-				glm::vec3(-aspect + 2.0f * H + ofs, -1.0 + + 2.0f * H + ofs, 0.0),
-				glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-				glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 		}
 
-		lines.draw_text("Hunger: " + std::to_string(QTE::score),
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 5.0f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-        lines.draw_text("Hunger: " + std::to_string(QTE::score),
-            glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 5.0f * H + ofs, 0.0),
-            glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-            glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	}
 
 	GL_ERRORS();

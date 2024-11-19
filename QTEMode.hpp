@@ -6,6 +6,9 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include <cstdlib>
+
+extern UIElements ui_elements;
 
 struct QTEMode : public Mode {
     QTEMode(Puffer *puffer, Bait *bait);
@@ -19,6 +22,13 @@ struct QTEMode : public Mode {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
 	} left, right, down, up, quit;
+
+	std::unordered_map<SDL_Keycode, Texture> keys_ui = {
+		{SDLK_w, ui_elements.w_pressed},
+		{SDLK_a, ui_elements.a_pressed},
+		{SDLK_s, ui_elements.s_pressed},
+		{SDLK_d, ui_elements.d_pressed}
+	};
 
     QTE *eat_bait_QTE;
 	
