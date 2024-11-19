@@ -545,9 +545,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//draw oxygen bar
 	{
 		float oxygen_bar_scaling = 1.0f * (puffer.oxygen_level / 100.0f);
-		ui_render_program->draw_ui(ui_elements.oxygen_bar_fill, glm::vec2(0.55f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(oxygen_bar_scaling*0.5f,1.0f));
-
-		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.55f,0.9f),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+		if(puffer.above_water){
+			ui_render_program->draw_ui(ui_elements.oxygen_bar_fill, glm::vec2(0.55f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(oxygen_bar_scaling*0.5f,1.0f));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.55f,0.9f),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+		}
 
 	}
 
