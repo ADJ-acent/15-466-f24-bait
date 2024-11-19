@@ -22,6 +22,7 @@ struct WaveTextureProgram {
 	GLuint OBJECT_TO_CLIP_mat4 = -1U;
 	GLuint OBJECT_TO_LIGHT_mat4x3 = -1U;
 	GLuint OBJECT_TO_WORLD_mat4 = -1U;
+	GLuint WORLD_TO_CLIP_mat4 = -1U;
 	GLuint NORMAL_TO_LIGHT_mat3 = -1U;
 
 	//lighting:
@@ -31,7 +32,9 @@ struct WaveTextureProgram {
 	GLuint LIGHT_ENERGY_vec3 = -1U;
 	GLuint LIGHT_CUTOFF_float = -1U;
 	GLuint CAMPOS_vec3 = -1U;
-	GLuint CAMROT_vec3 = -1U;
+	GLuint PLAYER_VEL_vec3 = -1U;
+	GLuint PLAYER_POS_vec3 = -1U;
+	GLuint PLAYER_SCALE_float = -1U;
 	GLuint TIME_float = -1U;
 
 

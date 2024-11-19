@@ -16,6 +16,7 @@ Load< WaveTextureProgram > wave_texture_program(LoadTagEarly, []() -> WaveTextur
 
 	wave_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
 	wave_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
+	wave_texture_program_pipeline.WORLD_TO_CLIP_mat4 = ret-> WORLD_TO_CLIP_mat4;
 	wave_texture_program_pipeline.OBJECT_TO_WORLD_mat4 = ret->OBJECT_TO_WORLD_mat4;
 	wave_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
@@ -55,7 +56,11 @@ WaveTextureProgram::WaveTextureProgram() {
 		"uniform mat4 OBJECT_TO_CLIP;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
 		"uniform mat4 OBJECT_TO_WORLD;\n"
+		"uniform mat4 WORLD_TO_CLIP;\n"
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
+		"uniform vec3 PLAYER_POS;\n"
+		"uniform vec3 PLAYER_VEL;\n"
+		"uniform float PLAYER_SCALE;\n"
         "uniform float TIME;\n"
 		"in vec4 Position;\n"
 		"in vec3 Normal;\n"
@@ -93,10 +98,6 @@ WaveTextureProgram::WaveTextureProgram() {
 		"	float pointsongrid = 0.0;\n"
 		"	float mindist = 100.0;\n"
 
-		"	vec3 worldnormal = (OBJECT_TO_WORLD * vec4(Normal,1.0)).xyz;\n"
-		
-		//"	vec3 redgridcolor = vec3(smoothstep(0.9,1.0,distedge),0.0,0.0);\n"//SHOWS THE GRIDLINE
-
 		"	for(float i = -1.0; i <= 1.0; i++){\n"
 		"		for(float j = -1.0; j <= 1.0; j++){\n"
 		"			vec2 adjgridcoords = vec2(i, j);\n"
@@ -111,13 +112,22 @@ WaveTextureProgram::WaveTextureProgram() {
 		"	}\n"
 		"}\n"
 		
-		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
 		
 		"	float oceanwave =  smoothstep(0.0,1.0,mindist);\n"
+		//"	gl_Position = OBJECT_TO_CLIP * Position;\n"
+        //"   gl_Position.y += 5.0 * oceanwave;\n"
+		
+		"   vec3 worldpos = (OBJECT_TO_WORLD * Position).xyz;\n"
+		"   vec3 offset = (worldpos - PLAYER_POS);\n"
+		"   float distplayer = length(offset);\n"
+		//"   worldpos.z += (((min(distplayer,20.0) - 20.0) * TexCoord.x) * PLAYER_SCALE) * max(PLAYER_VEL.z, 1.0) * (sin(TIME)/TIME);\n"
+		"   worldpos.z += 2.0 * oceanwave;"
+        "   offset = (worldpos - PLAYER_POS);\n"
+        "   distplayer = length(offset);\n"
+        "   offset = normalize(offset);\n"
+	
+		"   gl_Position = WORLD_TO_CLIP * vec4(worldpos,1.0);\n"
 
-		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
-        "   gl_Position.y += 5.0 * oceanwave;\n"
-		"	worldnormal.y += 5.0 * oceanwave;\n"
 		"	position = (OBJECT_TO_WORLD * Position).xyz;\n"
 		"	normal = Normal;\n"
 		"	color = Color;\n"
@@ -134,7 +144,6 @@ WaveTextureProgram::WaveTextureProgram() {
 		"uniform vec3 LIGHT_LOCATION;\n"
 		"uniform vec3 LIGHT_DIRECTION;\n"
 		"uniform vec3 CAMPOS;\n"
-		"uniform vec3 CAMROT;\n"
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
 		"uniform float TIME;\n"
@@ -228,6 +237,7 @@ WaveTextureProgram::WaveTextureProgram() {
 	//look up the locations of uniforms:
 	OBJECT_TO_CLIP_mat4 = glGetUniformLocation(program, "OBJECT_TO_CLIP");
 	OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(program, "OBJECT_TO_LIGHT");
+	WORLD_TO_CLIP_mat4 = glGetUniformLocation(program, "WORLD_TO_CLIP");
 	OBJECT_TO_WORLD_mat4 = glGetUniformLocation(program, "OBJECT_TO_WORLD");
 	NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(program, "NORMAL_TO_LIGHT");
 
@@ -237,7 +247,9 @@ WaveTextureProgram::WaveTextureProgram() {
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
 	CAMPOS_vec3 = glGetUniformLocation(program, "CAMPOS");
-	CAMROT_vec3 = glGetUniformLocation(program, "CAMROT");
+	PLAYER_POS_vec3 = glGetUniformLocation(program, "PLAYER_POS");
+	PLAYER_VEL_vec3 = glGetUniformLocation(program, "PLAYER_VEL");
+	PLAYER_SCALE_float = glGetUniformLocation(program, "PLAYER_SCALE");
 	TIME_float =  glGetUniformLocation(program, "TIME");
 
 	GLuint REFLECT_TEX_sampler2D = glGetUniformLocation(program, "REFLECT_TEX");
