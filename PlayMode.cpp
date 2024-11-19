@@ -355,10 +355,10 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
-	score_decrement_counter += elapsed;
-    if(score_decrement_counter>5.0f){
-        score_decrement_counter = 0.0f;
-        QTE::score -= 1;
+	hunger_decrement_counter += elapsed;
+    if(hunger_decrement_counter>5.0f){
+        hunger_decrement_counter = 0.0f;
+        QTE::hunger -= 1;
     }
 
 
@@ -535,7 +535,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		float hunger_bar_scaling = 1.0f * (QTE::score / 100.0f);
+		float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 		ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(hunger_bar_scaling*0.5f,1.0f));
 
 		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
