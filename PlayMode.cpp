@@ -533,6 +533,23 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
+	//draw hunger bar
+	{
+		float hunger_bar_scaling = 1.0f * (QTE::score / 100.0f);
+		ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(hunger_bar_scaling*0.5f,1.0f));
+
+		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+
+	}
+
+	//draw oxygen bar
+	{
+		float oxygen_bar_scaling = 1.0f * (puffer.oxygen_level / 100.0f);
+		ui_render_program->draw_ui(ui_elements.oxygen_bar_fill, glm::vec2(0.55f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(oxygen_bar_scaling*0.5f,1.0f));
+
+		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.55f,0.9f),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+
+	}
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
@@ -541,7 +558,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 		}
 
-		ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
+		// ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	}
 
 	GL_ERRORS();

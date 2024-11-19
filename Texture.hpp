@@ -20,4 +20,7 @@ struct UIElements {
 	Texture s_pressed;
 	Texture d;
 	Texture d_pressed;
+	Texture hunger_bar_outline;
+	Texture hunger_bar_fill;
+	Texture oxygen_bar_fill;
 };

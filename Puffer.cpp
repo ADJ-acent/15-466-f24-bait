@@ -288,8 +288,12 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
         if(above_water){
             velocity -= glm::vec3(0.0f,0.0f,gravity)*elapsed;
+            oxygen_level -= 1.0f*elapsed*oxygen_down_speed;
         } else {
             velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+            if(oxygen_level<100.0f){
+                oxygen_level +=  1.0f*elapsed*oxygen_up_speed;
+            }
         }
         
         
