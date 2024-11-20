@@ -1,4 +1,5 @@
 #include "CollisionDetection.hpp"
+#include "Collide.hpp"
 #include "Puffer.hpp"
 #include "iostream"
 #include <glm/gtx/norm.hpp>
@@ -47,7 +48,7 @@ void CollisionDetector::init(Puffer *p, Scene::Transform *t, const Mesh &m)
 
 }
 
-std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh)
+std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transform *transform_other, const Mesh *other_mesh, std::array<glm::vec3, 2> closest_collision_point)
 {
     // find barycentric coordinates of center of sphere on the triangle 
     // then checking distance
@@ -58,9 +59,12 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
     glm::vec3 center = transform->position;
     assert(other_mesh);
 
-    glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
-    glm::vec3 closest_point_normal = glm::vec3(0);
-	float closest_dis2 = std::numeric_limits< float >::infinity();
+    // glm::vec3 closest = glm::vec3(std::numeric_limits<float>::infinity());
+    glm::vec3 closest = closest_collision_point[0];
+    // glm::vec3 closest_point_normal = glm::vec3(0);
+    glm::vec3 closest_point_normal = closest_collision_point[1];
+    float closest_dis2 = glm::length2(center - closest); //starts with the
+	// float closest_dis2 = std::numeric_limits< float >::infinity();
     float radius = puffer->current_scale*4.5f;
 
     auto get_world_normal = [&](Triangle triangle, glm::vec3 barycentric_coord, glm::mat4x4 world_from_local) {
@@ -71,70 +75,76 @@ std::array<glm::vec3,2> CollisionDetector::check_collision(const Scene::Transfor
 
         return barycentric_coord.x * a_normal + barycentric_coord.y * b_normal + barycentric_coord.z * c_normal;
     };
+    glm::mat4x4 world_from_local = transform_other->make_local_to_world();
+    // make puffer aabb
+    const glm::vec3 puffer_min = center - glm::vec3(radius);
+    const glm::vec3 puffer_max = center + glm::vec3(radius);
 
-	for (Triangle t : other_mesh->triangles) {
-		//find closest point on triangle:
-        glm::mat4x4 world_from_local = transform_other->make_local_to_world();
-		glm::vec3 const &a = world_from_local * glm::vec4(t.a, 1.0f);
-		glm::vec3 const &b = world_from_local * glm::vec4(t.b, 1.0f);
-		glm::vec3 const &c = world_from_local * glm::vec4(t.c, 1.0f);
+    if (test_mesh_obb_overlap(puffer_min, puffer_max, glm::mat4(1), other_mesh->min, other_mesh->max, world_from_local)) {
+        for (Triangle t : other_mesh->triangles) {
+            //find closest point on triangle:
+            glm::vec3 const &a = world_from_local * glm::vec4(t.a, 1.0f);
+            glm::vec3 const &b = world_from_local * glm::vec4(t.b, 1.0f);
+            glm::vec3 const &c = world_from_local * glm::vec4(t.c, 1.0f);
 
-		//get barycentric coordinates of closest point in the plane of (a,b,c):
-		glm::vec3 coords = barycentric_weights(a,b,c, center);
+            //get barycentric coordinates of closest point in the plane of (a,b,c):
+            glm::vec3 coords = barycentric_weights(a,b,c, center);
 
-        glm::vec3 coords_to_world = (coords.x * a
-		     + coords.y * b
-		     + coords.z * c);
+            glm::vec3 coords_to_world = (coords.x * a
+                + coords.y * b
+                + coords.z * c);
 
-		//is that point inside the triangle?
-		if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
-			//yes, point is inside triangle.
-			float dis2 = glm::length2(center - coords_to_world);
-            if(dis2 < glm::length2(radius)){
-                //collided
-                if (dis2 < closest_dis2) {
-                    closest_dis2 = dis2;
-                    closest = coords_to_world;
-                    closest_point_normal = get_world_normal(t, coords, world_from_local);
-                }
-            }
-		} else {
-			//check triangle vertices and edges:
-			auto check_edge = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c) {
-
-				//find closest point on line segment ab:
-				float along = glm::dot(center-a, b-a);
-				float max = glm::dot(b-a, b-a);
-				glm::vec3 pt;
-				glm::vec3 coords;
-				if (along < 0.0f) {
-					pt = a;
-					coords = glm::vec3(1.0f, 0.0f, 0.0f);
-				} else if (along > max) {
-					pt = b;
-					coords = glm::vec3(0.0f, 1.0f, 0.0f);
-				} else {
-					float amt = along / max;
-					pt = glm::mix(a, b, amt);
-					coords = glm::vec3(1.0f - amt, amt, 0.0f);
-				}
-
-				float dis2 = glm::length2(center - pt);
+            //is that point inside the triangle?
+            if (coords.x >= 0.0f && coords.y >= 0.0f && coords.z >= 0.0f) {
+                //yes, point is inside triangle.
+                float dis2 = glm::length2(center - coords_to_world);
                 if(dis2 < glm::length2(radius)){
                     //collided
                     if (dis2 < closest_dis2) {
                         closest_dis2 = dis2;
-                        closest = pt;
+                        closest = coords_to_world;
                         closest_point_normal = get_world_normal(t, coords, world_from_local);
                     }
                 }
-				
-			};
-			check_edge(a, b, c);
-			check_edge(b, c, a);
-			check_edge(c, a, b);
-		}
-	}
+            } else {
+                //check triangle vertices and edges:
+                auto check_edge = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+
+                    //find closest point on line segment ab:
+                    float along = glm::dot(center-a, b-a);
+                    float max = glm::dot(b-a, b-a);
+                    glm::vec3 pt;
+                    glm::vec3 coords;
+                    if (along < 0.0f) {
+                        pt = a;
+                        coords = glm::vec3(1.0f, 0.0f, 0.0f);
+                    } else if (along > max) {
+                        pt = b;
+                        coords = glm::vec3(0.0f, 1.0f, 0.0f);
+                    } else {
+                        float amt = along / max;
+                        pt = glm::mix(a, b, amt);
+                        coords = glm::vec3(1.0f - amt, amt, 0.0f);
+                    }
+
+                    float dis2 = glm::length2(center - pt);
+                    if(dis2 < glm::length2(radius)){
+                        //collided
+                        if (dis2 < closest_dis2) {
+                            closest_dis2 = dis2;
+                            closest = pt;
+                            closest_point_normal = get_world_normal(t, coords, world_from_local);
+                        }
+                    }
+                    
+                };
+                check_edge(a, b, c);
+                check_edge(b, c, a);
+                check_edge(c, a, b);
+            }
+        }
+    }
+
 
 	return {closest, closest_point_normal};
 
