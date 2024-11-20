@@ -536,9 +536,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//draw hunger bar
 	{
 		float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
-		ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(hunger_bar_scaling*0.5f,1.0f));
-
-		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.05f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
+		ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
+		ui_render_program->draw_ui(ui_elements.hunger_bar_symbol, glm::vec2(0.015f,0.025f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 
 	}
 
@@ -546,8 +546,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	{
 		float oxygen_bar_scaling = 1.0f * (puffer.oxygen_level / 100.0f);
 		if(puffer.above_water){
-			ui_render_program->draw_ui(ui_elements.oxygen_bar_fill, glm::vec2(0.55f,0.9f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(oxygen_bar_scaling*0.5f,1.0f));
-			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.55f,0.9f),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
+			ui_render_program->draw_ui(ui_elements.oxygen_bar_fill, glm::vec2(0.55f,0.1f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(oxygen_bar_scaling*0.5f,1.0f));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.55f,0.1f),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.5f,1.0f));
 		}
 
 	}

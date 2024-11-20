@@ -45,9 +45,10 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
 	ui_elements.s_pressed = load_tex_to_GL(data_path("ui/keyboard_s.png"));
 	ui_elements.d = load_tex_to_GL(data_path("ui/keyboard_d_outline.png"));
 	ui_elements.d_pressed = load_tex_to_GL(data_path("ui/keyboard_d.png"));
-	ui_elements.hunger_bar_outline = load_tex_to_GL(data_path("ui/hungerbar1.png"));
-	ui_elements.hunger_bar_fill = load_tex_to_GL(data_path("ui/hungerbar0.png"));
+	ui_elements.hunger_bar_outline = load_tex_to_GL(data_path("ui/uihungerbar_empty.png"));
+	ui_elements.hunger_bar_fill = load_tex_to_GL(data_path("ui/uihungerbar_bar.png"));
 	ui_elements.oxygen_bar_fill = load_tex_to_GL(data_path("ui/oxygenbar0.png"));
+	ui_elements.hunger_bar_symbol = load_tex_to_GL(data_path("ui/uihungerbar_symbol.png"));
 	//load qte timer textures
 	{
 		uint32_t cur_index = 0;
