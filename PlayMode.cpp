@@ -151,6 +151,11 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+// noise samples
+Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/flipper.wav"));
+});
+
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;

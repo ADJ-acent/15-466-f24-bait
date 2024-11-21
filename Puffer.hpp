@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Scene.hpp"
+#include "Sound.hpp"
 #include "Animation.hpp"
 #include "CollisionDetection.hpp"
 #include "CollisionDetection.hpp"
 #include <vector>
 #include <array>
+
+
 
 struct Puffer {
     Scene::Transform* main_transform = nullptr;
@@ -26,6 +29,9 @@ struct Puffer {
 
     std::vector<LinearAnimation<glm::vec3>> build_up_animations;
     std::vector<SlerpAnimation> swim_animation;
+
+    //sound effects
+    std::shared_ptr< Sound::PlayingSample > flipper_sound;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
