@@ -49,6 +49,7 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
 	ui_elements.hunger_bar_fill = load_tex_to_GL(data_path("ui/uihungerbar_bar.png"));
 	ui_elements.oxygen_bar_fill = load_tex_to_GL(data_path("ui/oxygenbar0.png"));
 	ui_elements.hunger_bar_symbol = load_tex_to_GL(data_path("ui/uihungerbar_symbol.png"));
+	ui_elements.bubble = load_tex_to_GL(data_path("ui/bubble.png"));
 	//load qte timer textures
 	{
 		uint32_t cur_index = 0;
