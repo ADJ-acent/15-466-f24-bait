@@ -45,6 +45,7 @@ void QTEMode::update(float elapsed) {
     if(!eat_bait_QTE->active){
 		if(eat_bait_QTE->failure){
 			QTE::hunger = 100;
+			QTE::score = 0;
 		}
 
         Mode::set_current(background);
@@ -74,7 +75,7 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 		}
 	}
 	else if(eat_bait_QTE->failure) {
-		ui_render_program->draw_ui(*font->get_text(std::string("Baited!!! FINAL HUNGER: " + std::to_string(QTE::hunger))), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+		ui_render_program->draw_ui(*font->get_text(std::string("Baited!!! FINAL SCORE: " + std::to_string(QTE::score))), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 	}
 
 }

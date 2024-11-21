@@ -11,6 +11,7 @@
 
 struct QTE {
     static int hunger;
+    static int score;
     static std::vector< Bait > active_baits;
 
     bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false, key_reset = false;            

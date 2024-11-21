@@ -1,6 +1,7 @@
 #include "QTE.hpp"
 
 int QTE::hunger = 100;
+int QTE::score = 0;
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -78,6 +79,7 @@ void QTE::update(float elapsed) {
 
             correct_key_pressed = true;
             QTE::hunger++; 
+            QTE::score++;
             bait->bait_bites_left--;
             if(bait->bait_bites_left > 0)   {
                 bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
