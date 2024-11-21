@@ -156,6 +156,9 @@ Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample cons
 	return new Sound::Sample(data_path("sound/flipper.wav"));
 });
 
+Load< Sound::Sample >  through_water_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/through_water.wav"));
+});
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;

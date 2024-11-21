@@ -13,6 +13,7 @@
 extern Load< MeshBuffer > pufferfish_meshes;
 extern GameConfig game_config;
 extern Load< Sound::Sample > flipper_sample;
+extern Load< Sound::Sample > through_water_sample;
 
 void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
 {
@@ -230,7 +231,13 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
             if(d.transform->name.substr(0,5)=="water"){
                 checking_non_colliding_object = true;
+                bool above_water_before = above_water;
                 above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+                if(above_water==false && above_water_before==true && glm::length(velocity) > 0.5f){
+                    through_water_sound = Sound::play(*through_water_sample,1.0f - (1.0f/glm::length(velocity)));
+                } else if(above_water==true && above_water_before==false && glm::length(velocity) > 0.5f){
+                    through_water_sound = Sound::play(*flipper_sample,1.0f - (1.0f/glm::length(velocity)));
+                }
             }
 
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){

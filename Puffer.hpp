@@ -32,6 +32,7 @@ struct Puffer {
 
     //sound effects
     std::shared_ptr< Sound::PlayingSample > flipper_sound;
+    std::shared_ptr< Sound::PlayingSample > through_water_sound;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
