@@ -62,8 +62,6 @@ void QTE::update(float elapsed) {
             else{
                 key_flash_reset_timer = 0.28f;
             }
-
-            std::cout << key_flash_reset_timer << std::endl;
         }
         return;
     }

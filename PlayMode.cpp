@@ -1,4 +1,5 @@
 #include "PlayMode.hpp"
+#include "MenuMode.hpp"
 
 #include "DepthTextureProgram.hpp"
 #include "LitColorTextureProgram.hpp"
@@ -19,6 +20,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+
+extern std::shared_ptr< MenuMode > menu;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
@@ -147,7 +150,6 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		drawable.mesh = &mesh;
 		drawable.meshbuffer = &(*bait_meshes);
-
 	});
 });
 
@@ -181,7 +183,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
 	puffer.init(puffer_transforms, &scene);
-
 
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
@@ -220,13 +221,11 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
-
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
-
 		}
 	}
 
@@ -237,12 +236,14 @@ PlayMode::~PlayMode() {
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.handle_event(evt, window_size);
+	// for (Button& button : example_buttons)
+	// 	button.handle_event(evt, window_size);
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			menu->background = shared_from_this();
+			Mode::set_current(menu);
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_a) {
 			left.downs += 1;
@@ -314,8 +315,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.update(elapsed);
+
+	// for (Button& button : example_buttons)
+	// 	button.update(elapsed);
 
 	if (debug.downs != 0) {
 		game_config.charge_face_camera = !game_config.charge_face_camera;
@@ -355,12 +357,16 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
+
+	if(Mode::current == menu && menu->is_before_game_start){
+		puffer.switch_to_main_menu_camera();
+	}
+
 	hunger_decrement_counter += elapsed;
     if(hunger_decrement_counter>5.0f){
         hunger_decrement_counter = 0.0f;
         QTE::hunger -= 1;
-    }
-
+	}
 
 	//reset button press counters:
 	left.downs = 0;
@@ -525,8 +531,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	}
 
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.draw(drawable_size);
+	// for (Button& button : example_buttons)
+	// 	button.draw(drawable_size);
 
 	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
@@ -559,12 +565,14 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);
+	
+		if(Mode::current == shared_from_this()) {
+			if(bait_in_eating_range && !qte_active){
+				ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			}
 
-		if(bait_in_eating_range && !qte_active){
-			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 		}
-
-		// ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	}
 
 	GL_ERRORS();

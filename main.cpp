@@ -3,6 +3,7 @@
 
 //The 'PlayMode' mode plays the game:
 #include "PlayMode.hpp"
+#include "MenuMode.hpp"
 
 //For asset loading:
 #include "Load.hpp"
@@ -25,6 +26,9 @@
 #include <stdexcept>
 #include <memory>
 #include <algorithm>
+
+std::shared_ptr< PlayMode > play;
+std::shared_ptr< MenuMode > menu;
 
 #ifdef _WIN32
 extern "C" { uint32_t GetACP(); }
@@ -115,7 +119,36 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlayMode >());
+	play = std::make_shared< PlayMode >();
+	menu = std::make_shared< MenuMode >();
+	
+	menu->background = play;
+
+	// menu->start_choices.emplace_back("BAIT");
+	
+	// menu->start_choices.emplace_back("Play", [&](){
+	// 	menu->is_before_game_start = false;
+	// 	Mode::set_current(play);
+	// }, true);
+	// menu->start_menu_buttons.push_back(menu->start_choices.back().button);
+
+	// menu->start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+	// menu->start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+	// menu->start_choices.emplace_back("Exit", [&](){
+	// 	Mode::set_current(nullptr);
+	// }, true);
+	// menu->start_menu_buttons.push_back(menu->start_choices.back().button);
+
+	// menu->start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+	// menu->start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+	// menu->selected = 1;
+
+
+	Mode::set_current(menu);
+
+	// Mode::set_current(std::make_shared< PlayMode >());
 
 	//------------ main loop ------------
 

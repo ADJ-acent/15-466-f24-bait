@@ -425,13 +425,11 @@ void Puffer::swim(int8_t swim_direction)
 
 void Puffer::switch_to_main_menu_camera()
 {
-    in_menu = true;
-    camera->position = spring_arm_normalized_displacement * 5.0f;
+    camera->position = spring_arm_normalized_displacement * 6.0f;
 }
 
 void Puffer::switch_to_default_camera()
 {
-    in_menu = false;
     camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
 }
 
