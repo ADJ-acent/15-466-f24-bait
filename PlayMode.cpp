@@ -160,6 +160,14 @@ Load< Sound::Sample >  through_water_sample(LoadTagDefault, []() -> Sound::Sampl
 	return new Sound::Sample(data_path("sound/through_water.wav"));
 });
 
+Load< Sound::Sample >  blow_up_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/blow_up_fish.wav"));
+});
+
+Load< Sound::Sample >  whoosh_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/whoosh.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
