@@ -12,6 +12,10 @@
 
 extern Load< MeshBuffer > pufferfish_meshes;
 extern GameConfig game_config;
+extern Load< Sound::Sample > flipper_sample;
+extern Load< Sound::Sample > through_water_sample;
+extern Load< Sound::Sample > blow_up_sample;
+extern Load< Sound::Sample > whoosh_sample;
 
 void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
 {
@@ -229,7 +233,13 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
             if(d.transform->name.substr(0,5)=="water"){
                 checking_non_colliding_object = true;
+                bool above_water_before = above_water;
                 above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+                if(above_water==false && above_water_before==true){
+                    through_water_sound = Sound::play(*through_water_sample, 0.1f * glm::length(velocity));
+                } else if(above_water==true && above_water_before==false){
+                    through_water_sound = Sound::play(*flipper_sample,0.1f * glm::length(velocity));
+                }
             }
 
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){
@@ -298,8 +308,9 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         
         
         main_transform->position += velocity;
-        
+
         if (building_up) {
+            
             
             build_up_time += elapsed * 0.5f;
             // grow
@@ -341,6 +352,37 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 }
             }
         }
+    }
+
+    //puff blow sounds
+
+    {
+
+        if(building_up){
+            if(!blow_up_sound.get() || blow_up_sound.get()->stopped || blow_up_sound.get()->stopping){
+                blow_up_sound = Sound::loop(*blow_up_sample,0.5f);
+                whoosh_sound_played = false;
+            }
+            if(whoosh_sound.get()){
+                whoosh_sound.get()->stop(0.5f);
+            }
+
+        } else {
+            if(blow_up_sound.get()){ //if sound exists going
+                blow_up_sound.get()->stop(0.5f);
+            }
+            
+        }
+
+        if(!building_up && !recovered && !whoosh_sound_played && !above_water){
+            //whooshing
+            if(!whoosh_sound.get() || whoosh_sound.get()->stopped || whoosh_sound.get()->stopping){
+                whoosh_sound = Sound::play(*whoosh_sample,0.2f * glm::length(velocity));
+                whoosh_sound_played = true;
+            }
+        }
+     
+
     }
 
     {// update animation based on scale of the pufferfish
@@ -415,6 +457,7 @@ void Puffer::update_build_up_animations(float t)
 //swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
+    flipper_sound = Sound::play(*flipper_sample, 0.5f);
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
