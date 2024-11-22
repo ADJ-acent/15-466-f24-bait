@@ -541,11 +541,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
-		ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
-		ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
-		ui_render_program->draw_ui(ui_elements.hunger_bar_symbol, glm::vec2(0.015f,0.025f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
-
+		if(Mode::current == shared_from_this()){
+			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
+			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_symbol, glm::vec2(0.015f,0.025f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
+		}
 	}
 
 	//draw oxygen bar
@@ -570,8 +571,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			if(bait_in_eating_range && !qte_active){
 				ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 			}
-
-			ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 		}
 	}
 
