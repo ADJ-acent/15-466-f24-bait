@@ -150,7 +150,6 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		drawable.mesh = &mesh;
 		drawable.meshbuffer = &(*bait_meshes);
-
 	});
 });
 
@@ -237,12 +236,14 @@ PlayMode::~PlayMode() {
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.handle_event(evt, window_size);
+	// for (Button& button : example_buttons)
+	// 	button.handle_event(evt, window_size);
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			menu->background = shared_from_this();
+			Mode::set_current(menu);
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_a) {
 			left.downs += 1;
@@ -315,8 +316,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 void PlayMode::update(float elapsed) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
 
-	for (Button& button : example_buttons)
-		button.update(elapsed);
+	// for (Button& button : example_buttons)
+	// 	button.update(elapsed);
 
 	if (debug.downs != 0) {
 		game_config.charge_face_camera = !game_config.charge_face_camera;
@@ -356,7 +357,7 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
-	if(Mode::current == menu){
+	if(Mode::current == menu && menu->is_before_game_start){
 		puffer.switch_to_main_menu_camera();
 	}
 
@@ -529,8 +530,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	}
 
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.draw(drawable_size);
+	// for (Button& button : example_buttons)
+	// 	button.draw(drawable_size);
 
 	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
