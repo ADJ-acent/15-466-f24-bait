@@ -199,6 +199,10 @@ Load< Sound::Sample >  wrong_sample(LoadTagDefault, []() -> Sound::Sample const 
 	return new Sound::Sample(data_path("sound/wrong.wav"));
 });
 
+Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/bg_music.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
@@ -223,6 +227,8 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 	}
+
+	bg_music_sound = Sound::loop(*bg_music_sample,0.2f);
 
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);

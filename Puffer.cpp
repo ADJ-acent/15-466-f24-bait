@@ -237,9 +237,9 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 bool above_water_before = above_water;
                 above_water = puffer_collider.check_over_water(d.transform,d.mesh);
                 if(above_water==false && above_water_before==true){
-                    through_water_sound = Sound::play(*through_water_sample, 0.1f * glm::length(velocity));
+                    through_water_sound = Sound::play(*through_water_sample, 0.3f * glm::length(velocity));
                 } else if(above_water==true && above_water_before==false){
-                    through_water_sound = Sound::play(*flipper_sample,0.1f * glm::length(velocity));
+                    through_water_sound = Sound::play(*flipper_sample,0.3f * glm::length(velocity));
                 }
             }
 
@@ -365,7 +365,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 whoosh_sound_played = false;
             }
             if(whoosh_sound.get()){
-                whoosh_sound.get()->stop(0.5f);
+                whoosh_sound.get()->stop(0.1f);
             }
 
         } else {
@@ -459,7 +459,7 @@ void Puffer::update_build_up_animations(float t)
 //swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
-    flipper_sound = Sound::play(*flipper_sample, 0.5f);
+    flipper_sound = Sound::play(*flipper_sample, 1.0f);
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
