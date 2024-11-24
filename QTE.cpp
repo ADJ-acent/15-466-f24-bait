@@ -24,6 +24,7 @@ void QTE::start() {
 
     int random_index = dist_index(gen);
     required_key = possible_keys[random_index];
+    puffer->qte_enter(bait);
 }
 
 void QTE::update(float elapsed) {
@@ -177,4 +178,5 @@ void QTE::end() {
     bait->is_active = true;
     bait->currently_in_qte = false;
     active = false;
+    puffer->qte_exit();
 }

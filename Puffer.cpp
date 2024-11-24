@@ -1,11 +1,13 @@
 #include "Puffer.hpp"
 #include "GameConfig.hpp"
+#include "Bait.hpp"
 #include "math_helpers.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
-// #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vector_angle.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <iostream>
@@ -272,7 +274,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if (colliding){
             handle_collision(closest_collision_point,bounce_factor);
         }
-        if (!in_menu) {
+        if (!in_menu && !in_qte) {
             camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
         }
     }
@@ -575,4 +577,30 @@ glm::vec3 Puffer::get_right()
 glm::vec3 Puffer::get_position()
 {
     return main_transform->position;
+}
+
+void Puffer::qte_enter(Bait *bait)
+{
+    in_qte = true;
+    glm::quat rotate_to_bait = glm::rotation(get_forward(), glm::normalize(bait->mesh_parts.bait_base->make_local_to_world() * glm::vec4(0,0,0,1) - get_position()));
+    main_transform->rotation = rotate_to_bait * main_transform->rotation;
+    const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera->rotation = rotate_180_z * camera->rotation;
+    camera->position = spring_arm_normalized_displacement * - default_spring_arm_length;
+    velocity = glm::vec3(0);
+}
+
+void Puffer::qte_exit()
+{
+    in_qte = false;
+    const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera->rotation = rotate_180_z * camera->rotation;
+}
+
+Scene::Transform *Puffer::qte_death(Bait *bait)
+{
+    glm::mat4x3 camera_world_transform = camera->make_local_to_world();
+
+    glm::mat4x3 bait_world_transform = bait->mesh_parts.bait_base->make_local_to_world();
+    return nullptr;
 }
