@@ -55,6 +55,8 @@ struct MenuMode : public Mode {
 
 		pause_choices.emplace_back("Restart", [&](){
 			play = std::make_shared< PlayMode >();
+			QTE::score = 0;
+			QTE::hunger = 100;
 			Mode::set_current(play);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
