@@ -542,7 +542,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
-		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
+		glUniform3fv(wave_texture_program->PLAYER_POS_vec3, 1, glm::value_ptr( puffer.get_position()));
+		glUniform3fv(wave_texture_program->PLAYER_VEL_vec3, 1, glm::value_ptr( puffer.velocity ));
+		glUniform1f(wave_texture_program->PLAYER_SCALE_float, puffer.current_scale);
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0); 
 
