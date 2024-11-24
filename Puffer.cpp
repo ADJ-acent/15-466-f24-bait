@@ -16,6 +16,7 @@ extern Load< Sound::Sample > flipper_sample;
 extern Load< Sound::Sample > through_water_sample;
 extern Load< Sound::Sample > blow_up_sample;
 extern Load< Sound::Sample > whoosh_sample;
+extern Load< Sound::Sample > bump_1_sample;
 
 void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
 {
@@ -445,6 +446,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
     }
     main_transform->position = collision_point[0] + collision_direction * (radius+ 0.2f);
 
+    bump_1_sound = Sound::play(*bump_1_sample, glm::length(velocity) * bounce_factor);
 }
 
 void Puffer::update_build_up_animations(float t)

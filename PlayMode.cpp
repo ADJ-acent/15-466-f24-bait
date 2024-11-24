@@ -170,6 +170,18 @@ Load< Sound::Sample >  whoosh_sample(LoadTagDefault, []() -> Sound::Sample const
 	return new Sound::Sample(data_path("sound/whoosh.wav"));
 });
 
+Load< Sound::Sample >  bump_1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/bump_1.wav"));
+});
+
+Load< Sound::Sample >  button_select_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/button_select.wav"));
+});
+
+Load< Sound::Sample >  button_hover_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/button_hover.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;

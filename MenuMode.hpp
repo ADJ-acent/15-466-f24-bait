@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mode.hpp"
+#include "Sound.hpp"
 
 #include "gl_compile_program.hpp"
 #include "UIRenderProgram.hpp"
@@ -15,6 +16,7 @@
 
 extern Load< Font > font;
 extern std::shared_ptr< PlayMode > play;
+
 
 struct MenuMode : public Mode {
 	MenuMode() {

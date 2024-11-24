@@ -3,6 +3,7 @@
 #include "Texture.hpp"
 #include "UIRenderProgram.hpp"
 #include "Animation.hpp"
+#include "Sound.hpp"
 #include "GL.hpp"
 #include <SDL.h>
 #include <glm/glm.hpp>
@@ -16,6 +17,7 @@ struct Button {
     UIRenderProgram::AlignMode align;
     glm::vec3 tint;
     bool single_channel;
+    bool button_sound_played = false;
     float state_switch_timer = 0.0f;
 
     enum ButtonState : uint8_t {
@@ -51,4 +53,7 @@ struct Button {
 
     //return (bottom left x, y, top right x, y)
     glm::u32vec4 get_bounding_box(glm::uvec2 const &window_size) const;
+
+	std::shared_ptr< Sound::PlayingSample > button_select_sound;
+    std::shared_ptr< Sound::PlayingSample > button_hover_sound;
 };

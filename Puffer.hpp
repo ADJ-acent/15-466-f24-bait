@@ -35,6 +35,7 @@ struct Puffer {
     std::shared_ptr< Sound::PlayingSample > through_water_sound;
     std::shared_ptr< Sound::PlayingSample > blow_up_sound;
     std::shared_ptr< Sound::PlayingSample > whoosh_sound;
+    std::shared_ptr< Sound::PlayingSample > bump_1_sound;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;

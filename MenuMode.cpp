@@ -14,6 +14,7 @@
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
 
+
 GLint fade_program_color = -1;
 
 Load< GLuint > fade_program(LoadTagEarly, [](){
