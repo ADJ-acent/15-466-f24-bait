@@ -124,8 +124,6 @@ void MenuMode::update(float elapsed) {
 	if (background) {
 		background->update(elapsed * (is_before_game_start ? 0.7f : 0.1f));
 	}
-
-	std::cout << selected << std::endl;
 }
 
 void MenuMode::draw(glm::uvec2 const &drawable_size) {

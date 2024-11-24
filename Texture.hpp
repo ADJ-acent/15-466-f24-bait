@@ -25,4 +25,5 @@ struct UIElements {
 	Texture oxygen_bar_fill;
 	Texture hunger_bar_symbol;
 	Texture bubble;
+	Texture end_screen;
 };

@@ -22,6 +22,7 @@
 #include <random>
 
 extern std::shared_ptr< MenuMode > menu;
+bool is_game_over = false;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
@@ -379,7 +380,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 	hunger_decrement_counter += elapsed;
-    if(hunger_decrement_counter>5.0f){
+    if(hunger_decrement_counter > 5.0f){
         hunger_decrement_counter = 0.0f;
         QTE::hunger -= 1;
 	}
@@ -405,8 +406,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//set up light type and position for depth_texture_program:
 	// all the shaders
-	{
-		
+
+	{	
 		glUseProgram(depth_texture_program->program);
 		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
@@ -532,18 +533,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
-
 	}
 
-
 	{
-
-
-
-
-
 		//framebuffers.tone_map();
-
 	}
 
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
@@ -557,7 +550,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		if(Mode::current == shared_from_this()){
+		if(Mode::current != menu){
 			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
@@ -580,7 +573,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	}
 
-	{ //use DrawLines to overlay some text:
+	//draw text for QTE trigger
+	{
 		glDisable(GL_DEPTH_TEST);
 	
 		if(Mode::current == shared_from_this()) {
