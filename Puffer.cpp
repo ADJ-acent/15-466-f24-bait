@@ -361,7 +361,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
         if(building_up){
             if(!blow_up_sound.get() || blow_up_sound.get()->stopped || blow_up_sound.get()->stopping){
-                blow_up_sound = Sound::loop(*blow_up_sample,0.5f);
+                blow_up_sound = Sound::loop(*blow_up_sample,1.0f);
                 whoosh_sound_played = false;
             }
             if(whoosh_sound.get()){
@@ -378,7 +378,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if(!building_up && !recovered && !whoosh_sound_played && !above_water){
             //whooshing
             if(!whoosh_sound.get() || whoosh_sound.get()->stopped || whoosh_sound.get()->stopping){
-                whoosh_sound = Sound::play(*whoosh_sample,0.2f * glm::length(velocity));
+                whoosh_sound = Sound::play(*whoosh_sample,glm::length(velocity));
                 whoosh_sound_played = true;
             }
         }

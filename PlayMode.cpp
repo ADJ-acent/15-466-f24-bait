@@ -164,7 +164,7 @@ Load< Sound::Sample >  through_water_sample(LoadTagDefault, []() -> Sound::Sampl
 });
 
 Load< Sound::Sample >  blow_up_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("sound/blow_up_fish.wav"));
+	return new Sound::Sample(data_path("sound/charge_up.wav"));
 });
 
 Load< Sound::Sample >  whoosh_sample(LoadTagDefault, []() -> Sound::Sample const * {
