@@ -479,7 +479,7 @@ void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vecto
     
 }
 
-void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
+/*void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
 {
     glm::vec4 transvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec3 origin = camera->make_local_to_world() * transvec;
@@ -541,7 +541,7 @@ void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::
         }
     }
 
-}
+} */
 
 glm::vec3 Puffer::calculate_jitter(float elapsed)
 {
