@@ -596,7 +596,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw oxygen bar
 	{
-		int num_bubbles = floor(puffer.oxygen_level / 10.0f);
+		int num_bubbles = int(floor(puffer.oxygen_level / 10.0f));
 		if(puffer.above_water){
 			{
 				for(int index = 0; index < num_bubbles; index++){
