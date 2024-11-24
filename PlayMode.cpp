@@ -182,6 +182,22 @@ Load< Sound::Sample >  button_hover_sample(LoadTagDefault, []() -> Sound::Sample
 	return new Sound::Sample(data_path("sound/button_hover.wav"));
 });
 
+Load< Sound::Sample >  timer_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/timer_tick.wav"));
+});
+
+Load< Sound::Sample >  flicker_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/flicker.wav"));
+});
+
+Load< Sound::Sample >  correct_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/correct.wav"));
+});
+
+Load< Sound::Sample >  wrong_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/wrong.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;

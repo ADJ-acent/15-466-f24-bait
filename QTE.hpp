@@ -14,7 +14,8 @@ struct QTE {
     static int score;
     static std::vector< Bait > active_baits;
 
-    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false, key_reset = false;            
+    bool active = false, success = false, failure = false, correct_key_pressed = false, trap_key_on = false, key_reset = false;     
+    bool wrong_correct_played = false;       
     float timer = 0.0f, hook_up_timer = 0.0f, red_percentage = 0.0f;         
     float time_limit = 1.0f;    
     float input_delay, input_delay_time = 3.0f;
@@ -32,6 +33,11 @@ struct QTE {
     // Possible keys for the QTE
     std::vector<SDL_Keycode> possible_keys = { SDLK_w, SDLK_a, SDLK_s, SDLK_d };
     std::vector<SDL_Keycode> trap_keys = possible_keys;
+
+    std::shared_ptr< Sound::PlayingSample > timer_sound;
+    std::shared_ptr< Sound::PlayingSample > flicker_sound;
+    std::shared_ptr< Sound::PlayingSample > correct_sound;
+    std::shared_ptr< Sound::PlayingSample > wrong_sound;
 
     QTE(Puffer *puffer_, Bait *bait_): puffer(puffer_), bait(bait_) {};
     QTE() = default;
