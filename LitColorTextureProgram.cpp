@@ -96,7 +96,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"out vec4 fragColor;\n"
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
-		"   float threshold = 200.0f;\n"
+		"   float threshold = 250.0f;\n"
 		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n"
 		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
