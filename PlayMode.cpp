@@ -1,4 +1,5 @@
 #include "PlayMode.hpp"
+#include "MenuMode.hpp"
 
 #include "DepthTextureProgram.hpp"
 #include "LitColorTextureProgram.hpp"
@@ -20,9 +21,13 @@
 
 #include <random>
 
+extern std::shared_ptr< MenuMode > menu;
+bool is_game_over = false;
+
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
+GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 
@@ -45,6 +50,12 @@ Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
 	bait_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load<MeshBuffer> chopping_board_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/chopping_board.pnct"));
+	chopping_board_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -76,7 +87,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 			drawable.pipeline.start = mesh.start;
 			drawable.pipeline.count = mesh.count;
 		}
-		else if(mesh_name.find("waterplane") != -1)
+		else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
 		{
 			scene.drawables.emplace_back(transform);
 			Scene::Drawable &drawable = scene.drawables.back();
@@ -147,10 +158,84 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		drawable.mesh = &mesh;
 		drawable.meshbuffer = &(*bait_meshes);
-
 	});
 });
 
+Load< Scene > chopping_board_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/chopping_board.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = chopping_board_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = chopping_board_scene_for_depth_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*chopping_board_meshes);
+	});
+});
+
+// noise samples
+Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/flipper.wav"));
+});
+
+Load< Sound::Sample >  through_water_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/through_water.wav"));
+});
+
+Load< Sound::Sample >  blow_up_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/charge_up.wav"));
+});
+
+Load< Sound::Sample >  whoosh_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/whoosh.wav"));
+});
+
+Load< Sound::Sample >  bump_1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/bump_1.wav"));
+});
+
+Load< Sound::Sample >  button_select_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/button_select.wav"));
+});
+
+Load< Sound::Sample >  button_hover_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/button_hover.wav"));
+});
+
+Load< Sound::Sample >  timer_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/timer_tick.wav"));
+});
+
+Load< Sound::Sample >  flicker_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/flicker.wav"));
+});
+
+Load< Sound::Sample >  correct_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/correct.wav"));
+});
+
+Load< Sound::Sample >  wrong_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/wrong.wav"));
+});
+
+Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/bg_music.wav"));
+});
+
+Load< Sound::Sample >  congrats_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/congrats.wav"));
+});
+
+Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/fail.wav"));
+});
 
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
@@ -177,11 +262,12 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 	}
 
+	bg_music_sound = Sound::loop(*bg_music_sample,0.2f);
+
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
 	puffer.init(puffer_transforms, &scene);
-
 
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
@@ -200,6 +286,17 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		bait_manager.baits_in_use.push_back(new_bait);
 		bait_manager.active_baits_num++;
 	}
+
+	std::vector<Scene::Transform *> chopping_board_transforms = scene.spawn(*chopping_board_scene,CHOPPING_BOARD);
+	for (auto t : chopping_board_transforms){
+        if (t->name == "choppingboard_main") {
+			chopping_board_main_mesh = t;
+			chopping_board_main_mesh->position = glm::vec3(0.0f, 0.0f, 200.0f);
+			chopping_board_main_mesh->scale = glm::vec3(0.0f);
+        }
+	}
+	
+
 
 	// for(Bait b : bait_manager.baits_in_use){
     	
@@ -220,13 +317,11 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
-
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
-
 		}
 	}
 
@@ -237,12 +332,14 @@ PlayMode::~PlayMode() {
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.handle_event(evt, window_size);
+	// for (Button& button : example_buttons)
+	// 	button.handle_event(evt, window_size);
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			menu->background = shared_from_this();
+			Mode::set_current(menu);
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_a) {
 			left.downs += 1;
@@ -314,8 +411,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.update(elapsed);
+
+	// for (Button& button : example_buttons)
+	// 	button.update(elapsed);
 
 	if (debug.downs != 0) {
 		game_config.charge_face_camera = !game_config.charge_face_camera;
@@ -355,12 +453,37 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
-	score_decrement_counter += elapsed;
-    if(score_decrement_counter>5.0f){
-        score_decrement_counter = 0.0f;
-        QTE::score -= 1;
-    }
 
+	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
+		puffer.switch_to_main_menu_camera();
+	}
+
+	hunger_decrement_counter += elapsed;
+    if(hunger_decrement_counter > 5.0f){
+        hunger_decrement_counter = 0.0f;
+        QTE::hunger -= 1;
+	}
+
+	if(is_game_over){
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+		puffer.main_transform->position = glm::vec3(0.0f, 0.0f, 205.0f);
+
+		
+		wobble += elapsed / 1.0f;
+		wobble -= std::floor(wobble);
+		for(Scene::Transform* collectible : puffer.collected){
+			
+			collectible->rotation = collectible->rotation * glm::angleAxis(
+				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+				glm::vec3(0.0f, 0.2f, 0.0f)
+			);
+		}
+		
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);
+	}
 
 	//reset button press counters:
 	left.downs = 0;
@@ -383,8 +506,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//set up light type and position for depth_texture_program:
 	// all the shaders
-	{
-		
+
+	{	
 		glUseProgram(depth_texture_program->program);
 		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
@@ -485,7 +608,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
-		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
+		glUniform3fv(wave_texture_program->PLAYER_POS_vec3, 1, glm::value_ptr( puffer.get_position()));
+		glUniform3fv(wave_texture_program->PLAYER_VEL_vec3, 1, glm::value_ptr( puffer.velocity ));
+		glUniform1f(wave_texture_program->PLAYER_SCALE_float, puffer.current_scale);
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0); 
 
@@ -510,38 +635,55 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
-
 	}
 
-
 	{
-
-
-
-
-
 		//framebuffers.tone_map();
-
 	}
 
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-	for (Button& button : example_buttons)
-		button.draw(drawable_size);
+	// for (Button& button : example_buttons)
+	// 	button.draw(drawable_size);
 
 	// ui_render_program->draw_ui(*font->get_text(std::string("this is a test, do not panic")), glm::vec2(0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(*font->get_text(std::string("Hunger:")), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
 	// ui_render_program->draw_ui(ui_elements.w, glm::vec2(0.5f),drawable_size);
 	// ui_render_program->draw_ui(ui_elements.w_pressed, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Center, glm::vec2(3.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
+	//draw hunger bar
+	{
+		if(Mode::current != menu && !is_game_over){
+			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
+			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
+			ui_render_program->draw_ui(ui_elements.hunger_bar_symbol, glm::vec2(0.015f,0.025f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
+		}
+	}
 
-	{ //use DrawLines to overlay some text:
-		glDisable(GL_DEPTH_TEST);
+	//draw oxygen bar
+	{
+		int num_bubbles = int(puffer.oxygen_level / 10.0f);
+		if(puffer.above_water){
+			{
+				for(int index = 0; index < num_bubbles; index++){
+					float bubble_vertical_position = 0.1f + (0.08f * index);
+					ui_render_program->draw_ui(ui_elements.bubble, glm::vec2(0.95f,bubble_vertical_position),drawable_size, UIRenderProgram::BottomLeft,glm::vec2(0.13f,0.13f));
+				}
 
-		if(bait_in_eating_range && !qte_active){
-			ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			}
 		}
 
-		ui_render_program->draw_ui(*font->get_text(std::string("Hunger: " + std::to_string(QTE::score))), glm::vec2(0.1f, .9f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(0),true);
+	}
+
+	//draw text for QTE trigger
+	{
+		glDisable(GL_DEPTH_TEST);
+	
+		if(Mode::current == shared_from_this()) {
+			if(bait_in_eating_range && !qte_active){
+				ui_render_program->draw_ui(*font->get_text(std::string("Press E to eat the bait")), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+			}
+		}
 	}
 
 	GL_ERRORS();

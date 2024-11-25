@@ -2,6 +2,8 @@
 #include <SDL.h>
 
 extern Load< UIRenderProgram > ui_render_program;
+extern Load< Sound::Sample > button_hover_sample;
+extern Load< Sound::Sample > button_select_sample;
 
 Button::Button(Texture *texture_, glm::uvec2 padding_, glm::vec2 position_, glm::vec2 scale_, UIRenderProgram::AlignMode align_, glm::vec3 tint_, bool single_channel_,  std::function<void()> on_click_function_) :
 texture(texture_), padding(padding_), position(position_), scale(scale_), align(align_), tint(tint_), single_channel(single_channel_), on_click_function(on_click_function_),
@@ -69,6 +71,7 @@ void Button::handle_event(SDL_Event const &event, glm::uvec2 const &window_size)
 
         if (button_state != old_state) {
             state_switch_timer = 0.01f;
+            button_sound_played = false; 
         }
     }
 }
@@ -86,6 +89,7 @@ void Button::update(float elapsed)
             }
         }
         else if (button_state == Button::ButtonState::Hover) {
+            
             float amt = std::min(state_switch_timer * hover_animation_speed, 1.0f);
             if (hover_tint != glm::vec3(-1.0f)) {
                 tint = glm::mix(tint, hover_tint, amt);
@@ -96,8 +100,14 @@ void Button::update(float elapsed)
             if (amt == 1.0f) {
                 state_switch_timer = 0.0f;
             }
+            if(!button_sound_played){
+                button_hover_sound = Sound::play(*button_hover_sample,0.7f);
+                button_sound_played = true;
+            }
+
         }
         else if (button_state == Button::ButtonState::Pressing) {
+            
             float amt = std::min(state_switch_timer * pressing_animation_speed, 1.0f);
             if (pressing_tint != glm::vec3(-1.0f)) {
                 tint = glm::mix(tint, pressing_tint, amt);
@@ -108,6 +118,12 @@ void Button::update(float elapsed)
             if (amt == 1.0f) {
                 state_switch_timer = 0.0f;
             }
+            if(!button_sound_played){
+                button_select_sound = Sound::play(*button_select_sample,0.5f);
+                button_sound_played = true;
+            }
+
+            
         }
     }
 }

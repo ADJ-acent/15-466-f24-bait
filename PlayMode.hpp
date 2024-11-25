@@ -26,7 +26,7 @@ struct PlayMode : Mode {
 	//----- game state -----
 	bool qte_active = false;
 
-	float score_decrement_counter = 0.0f;
+	float hunger_decrement_counter = 0.0f;
 
 	//input tracking:
 	struct ButtonInput {
@@ -53,8 +53,11 @@ struct PlayMode : Mode {
 	Texture cur_texture;
 
 	float elapsedtime = 0.0f;
+	float wobble = 0.0f;
 
 	Scene::Transform *waterplane_size = nullptr;
+	Scene::Transform *chopping_board_main_mesh = nullptr;
 
 	std::vector<Button> example_buttons;
+	std::shared_ptr< Sound::PlayingSample > bg_music_sound;
 };

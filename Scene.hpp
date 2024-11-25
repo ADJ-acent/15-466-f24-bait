@@ -27,7 +27,7 @@
 
 struct Puffer;
 
-enum type_of_spawn {FISH,PUFFER,CARROT_BAIT,FISH_BAIT};
+enum type_of_spawn {FISH,PUFFER,CARROT_BAIT,FISH_BAIT,CHOPPING_BOARD};
 // std::vector<std::string> puffer_transform_names =  { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush"
 // , "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
 
@@ -51,6 +51,8 @@ struct Scene {
 		// ..relative to the world:
 		glm::mat4x3 make_local_to_world() const;
 		glm::mat4x3 make_world_to_local() const;
+
+		static void decompose_transform(const glm::mat4x3& transform, glm::vec3& position, glm::vec3& scale, glm::quat& rotation);
 
 		//since hierarchy is tracked through pointers, copy-constructing a transform  is not advised:
 		Transform(Transform const &) = delete;

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Scene.hpp"
+#include "Sound.hpp"
 #include "Animation.hpp"
 #include "CollisionDetection.hpp"
 #include "CollisionDetection.hpp"
 #include <vector>
 #include <array>
+
+struct Bait;
 
 struct Puffer {
     Scene::Transform* main_transform = nullptr;
@@ -24,8 +27,20 @@ struct Puffer {
         Scene::Transform* puff_tail;
     } mesh_parts;
 
+    //store bools of if collectibles are collected
+    struct {
+        bool boat = false;
+    } collectibles;
+
     std::vector<LinearAnimation<glm::vec3>> build_up_animations;
     std::vector<SlerpAnimation> swim_animation;
+
+    //sound effects
+    std::shared_ptr< Sound::PlayingSample > flipper_sound;
+    std::shared_ptr< Sound::PlayingSample > through_water_sound;
+    std::shared_ptr< Sound::PlayingSample > blow_up_sound;
+    std::shared_ptr< Sound::PlayingSample > whoosh_sound;
+    std::shared_ptr< Sound::PlayingSample > bump_1_sound;
 
     float current_pitch = 0.0f;
     float current_yaw = 0.0f;
@@ -37,6 +52,7 @@ struct Puffer {
     float release_rotate_angle = 0.0f;
     float total_release_angle = 0.0f;
     float default_spring_arm_length;
+    float oxygen_level = 100.0f;
     uint8_t swimming_side = 0; // 0 is left, 1 is right
 
     bool building_up = false;
@@ -44,6 +60,9 @@ struct Puffer {
     bool overshoot = false;
     bool above_water = false;
     bool in_menu = false;
+    bool whoosh_sound_played = true;
+    bool in_qte = false;
+    bool reeled_up = false;
 
     glm::vec3 original_mesh_scale = glm::vec3(1.0f);
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
@@ -64,11 +83,16 @@ struct Puffer {
     inline static constexpr float puffer_rotation_release_halflife = .3f;
     inline static constexpr float speed = 1.0f;
     inline static constexpr float gravity = 1.0f;
+    inline static constexpr float oxygen_down_speed = 5.0f;
+    inline static constexpr float oxygen_up_speed = 10.0f;
+
 
     std::vector<std::string> names = {"PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
+    std::vector<Scene::Transform *> collected = {};
 
     void init(std::vector<Scene::Transform * > transform_vector, Scene *scene);
     void rotate_from_mouse(glm::vec2 mouse_motion);
+    void recalibrate_rotation();
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
@@ -77,6 +101,8 @@ struct Puffer {
     void swim(int8_t swim_direction);
     void switch_to_main_menu_camera();
     void switch_to_default_camera();
+    void check_collectibles(Scene::Transform* collided_object);
+
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
@@ -87,4 +113,7 @@ struct Puffer {
     glm::vec3 get_right();
     glm::vec3 get_position();
 
+    void qte_enter(Bait *bait);
+    void qte_exit();
+    void qte_death(Bait *bait);
 };

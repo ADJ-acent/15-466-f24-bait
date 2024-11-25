@@ -12,6 +12,9 @@ void BaitManager::update_bait_lifetime(float elapsed){
         if (b.current_life_time >= b.total_life_time)
         {
             b.reel_up(elapsed);
+            if (b.reel_up_timer > 3.0f) {
+                b.to_siberia();
+            }
         }
     }
 

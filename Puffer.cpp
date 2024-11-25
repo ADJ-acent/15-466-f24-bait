@@ -1,10 +1,12 @@
 #include "Puffer.hpp"
 #include "GameConfig.hpp"
+#include "Bait.hpp"
 #include "math_helpers.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
+#include <glm/gtx/vector_angle.hpp>
 // #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
@@ -12,6 +14,11 @@
 
 extern Load< MeshBuffer > pufferfish_meshes;
 extern GameConfig game_config;
+extern Load< Sound::Sample > flipper_sample;
+extern Load< Sound::Sample > through_water_sample;
+extern Load< Sound::Sample > blow_up_sample;
+extern Load< Sound::Sample > whoosh_sample;
+extern Load< Sound::Sample > bump_1_sample;
 
 void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
 {
@@ -169,6 +176,16 @@ void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
     }
 }
 
+// only for qte camera switch
+void Puffer::recalibrate_rotation()
+{
+    glm::quat yaw_rotation = glm::angleAxis(glm::radians(current_yaw), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::quat pitch_rotation = glm::angleAxis(glm::radians(current_pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::quat total_rotation = yaw_rotation * pitch_rotation;
+    main_transform->rotation =  glm::normalize(total_rotation * original_rotation);
+}
+
 void Puffer::start_build_up()
 {
     assert(main_transform);
@@ -197,6 +214,21 @@ void Puffer::release()
 void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed)
 {
     assert(main_transform);
+    if (reeled_up) {
+        glm::vec3 target_position = glm::vec3(main_transform->make_local_to_world() * glm::vec4(0, 0, 0, 1));
+        glm::vec3 camera_position = camera->make_local_to_world() *  glm::vec4(0, 0, 0, 1);
+        glm::vec3 world_up = glm::vec3(0, 0, 1);
+        glm::vec3 forward = glm::normalize(target_position - camera_position);
+        glm::vec3 right = glm::normalize(glm::cross(forward, world_up));
+        glm::vec3 up = glm::cross(right, forward);
+
+        glm::mat3 rotation_matrix = glm::mat3(right, up, -forward);
+
+        // glm::vec3 forward_vector = glm::normalize(target_position - camera_position);
+        glm::quat target = glm::quat_cast(rotation_matrix);
+        camera->rotation = target;
+        return;
+    }
     idletime += elapsed;
 
     rotate_from_mouse(mouse_motion);
@@ -227,13 +259,20 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 current_bounce_factor = 0.1f;
             }
 
+            //d.transform->name.substr(0,6)=="puddle"
             if(d.transform->name.substr(0,5)=="water"){
                 checking_non_colliding_object = true;
+                bool above_water_before = above_water;
                 above_water = puffer_collider.check_over_water(d.transform,d.mesh);
+                if(above_water==false && above_water_before==true){
+                    through_water_sound = Sound::play(*through_water_sample, 0.3f * glm::length(velocity));
+                } else if(above_water==true && above_water_before==false){
+                    through_water_sound = Sound::play(*flipper_sample,0.3f * glm::length(velocity));
+                }
             }
 
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){
-                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_collision(d.transform,d.mesh,closest_collision_point);
+                std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_puffer_collision(d.transform,d.mesh,closest_collision_point);
                 if (closest_collision_point != new_collision_point){
                     //it changed, so update bounce factor for new closest mesh
                     bounce_factor = current_bounce_factor;
@@ -250,6 +289,11 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     }
                 }
             }
+
+            if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+                //check collectibles by name here
+                check_collectibles(d.transform);
+            }
         }
         if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
             colliding = true;
@@ -261,9 +305,10 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if (colliding){
             handle_collision(closest_collision_point,bounce_factor);
         }
-        if (!in_menu) {
+        if (!in_menu && !in_qte) {
             camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
         }
+
     }
 
     if (swim_cooldown == 0.0f) {
@@ -288,14 +333,19 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         float velocity_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_velocity_halflife * 2.0f));
         if(above_water){
             velocity -= glm::vec3(0.0f,0.0f,gravity)*elapsed;
+            oxygen_level -= 1.0f*elapsed*oxygen_down_speed;
         } else {
             velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
+            if(oxygen_level<100.0f){
+                oxygen_level +=  1.0f*elapsed*oxygen_up_speed;
+            }
         }
         
         
         main_transform->position += velocity;
-        
+
         if (building_up) {
+            
             
             build_up_time += elapsed * 0.5f;
             // grow
@@ -337,6 +387,37 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 }
             }
         }
+    }
+
+    //puff blow sounds
+
+    {
+
+        if(building_up){
+            if(!blow_up_sound.get() || blow_up_sound.get()->stopped || blow_up_sound.get()->stopping){
+                blow_up_sound = Sound::loop(*blow_up_sample,1.0f);
+                whoosh_sound_played = false;
+            }
+            if(whoosh_sound.get()){
+                whoosh_sound.get()->stop(0.1f);
+            }
+
+        } else {
+            if(blow_up_sound.get()){ //if sound exists going
+                blow_up_sound.get()->stop(0.5f);
+            }
+            
+        }
+
+        if(!building_up && !recovered && !whoosh_sound_played && !above_water){
+            //whooshing
+            if(!whoosh_sound.get() || whoosh_sound.get()->stopped || whoosh_sound.get()->stopping){
+                whoosh_sound = Sound::play(*whoosh_sample,glm::length(velocity));
+                whoosh_sound_played = true;
+            }
+        }
+     
+
     }
 
     {// update animation based on scale of the pufferfish
@@ -381,6 +462,16 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
     }
 
 }
+void Puffer::check_collectibles(Scene::Transform* collided_object){
+    if (collided_object->name == "boat1_obs"){
+        //move it to end scene
+        collided_object->scale = glm::vec3(2.0f);
+        collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
+        collided_object->rotation = glm::vec3(0.5f,0.5f,0.5f);
+        collectibles.boat = true;
+        collected.emplace_back(collided_object);
+    }
+}
 
 void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor)
 {
@@ -399,6 +490,7 @@ void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float boun
     }
     main_transform->position = collision_point[0] + collision_direction * (radius+ 0.2f);
 
+    bump_1_sound = Sound::play(*bump_1_sample, glm::length(velocity) * bounce_factor);
 }
 
 void Puffer::update_build_up_animations(float t)
@@ -411,6 +503,7 @@ void Puffer::update_build_up_animations(float t)
 //swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
+    flipper_sound = Sound::play(*flipper_sample, 1.0f);
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
@@ -421,13 +514,11 @@ void Puffer::swim(int8_t swim_direction)
 
 void Puffer::switch_to_main_menu_camera()
 {
-    in_menu = true;
-    camera->position = spring_arm_normalized_displacement * 5.0f;
+    camera->position = spring_arm_normalized_displacement * 6.0f;
 }
 
 void Puffer::switch_to_default_camera()
 {
-    in_menu = false;
     camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
 }
 
@@ -479,7 +570,7 @@ void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vecto
     
 }
 
-void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
+/*void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
 {
     glm::vec4 transvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec3 origin = camera->make_local_to_world() * transvec;
@@ -541,7 +632,7 @@ void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::
         }
     }
 
-}
+} */
 
 glm::vec3 Puffer::calculate_jitter(float elapsed)
 {
@@ -592,4 +683,62 @@ glm::vec3 Puffer::get_right()
 glm::vec3 Puffer::get_position()
 {
     return main_transform->position;
+}
+
+void Puffer::qte_enter(Bait *bait)
+{
+    in_qte = true;
+    glm::quat rotate_to_bait = glm::rotation(original_rotation * glm::vec3(0,0,1), glm::normalize(bait->mesh_parts.bait_base->make_local_to_world() * glm::vec4(0,0,0,1) - get_position()));
+    main_transform->rotation = rotate_to_bait * original_rotation;
+
+    // eliminate roll
+    glm::vec3 forward = main_transform->rotation * glm::vec3(0, 0, 1);
+    glm::vec3 original_up = original_rotation * glm::vec3(0, 1, 0);
+    glm::vec3 right = glm::normalize(glm::cross(original_up, forward));
+    glm::vec3 adjusted_up = glm::normalize(glm::cross(forward, right));
+    glm::mat3 rotation_matrix(right, adjusted_up, forward);
+    main_transform->rotation = glm::quat_cast(rotation_matrix);
+
+    const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera->rotation = rotate_180_z * camera->rotation;
+    camera->position = spring_arm_normalized_displacement * - default_spring_arm_length;
+    if (building_up) {
+        release();
+    }
+    velocity = glm::vec3(0);
+}
+
+void Puffer::qte_exit()
+{
+    in_qte = false;
+    if (!reeled_up) {
+        const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+        camera->rotation = rotate_180_z * camera->rotation;
+        recalibrate_rotation();
+        //no need to reset the camera distance as it automatically does the projection in update
+    }
+    else {
+        
+        glm::mat4x3 puffer_world_transform = main_transform->make_local_to_world();
+        Scene::Transform::decompose_transform(puffer_world_transform, main_transform->position, main_transform->scale, main_transform->rotation);
+        main_transform->parent = nullptr;
+    }
+}
+
+void Puffer::qte_death(Bait *bait)
+{
+    if (reeled_up) return;
+    std::cout<<"reel up:\n";
+    glm::mat4x3 camera_world_transform = camera->make_local_to_world();
+    // std::cout<< "camera position: "<< glm::to_string(camera_world_transform * glm::vec4(0,0,0,1))<<std::endl;
+    camera->parent = nullptr;
+    Scene::Transform::decompose_transform(camera_world_transform, camera->position, camera->scale, camera->rotation);
+    glm::mat4 puffer_world_transform = glm::mat4(main_transform->make_local_to_world());
+    glm::mat4 bait_world_transform_inverse = glm::inverse(glm::mat4(bait->mesh_parts.bait_base->make_local_to_world()));
+
+    glm::mat4 new_puffer_local_transform = glm::mat4x3(bait_world_transform_inverse * puffer_world_transform);
+    Scene::Transform::decompose_transform(new_puffer_local_transform, main_transform->position, main_transform->scale, main_transform->rotation);
+
+    main_transform->parent = bait->mesh_parts.bait_base;
+    reeled_up = true;
 }

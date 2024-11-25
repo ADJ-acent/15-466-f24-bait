@@ -7,6 +7,8 @@ UIElements ui_elements;
 
 SpriteAnimation qte_timer_animation;
 
+ParticleTextures particle_textures;
+
 Load< void > load_textures(LoadTagDefault, []() -> void {
 	stbi_set_flip_vertically_on_load(true);
 	auto load_tex_to_GL = [&](std::string const &filename) {
@@ -45,10 +47,14 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
 	ui_elements.s_pressed = load_tex_to_GL(data_path("ui/keyboard_s.png"));
 	ui_elements.d = load_tex_to_GL(data_path("ui/keyboard_d_outline.png"));
 	ui_elements.d_pressed = load_tex_to_GL(data_path("ui/keyboard_d.png"));
-
-
-	//load qte timer textures
-	{
+	ui_elements.hunger_bar_outline = load_tex_to_GL(data_path("ui/uihungerbar_empty.png"));
+	ui_elements.hunger_bar_fill = load_tex_to_GL(data_path("ui/uihungerbar_bar.png"));
+	ui_elements.oxygen_bar_fill = load_tex_to_GL(data_path("ui/oxygenbar0.png"));
+	ui_elements.hunger_bar_symbol = load_tex_to_GL(data_path("ui/uihungerbar_symbol.png"));
+	ui_elements.bubble = load_tex_to_GL(data_path("ui/bubble.png"));
+	ui_elements.end_screen = load_tex_to_GL(data_path("ui/pufferfish_endscreen.jpg"));
+	
+	{//load qte timer textures
 		uint32_t cur_index = 0;
 		qte_timer_animation.frames.clear();
 		while (true) {
@@ -61,5 +67,12 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
 			cur_index++;
 		}
 		// std::cout<<"loaded "<<cur_index<< " frames of qte timer animation"<<std::endl;
+	}
+
+	{// particle sprites
+		//bubbles
+		for (int i = 0; i < 7; ++i) {
+			particle_textures.bubbles[i] = load_tex_to_GL(data_path("particles/bubble_" + std::to_string(i + 1) + ".png"));
+		}
 	}
 });

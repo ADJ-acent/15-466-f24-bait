@@ -1,8 +1,7 @@
 #include "QTEMode.hpp"
+#include "MenuMode.hpp"
 
 #include "Load.hpp"
-#include "DrawLines.hpp"
-#include "gl_compile_program.hpp"
 #include "UIRenderProgram.hpp"
 #include "Animation.hpp"
 #include "Font.hpp"
@@ -14,6 +13,8 @@
 extern SpriteAnimation qte_timer_animation;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
+extern std::shared_ptr< MenuMode > menu;
+extern bool is_game_over;
 
 //-------------------------------------
 
@@ -26,9 +27,11 @@ QTEMode::QTEMode(Puffer *puffer, Bait *bait) {
 bool QTEMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-            eat_bait_QTE->end();
-            Mode::set_current(background);
-			return true;
+			if(!eat_bait_QTE->failure){
+				eat_bait_QTE->end();
+				Mode::set_current(background);
+				return true;
+			}
 		} 
     }
 	return false;
@@ -36,7 +39,7 @@ bool QTEMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) 
 
 void QTEMode::update(float elapsed) {
     if(background){
-        background->update(elapsed * background_time_scale);
+        background->update(elapsed);
     }
 
 	cur_texture = qte_timer_animation.get_current_frame(eat_bait_QTE->timer/eat_bait_QTE->time_limit);
@@ -44,7 +47,9 @@ void QTEMode::update(float elapsed) {
     eat_bait_QTE->update(elapsed);
     if(!eat_bait_QTE->active){
 		if(eat_bait_QTE->failure){
-			QTE::score = 100;
+			QTE::hunger = 100;
+			QTE::score = 0;
+			is_game_over = true;
 		}
 
         Mode::set_current(background);
@@ -52,7 +57,7 @@ void QTEMode::update(float elapsed) {
 }
 
 void QTEMode::draw(glm::uvec2 const &drawable_size) {
-	if (background && background_fade < 1.0f) {
+	if (background) {
 	    background->draw(drawable_size);
 	}
  
@@ -74,7 +79,6 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 		}
 	}
 	else if(eat_bait_QTE->failure) {
-		ui_render_program->draw_ui(*font->get_text(std::string("Baited!!! FINAL HUNGER: " + std::to_string(QTE::score))), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
+		ui_render_program->draw_ui(*font->get_text(std::string("Baited!!! FINAL SCORE: " + std::to_string(QTE::score))), glm::vec2(0.5f, 0.7f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(0.8f), glm::vec3(1),true);
 	}
-
 }

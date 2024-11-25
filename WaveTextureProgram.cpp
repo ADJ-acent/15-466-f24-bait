@@ -201,7 +201,7 @@ WaveTextureProgram::WaveTextureProgram() {
 		"}\n"
 		
 		//"	vec3 pointsongridcolor = vec3(pointsongrid);\n" //SHOWS THE POINTS ON THE GRID
-		"   float threshold = 200.0f;\n" //the viewing threshold for the fog
+		"   float threshold = 250.0f;\n" //the viewing threshold for the fog
 		"	vec3 n = normal;\n" //normalized vector of the normal from the fragment
 		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n" //shade of the ocean being used
 

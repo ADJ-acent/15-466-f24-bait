@@ -146,7 +146,9 @@ const game_names = [
 	maek.CPP("Texture.cpp"),
 	maek.CPP('BaitManager.cpp'),
 	maek.CPP('Font.cpp'),
-	maek.CPP('Button.cpp')
+	maek.CPP('Button.cpp'),
+	maek.CPP('MenuMode.cpp'),
+	maek.CPP("Particles.cpp"),
 ];
 
 const common_names = [
