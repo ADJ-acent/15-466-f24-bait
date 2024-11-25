@@ -215,9 +215,18 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 {
     assert(main_transform);
     if (reeled_up) {
-        glm::quat rotation_to_puffer = glm::rotation(camera->rotation * glm::vec3(0,0,1), glm::normalize(main_transform->make_local_to_world() * glm::vec4(0,0,0,1)- camera->position ));
-        camera->rotation = camera->rotation * rotation_to_puffer;
-        
+        glm::vec3 target_position = glm::vec3(main_transform->make_local_to_world() * glm::vec4(0, 0, 0, 1));
+        glm::vec3 camera_position = camera->make_local_to_world() *  glm::vec4(0, 0, 0, 1);
+        glm::vec3 world_up = glm::vec3(0, 0, 1);
+        glm::vec3 forward = glm::normalize(target_position - camera_position);
+        glm::vec3 right = glm::normalize(glm::cross(forward, world_up));
+        glm::vec3 up = glm::cross(right, forward);
+
+        glm::mat3 rotation_matrix = glm::mat3(right, up, -forward);
+
+        glm::vec3 forward_vector = glm::normalize(target_position - camera_position);
+        glm::quat target = glm::quat_cast(rotation_matrix);
+        camera->rotation = target;
         return;
     }
     idletime += elapsed;
@@ -699,10 +708,9 @@ void Puffer::qte_exit()
 void Puffer::qte_death(Bait *bait)
 {
     if (reeled_up) return;
-    const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-    camera->rotation = rotate_180_z * camera->rotation;
+    std::cout<<"reel up:\n";
     glm::mat4x3 camera_world_transform = camera->make_local_to_world();
-    camera->position = spring_arm_normalized_displacement * default_spring_arm_length;
+    std::cout<< "camera position: "<< glm::to_string(camera_world_transform * glm::vec4(0,0,0,1))<<std::endl;
     camera->parent = nullptr;
     Scene::Transform::decompose_transform(camera_world_transform, camera->position, camera->scale, camera->rotation);
     glm::mat4 puffer_world_transform = glm::mat4(main_transform->make_local_to_world());
@@ -710,6 +718,7 @@ void Puffer::qte_death(Bait *bait)
 
     glm::mat4 new_puffer_local_transform = glm::mat4x3(bait_world_transform_inverse * puffer_world_transform);
     Scene::Transform::decompose_transform(new_puffer_local_transform, main_transform->position, main_transform->scale, main_transform->rotation);
+
     main_transform->parent = bait->mesh_parts.bait_base;
     reeled_up = true;
 }
