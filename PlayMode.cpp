@@ -27,6 +27,7 @@ bool is_game_over = false;
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
+GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 
@@ -49,6 +50,12 @@ Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
 	bait_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load<MeshBuffer> chopping_board_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/chopping_board.pnct"));
+	chopping_board_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -154,6 +161,25 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > chopping_board_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/chopping_board.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = chopping_board_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = chopping_board_scene_for_depth_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*chopping_board_meshes);
+	});
+});
+
 // noise samples
 Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("sound/flipper.wav"));
@@ -252,6 +278,15 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		bait_manager.baits_in_use.push_back(new_bait);
 		bait_manager.active_baits_num++;
 	}
+
+	std::vector<Scene::Transform *> chopping_board_transforms = scene.spawn(*chopping_board_scene,CHOPPING_BOARD);
+	for (auto t : chopping_board_transforms){
+        if (t->name == "choppingboard_main") {
+			t->position = glm::vec3(0.0f, 0.0f, 2000.0f);
+        }
+	}
+	
+
 
 	// for(Bait b : bait_manager.baits_in_use){
     	
