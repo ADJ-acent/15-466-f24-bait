@@ -70,9 +70,6 @@ void Bait::reel_up(float elapsed, float reel_up_speed)
     if(reel_up_timer <= 3.0f){
         main_transform->position.z += reel_up_speed * elapsed;
     }
-    else{
-        to_siberia();
-    }
 }
 
 void Bait::to_siberia(){

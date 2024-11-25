@@ -165,6 +165,7 @@ void QTE::key_flashing_reset(){
 
 void QTE::bait_hook_up(float elapsed){
     bait->reel_up(elapsed);
+    puffer->qte_death(bait);
     if(hook_up_timer < 3.0f) {
         puffer->main_transform->position.z += elapsed * 30.0f;
         hook_up_timer += elapsed;
@@ -175,8 +176,9 @@ void QTE::bait_hook_up(float elapsed){
 }
 
 void QTE::end() {
+    puffer->qte_exit();
+    bait->to_siberia();
     bait->is_active = true;
     bait->currently_in_qte = false;
     active = false;
-    puffer->qte_exit();
 }

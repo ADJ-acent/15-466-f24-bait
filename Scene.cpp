@@ -649,3 +649,26 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
 
     return transforms_vector;
 }
+
+void Scene::Transform::decompose_transform(const glm::mat4x3 &transform, glm::vec3 &position, glm::vec3 &scale, glm::quat &rotation)
+{
+    // Extract translation (last row)
+    position = glm::vec3(transform[3]);
+
+    // Extract rotation-scale matrix
+    glm::mat3 rotation_scale = glm::mat3(transform);
+
+    // Extract scale factors
+    scale.x = glm::length(rotation_scale[0]); // Length of the first column
+    scale.y = glm::length(rotation_scale[1]); // Length of the second column
+    scale.z = glm::length(rotation_scale[2]); // Length of the third column
+
+    // Normalize the rotation-scale matrix to get pure rotation
+    if (scale.x > 0.0f) rotation_scale[0] /= scale.x;
+    if (scale.y > 0.0f) rotation_scale[1] /= scale.y;
+    if (scale.z > 0.0f) rotation_scale[2] /= scale.z;
+
+    // Convert the rotation matrix to a quaternion
+    rotation = glm::quat_cast(rotation_scale);
+}
+
