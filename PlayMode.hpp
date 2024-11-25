@@ -53,6 +53,7 @@ struct PlayMode : Mode {
 	Texture cur_texture;
 
 	float elapsedtime = 0.0f;
+	float wobble = 0.0f;
 
 	Scene::Transform *waterplane_size = nullptr;
 	Scene::Transform *chopping_board_main_mesh = nullptr;

@@ -469,6 +469,18 @@ void PlayMode::update(float elapsed) {
 		puffer.main_transform->rotation = puffer.original_rotation;
 		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
 		puffer.main_transform->position = glm::vec3(0.0f, 0.0f, 205.0f);
+
+		
+		wobble += elapsed / 1.0f;
+		wobble -= std::floor(wobble);
+		for(Scene::Transform* collectible : puffer.collected){
+			
+			collectible->rotation = collectible->rotation * glm::angleAxis(
+				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+				glm::vec3(0.0f, 0.2f, 0.0f)
+			);
+		}
+		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}

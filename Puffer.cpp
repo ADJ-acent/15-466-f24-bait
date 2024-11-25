@@ -288,6 +288,11 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     }
                 }
             }
+
+            if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
+                //check collectibles by name here
+                check_collectibles(d.transform);
+            }
         }
         if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
             colliding = true;
@@ -302,6 +307,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if (!in_menu && !in_qte) {
             camera->position = spring_arm_normalized_displacement * std::max(0.01f, best_spring_arm_length + 0.1f);
         }
+
     }
 
     if (swim_cooldown == 0.0f) {
@@ -454,6 +460,16 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         }
     }
 
+}
+void Puffer::check_collectibles(Scene::Transform* collided_object){
+    if (collided_object->name == "boat1_obs"){
+        //move it to end scene
+        collided_object->scale = glm::vec3(2.0f);
+        collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
+        collided_object->rotation = glm::vec3(0.5f,0.5f,0.5f);
+        collectibles.boat = true;
+        collected.emplace_back(collided_object);
+    }
 }
 
 void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor)

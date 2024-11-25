@@ -27,6 +27,11 @@ struct Puffer {
         Scene::Transform* puff_tail;
     } mesh_parts;
 
+    //store bools of if collectibles are collected
+    struct {
+        bool boat = false;
+    } collectibles;
+
     std::vector<LinearAnimation<glm::vec3>> build_up_animations;
     std::vector<SlerpAnimation> swim_animation;
 
@@ -83,6 +88,7 @@ struct Puffer {
 
 
     std::vector<std::string> names = {"PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
+    std::vector<Scene::Transform *> collected = {};
 
     void init(std::vector<Scene::Transform * > transform_vector, Scene *scene);
     void rotate_from_mouse(glm::vec2 mouse_motion);
@@ -95,6 +101,7 @@ struct Puffer {
     void swim(int8_t swim_direction);
     void switch_to_main_menu_camera();
     void switch_to_default_camera();
+    void check_collectibles(Scene::Transform* collided_object);
 
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
