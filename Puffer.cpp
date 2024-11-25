@@ -701,6 +701,9 @@ void Puffer::qte_enter(Bait *bait)
     const glm::quat rotate_180_z = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
     camera->rotation = rotate_180_z * camera->rotation;
     camera->position = spring_arm_normalized_displacement * - default_spring_arm_length;
+    if (building_up) {
+        release();
+    }
     velocity = glm::vec3(0);
 }
 
