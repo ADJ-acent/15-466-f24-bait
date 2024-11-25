@@ -80,7 +80,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 			drawable.pipeline.start = mesh.start;
 			drawable.pipeline.count = mesh.count;
 		}
-		else if(mesh_name.find("waterplane") != -1)
+		else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
 		{
 			scene.drawables.emplace_back(transform);
 			Scene::Drawable &drawable = scene.drawables.back();

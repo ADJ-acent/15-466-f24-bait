@@ -232,6 +232,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 current_bounce_factor = 0.1f;
             }
 
+            //d.transform->name.substr(0,6)=="puddle"
             if(d.transform->name.substr(0,5)=="water"){
                 checking_non_colliding_object = true;
                 bool above_water_before = above_water;
