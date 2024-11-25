@@ -27,3 +27,7 @@ struct UIElements {
 	Texture bubble;
 	Texture end_screen;
 };
+
+struct ParticleTextures {
+	Texture bubbles[7];
+};
