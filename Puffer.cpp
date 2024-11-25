@@ -7,7 +7,7 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp> 
 #include <glm/gtx/vector_angle.hpp>
-#include <glm/gtx/string_cast.hpp>
+// #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <iostream>
@@ -224,7 +224,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
         glm::mat3 rotation_matrix = glm::mat3(right, up, -forward);
 
-        glm::vec3 forward_vector = glm::normalize(target_position - camera_position);
+        // glm::vec3 forward_vector = glm::normalize(target_position - camera_position);
         glm::quat target = glm::quat_cast(rotation_matrix);
         camera->rotation = target;
         return;
@@ -710,7 +710,7 @@ void Puffer::qte_death(Bait *bait)
     if (reeled_up) return;
     std::cout<<"reel up:\n";
     glm::mat4x3 camera_world_transform = camera->make_local_to_world();
-    std::cout<< "camera position: "<< glm::to_string(camera_world_transform * glm::vec4(0,0,0,1))<<std::endl;
+    // std::cout<< "camera position: "<< glm::to_string(camera_world_transform * glm::vec4(0,0,0,1))<<std::endl;
     camera->parent = nullptr;
     Scene::Transform::decompose_transform(camera_world_transform, camera->position, camera->scale, camera->rotation);
     glm::mat4 puffer_world_transform = glm::mat4(main_transform->make_local_to_world());

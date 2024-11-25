@@ -203,6 +203,14 @@ Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample con
 	return new Sound::Sample(data_path("sound/bg_music.wav"));
 });
 
+Load< Sound::Sample >  congrats_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/congrats.wav"));
+});
+
+Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/fail.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
