@@ -229,6 +229,14 @@ Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample con
 	return new Sound::Sample(data_path("sound/bg_music.wav"));
 });
 
+Load< Sound::Sample >  congrats_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/congrats.wav"));
+});
+
+Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/fail.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
@@ -631,7 +639,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw oxygen bar
 	{
-		int num_bubbles = int(floor(puffer.oxygen_level / 10.0f));
+		int num_bubbles = int(puffer.oxygen_level / 10.0f);
 		if(puffer.above_water){
 			{
 				for(int index = 0; index < num_bubbles; index++){

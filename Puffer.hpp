@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 
-
+struct Bait;
 
 struct Puffer {
     Scene::Transform* main_transform = nullptr;
@@ -56,6 +56,8 @@ struct Puffer {
     bool above_water = false;
     bool in_menu = false;
     bool whoosh_sound_played = true;
+    bool in_qte = false;
+    bool reeled_up = false;
 
     glm::vec3 original_mesh_scale = glm::vec3(1.0f);
     glm::vec3 original_mesh_position = glm::vec3(0.0f);
@@ -84,6 +86,7 @@ struct Puffer {
 
     void init(std::vector<Scene::Transform * > transform_vector, Scene *scene);
     void rotate_from_mouse(glm::vec2 mouse_motion);
+    void recalibrate_rotation();
     void start_build_up();
     void release();
     void update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed);
@@ -92,6 +95,7 @@ struct Puffer {
     void swim(int8_t swim_direction);
     void switch_to_main_menu_camera();
     void switch_to_default_camera();
+
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);
 
@@ -102,4 +106,7 @@ struct Puffer {
     glm::vec3 get_right();
     glm::vec3 get_position();
 
+    void qte_enter(Bait *bait);
+    void qte_exit();
+    void qte_death(Bait *bait);
 };

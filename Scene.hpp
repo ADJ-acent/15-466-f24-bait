@@ -52,6 +52,8 @@ struct Scene {
 		glm::mat4x3 make_local_to_world() const;
 		glm::mat4x3 make_world_to_local() const;
 
+		static void decompose_transform(const glm::mat4x3& transform, glm::vec3& position, glm::vec3& scale, glm::quat& rotation);
+
 		//since hierarchy is tracked through pointers, copy-constructing a transform  is not advised:
 		Transform(Transform const &) = delete;
 		//if we delete some constructors, we need to let the compiler know that the default constructor is still okay:
