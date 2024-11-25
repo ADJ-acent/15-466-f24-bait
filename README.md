@@ -12,4 +12,7 @@ How To Play:
 
 (TODO: describe the controls and (if needed) goals/strategy.)
 
+Credits:
+Bubble Particle Sprites: https://cassala.itch.io/bubble-sprites
+
 This game was built with [NEST](NEST.md).

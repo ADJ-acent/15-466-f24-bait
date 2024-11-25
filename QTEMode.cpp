@@ -1,4 +1,5 @@
 #include "QTEMode.hpp"
+#include "MenuMode.hpp"
 
 #include "Load.hpp"
 #include "UIRenderProgram.hpp"
@@ -12,6 +13,7 @@
 extern SpriteAnimation qte_timer_animation;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
+extern std::shared_ptr< MenuMode > menu;
 extern bool is_game_over;
 
 //-------------------------------------
@@ -25,9 +27,11 @@ QTEMode::QTEMode(Puffer *puffer, Bait *bait) {
 bool QTEMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-            eat_bait_QTE->end();
-            Mode::set_current(background);
-			return true;
+			if(!eat_bait_QTE->failure){
+				eat_bait_QTE->end();
+				Mode::set_current(background);
+				return true;
+			}
 		} 
     }
 	return false;

@@ -12,6 +12,8 @@ extern Load< Sound::Sample > timer_sample;
 extern Load< Sound::Sample > flicker_sample;
 extern Load< Sound::Sample > correct_sample;
 extern Load< Sound::Sample > wrong_sample;
+extern Load< Sound::Sample > congrats_sample;
+extern Load< Sound::Sample > fail_sample;
 
 void QTE::start() {
     active = true;
@@ -29,6 +31,7 @@ void QTE::start() {
 
     int random_index = dist_index(gen);
     required_key = possible_keys[random_index];
+    puffer->qte_enter(bait);
 }
 
 void QTE::update(float elapsed) {
@@ -57,6 +60,7 @@ void QTE::update(float elapsed) {
     }
 
     if(success){
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         if(timer_sound){
             timer_sound.get()->stop();
         }
@@ -99,23 +103,28 @@ void QTE::update(float elapsed) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         
         if (state[SDL_GetScancodeFromKey(required_key)]) {
+            if(!trap_key_on) {
+                correct_key_pressed = true;
+                QTE::hunger++; 
+                QTE::score++;
+                bait->bait_bites_left--;
+                if(bait->bait_bites_left > 0)   {
+                    bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
+                } 
+                else{
+                    bait->mesh_parts.bait_base->scale *= 0;
+                }
+                
+                std::cout << "scaled down" << std::endl;
+                std::cout << bait->bait_bites_left << std::endl;
 
-            correct_key_pressed = true;
-            QTE::hunger++; 
-            QTE::score++;
-            bait->bait_bites_left--;
-            if(bait->bait_bites_left > 0)   {
-                bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
-            } 
-            else{
-                bait->mesh_parts.bait_base->scale *= 0;
+                if(bait->bait_bites_left == 0){
+                    success = true;
+                }
             }
-            
-            std::cout << "scaled down" << std::endl;
-            std::cout << bait->bait_bites_left << std::endl;
-
-            if(bait->bait_bites_left == 0){
-                success = true;
+            else{
+                std::cout << "QTE Failed! Trap Key Pressed!" << std::endl;
+                failure = true;
             }
 
             return;
@@ -135,6 +144,10 @@ void QTE::update(float elapsed) {
                 failure = true;
                 return;
             } else {
+                if((!correct_sound || correct_sound.get()->stopped || correct_sound.get()->stopping) && !wrong_correct_played){
+                    correct_sound = Sound::play(*correct_sample,0.2f);
+                    wrong_correct_played = true;
+                }
                 timer_sound.get()->stop();
             }
 
@@ -147,7 +160,7 @@ void QTE::update(float elapsed) {
     else{
         timer_sound.get()->stop();
         if((!correct_sound || correct_sound.get()->stopped || correct_sound.get()->stopping) && !wrong_correct_played){
-            correct_sound = Sound::play(*correct_sample,0.5f);
+            correct_sound = Sound::play(*correct_sample,0.2f);
             wrong_correct_played = true;
         }
         if(timer >= time_limit && !success){
@@ -176,9 +189,11 @@ void QTE::reset(){
         trap_keys.erase(trap_keys.begin() + random_index);
         random_trap_index = dist_trap_index(gen);
         trap_key = trap_keys[random_trap_index];
+        required_key = trap_key;
 
         std::cout << "trap key is on" << std::endl;
         std::cout << trap_key << std::endl;
+        std::cout << required_key << std::endl;
     }
     else{
         trap_key_on = false;
@@ -197,9 +212,12 @@ void QTE::key_flashing_reset(){
 }
 
 void QTE::bait_hook_up(float elapsed){
+    if(!fail_sound || fail_sound.get()->stopped || fail_sound.get()->stopping){
+        fail_sound = Sound::play(*fail_sample,0.5f);
+    }
     bait->reel_up(elapsed);
+    puffer->qte_death(bait);
     if(hook_up_timer < 3.0f) {
-        puffer->main_transform->position.z += elapsed * 30.0f;
         hook_up_timer += elapsed;
     }
     else{
@@ -208,6 +226,10 @@ void QTE::bait_hook_up(float elapsed){
 }
 
 void QTE::end() {
+    puffer->qte_exit();
+    if (bait->reel_up_timer > 3.0f) {
+        bait->to_siberia();
+    }
     bait->is_active = true;
     bait->currently_in_qte = false;
     active = false;

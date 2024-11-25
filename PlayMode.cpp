@@ -27,6 +27,7 @@ bool is_game_over = false;
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
+GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 
@@ -49,6 +50,12 @@ Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * 
 Load< MeshBuffer > bait_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/bait_objects.pnct"));
 	bait_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load<MeshBuffer> chopping_board_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/chopping_board.pnct"));
+	chopping_board_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -154,6 +161,25 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > chopping_board_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/chopping_board.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = chopping_board_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = chopping_board_scene_for_depth_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*chopping_board_meshes);
+	});
+});
+
 // noise samples
 Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("sound/flipper.wav"));
@@ -201,6 +227,14 @@ Load< Sound::Sample >  wrong_sample(LoadTagDefault, []() -> Sound::Sample const 
 
 Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("sound/bg_music.wav"));
+});
+
+Load< Sound::Sample >  congrats_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/congrats.wav"));
+});
+
+Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/fail.wav"));
 });
 
 extern UIElements ui_elements;
@@ -252,6 +286,17 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		bait_manager.baits_in_use.push_back(new_bait);
 		bait_manager.active_baits_num++;
 	}
+
+	std::vector<Scene::Transform *> chopping_board_transforms = scene.spawn(*chopping_board_scene,CHOPPING_BOARD);
+	for (auto t : chopping_board_transforms){
+        if (t->name == "choppingboard_main") {
+			chopping_board_main_mesh = t;
+			chopping_board_main_mesh->position = glm::vec3(0.0f, 0.0f, 200.0f);
+			chopping_board_main_mesh->scale = glm::vec3(0.0f);
+        }
+	}
+	
+
 
 	// for(Bait b : bait_manager.baits_in_use){
     	
@@ -409,7 +454,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 
-	if(Mode::current == menu && menu->is_before_game_start){
+	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
 
@@ -417,6 +462,27 @@ void PlayMode::update(float elapsed) {
     if(hunger_decrement_counter > 5.0f){
         hunger_decrement_counter = 0.0f;
         QTE::hunger -= 1;
+	}
+
+	if(is_game_over){
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+		puffer.main_transform->position = glm::vec3(0.0f, 0.0f, 205.0f);
+
+		
+		wobble += elapsed / 1.0f;
+		wobble -= std::floor(wobble);
+		for(Scene::Transform* collectible : puffer.collected){
+			
+			collectible->rotation = collectible->rotation * glm::angleAxis(
+				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+				glm::vec3(0.0f, 0.2f, 0.0f)
+			);
+		}
+		
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);
 	}
 
 	//reset button press counters:
@@ -586,7 +652,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		if(Mode::current != menu){
+		if(Mode::current != menu && !is_game_over){
 			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
@@ -596,7 +662,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw oxygen bar
 	{
-		int num_bubbles = int(floor(puffer.oxygen_level / 10.0f));
+		int num_bubbles = int(puffer.oxygen_level / 10.0f);
 		if(puffer.above_water){
 			{
 				for(int index = 0; index < num_bubbles; index++){

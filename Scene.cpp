@@ -565,9 +565,15 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
     if(type_of_spawn==PUFFER){
         transform_names = { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
     } else if (type_of_spawn == CARROT_BAIT){
-		transform_names = { "carrotbait_main", "carrotbait_string", "carrotbait_base"};
+		transform_names = { "carrotbait_main1", "carrotbait_string1", "carrotbait_base1",
+							"carrotbait_main2", "carrotbait_string2", "carrotbait_base2",
+							"carrotbait_main3", "carrotbait_string3", "carrotbait_base3",
+							"carrotbait_main4", "carrotbait_string4", "carrotbait_base4",
+							"carrotbait_main5", "carrotbait_string5", "carrotbait_base5"};
 	} else if (type_of_spawn == FISH_BAIT){
 		transform_names = { "fishbait_main", "fishbait_string", "fishbait_base"};
+	} else if (type_of_spawn == CHOPPING_BOARD){
+		transform_names = { "choppingboard_main", "chopping_board", "kitchen_knife", "handle"};
 	}
 
     std::vector< Scene::Transform * > transforms_vector;
@@ -649,3 +655,26 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
 
     return transforms_vector;
 }
+
+void Scene::Transform::decompose_transform(const glm::mat4x3 &transform, glm::vec3 &position, glm::vec3 &scale, glm::quat &rotation)
+{
+    // Extract translation (last row)
+    position = glm::vec3(transform[3]);
+
+    // Extract rotation-scale matrix
+    glm::mat3 rotation_scale = glm::mat3(transform);
+
+    // Extract scale factors
+    scale.x = glm::length(rotation_scale[0]); // Length of the first column
+    scale.y = glm::length(rotation_scale[1]); // Length of the second column
+    scale.z = glm::length(rotation_scale[2]); // Length of the third column
+
+    // Normalize the rotation-scale matrix to get pure rotation
+    if (scale.x > 0.0f) rotation_scale[0] /= scale.x;
+    if (scale.y > 0.0f) rotation_scale[1] /= scale.y;
+    if (scale.z > 0.0f) rotation_scale[2] /= scale.z;
+
+    // Convert the rotation matrix to a quaternion
+    rotation = glm::quat_cast(rotation_scale);
+}
+
