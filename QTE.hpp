@@ -38,6 +38,8 @@ struct QTE {
     std::shared_ptr< Sound::PlayingSample > flicker_sound;
     std::shared_ptr< Sound::PlayingSample > correct_sound;
     std::shared_ptr< Sound::PlayingSample > wrong_sound;
+    std::shared_ptr< Sound::PlayingSample > congrats_sound;
+    std::shared_ptr< Sound::PlayingSample > fail_sound;
 
     QTE(Puffer *puffer_, Bait *bait_): puffer(puffer_), bait(bait_) {};
     QTE() = default;

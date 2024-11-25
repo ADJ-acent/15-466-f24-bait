@@ -55,6 +55,7 @@ struct PlayMode : Mode {
 	float elapsedtime = 0.0f;
 
 	Scene::Transform *waterplane_size = nullptr;
+	Scene::Transform *chopping_board_main_mesh = nullptr;
 
 	std::vector<Button> example_buttons;
 	std::shared_ptr< Sound::PlayingSample > bg_music_sound;

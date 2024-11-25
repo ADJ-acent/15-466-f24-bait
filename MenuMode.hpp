@@ -16,15 +16,23 @@
 
 extern Load< Font > font;
 extern std::shared_ptr< PlayMode > play;
+extern bool is_game_over;
 
 
 struct MenuMode : public Mode {
+	enum MenuState {
+		BEFORE_START,
+		IN_GAME,
+		END_GAME
+	};
+
 	MenuMode() {
 		//Start Menu set up
 		start_choices.emplace_back("BAIT");
 	
 		start_choices.emplace_back("Play", [&](){
-			is_before_game_start = false;
+			menu_state = IN_GAME;
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(background);
 		}, true);
 		start_menu_buttons.push_back(start_choices.back().button);
@@ -46,6 +54,7 @@ struct MenuMode : public Mode {
 		pause_choices.emplace_back("BAIT");
 
 		pause_choices.emplace_back("Resume", [&](){
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(background);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
@@ -58,6 +67,9 @@ struct MenuMode : public Mode {
 			play = std::make_shared< PlayMode >();
 			QTE::score = 0;
 			QTE::hunger = 100;
+			is_game_over = false;
+			menu_state = IN_GAME;
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(play);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
@@ -72,6 +84,37 @@ struct MenuMode : public Mode {
 
 		pause_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		//End Menu set up
+		end_choices.emplace_back("BAIT");
+
+		end_choices.emplace_back("Restart", [&](){
+			play.get()->bg_music_sound.get()->stop();
+			play = std::make_shared< PlayMode >();
+			QTE::score = 0;
+			QTE::hunger = 100;
+			is_game_over = false;
+			menu_state = IN_GAME;
+			SDL_SetRelativeMouseMode(SDL_TRUE);
+			Mode::set_current(play);
+		}, true);
+		end_menu_buttons.push_back(end_choices.back().button);
+
+		end_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		end_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		end_choices.emplace_back("Exit", [&](){
+			Mode::set_current(nullptr);
+		}, true);
+		end_menu_buttons.push_back(end_choices.back().button);
+
+		end_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		end_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		//Current Menu Set up
+
+		current_choices = start_choices;
+		current_menu_buttons = start_menu_buttons;
 	}
 	virtual ~MenuMode() { }
 
@@ -97,10 +140,20 @@ struct MenuMode : public Mode {
 
 	std::vector< Choice > pause_choices;
 	std::vector< Button > pause_menu_buttons;
+
+	std::vector< Choice > end_choices;
+	std::vector< Button > end_menu_buttons;
+
+	std::vector< Choice > current_choices;
+	std::vector< Button > current_menu_buttons;
+
 	
 	uint32_t selected = 0;
 	bool mouse_select_mode_on  = false;
-	bool is_before_game_start = true;
+
+	MenuState menu_state = BEFORE_START;
+	bool in_game_menu_set = false;
+	bool end_game_menu_set = false;
 
 	//called when user presses 'escape':
 	// (note: if not defined, menumode will Mode::set_current(background).)

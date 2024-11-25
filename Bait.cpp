@@ -13,7 +13,7 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
     type_of_bait = tob;
 
     if(type_of_bait == CIRCLE){
-        bait_bites_left = 3;
+        bait_bites_left = 5;
     }
     else{
         bait_bites_left = 5;
@@ -45,16 +45,13 @@ void Bait::reset(){
 void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
 {
     for (auto t : transform_vector){
-        if (t->name == "carrotbait_main" || t->name == "fishbait_main") {
+        if (t->name == "carrotbait_main1" || t->name == "fishbait_main") {
             main_transform = t;
         }
-        else if (t->name == "carrotbait_main" || t->name == "fishbait_main") {
-            mesh = t;
-        }
-        else if (t->name == "carrotbait_base" || t->name == "fishbait_base") {
+        else if (t->name == "carrotbait_base1" || t->name == "fishbait_base") {
             mesh_parts.bait_base = t;
         }
-        else if (t->name == "carrotbait_string" || t->name == "fishbait_string") {
+        else if (t->name == "carrotbait_string1" || t->name == "fishbait_string") {
             mesh_parts.bait_string = t;
         }
 
@@ -69,6 +66,9 @@ void Bait::reel_up(float elapsed, float reel_up_speed)
     reel_up_timer += elapsed;
     if(reel_up_timer <= 3.0f){
         main_transform->position.z += reel_up_speed * elapsed;
+    }
+    else{
+        to_siberia();
     }
 }
 

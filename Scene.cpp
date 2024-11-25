@@ -565,9 +565,15 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
     if(type_of_spawn==PUFFER){
         transform_names = { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
     } else if (type_of_spawn == CARROT_BAIT){
-		transform_names = { "carrotbait_main", "carrotbait_string", "carrotbait_base"};
+		transform_names = { "carrotbait_main1", "carrotbait_string1", "carrotbait_base1",
+							"carrotbait_main2", "carrotbait_string2", "carrotbait_base2",
+							"carrotbait_main3", "carrotbait_string3", "carrotbait_base3",
+							"carrotbait_main4", "carrotbait_string4", "carrotbait_base4",
+							"carrotbait_main5", "carrotbait_string5", "carrotbait_base5"};
 	} else if (type_of_spawn == FISH_BAIT){
 		transform_names = { "fishbait_main", "fishbait_string", "fishbait_base"};
+	} else if (type_of_spawn == CHOPPING_BOARD){
+		transform_names = { "choppingboard_main", "chopping_board", "kitchen_knife", "handle"};
 	}
 
     std::vector< Scene::Transform * > transforms_vector;
