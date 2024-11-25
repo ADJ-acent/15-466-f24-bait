@@ -14,7 +14,6 @@ enum BaitType {
 
 struct Bait {
     Scene::Transform* main_transform = nullptr;
-    Scene::Transform* mesh = nullptr;
 
     BaitType type_of_bait;
     float total_life_time = 0.0f;

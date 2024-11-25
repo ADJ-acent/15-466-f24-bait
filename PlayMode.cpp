@@ -290,7 +290,9 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	std::vector<Scene::Transform *> chopping_board_transforms = scene.spawn(*chopping_board_scene,CHOPPING_BOARD);
 	for (auto t : chopping_board_transforms){
         if (t->name == "choppingboard_main") {
-			t->position = glm::vec3(0.0f, 0.0f, 2000.0f);
+			chopping_board_main_mesh = t;
+			chopping_board_main_mesh->position = glm::vec3(0.0f, 0.0f, 200.0f);
+			chopping_board_main_mesh->scale = glm::vec3(0.0f);
         }
 	}
 	
@@ -452,7 +454,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 
-	if(Mode::current == menu && menu->is_before_game_start){
+	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
 
@@ -460,6 +462,15 @@ void PlayMode::update(float elapsed) {
     if(hunger_decrement_counter > 5.0f){
         hunger_decrement_counter = 0.0f;
         QTE::hunger -= 1;
+	}
+
+	if(is_game_over){
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+		puffer.main_transform->position = glm::vec3(0.0f, 0.0f, 205.0f);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);
 	}
 
 	//reset button press counters:
@@ -629,7 +640,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		if(Mode::current != menu){
+		if(Mode::current != menu && !is_game_over){
 			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));

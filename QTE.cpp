@@ -103,23 +103,28 @@ void QTE::update(float elapsed) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         
         if (state[SDL_GetScancodeFromKey(required_key)]) {
+            if(!trap_key_on) {
+                correct_key_pressed = true;
+                QTE::hunger++; 
+                QTE::score++;
+                bait->bait_bites_left--;
+                if(bait->bait_bites_left > 0)   {
+                    bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
+                } 
+                else{
+                    bait->mesh_parts.bait_base->scale *= 0;
+                }
+                
+                std::cout << "scaled down" << std::endl;
+                std::cout << bait->bait_bites_left << std::endl;
 
-            correct_key_pressed = true;
-            QTE::hunger++; 
-            QTE::score++;
-            bait->bait_bites_left--;
-            if(bait->bait_bites_left > 0)   {
-                bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
-            } 
-            else{
-                bait->mesh_parts.bait_base->scale *= 0;
+                if(bait->bait_bites_left == 0){
+                    success = true;
+                }
             }
-            
-            std::cout << "scaled down" << std::endl;
-            std::cout << bait->bait_bites_left << std::endl;
-
-            if(bait->bait_bites_left == 0){
-                success = true;
+            else{
+                std::cout << "QTE Failed! Trap Key Pressed!" << std::endl;
+                failure = true;
             }
 
             return;
@@ -184,9 +189,11 @@ void QTE::reset(){
         trap_keys.erase(trap_keys.begin() + random_index);
         random_trap_index = dist_trap_index(gen);
         trap_key = trap_keys[random_trap_index];
+        required_key = trap_key;
 
         std::cout << "trap key is on" << std::endl;
         std::cout << trap_key << std::endl;
+        std::cout << required_key << std::endl;
     }
     else{
         trap_key_on = false;
