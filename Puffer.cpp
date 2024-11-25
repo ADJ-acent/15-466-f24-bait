@@ -255,9 +255,9 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 bool above_water_before = above_water;
                 above_water = puffer_collider.check_over_water(d.transform,d.mesh);
                 if(above_water==false && above_water_before==true){
-                    through_water_sound = Sound::play(*through_water_sample, 0.1f * glm::length(velocity));
+                    through_water_sound = Sound::play(*through_water_sample, 0.3f * glm::length(velocity));
                 } else if(above_water==true && above_water_before==false){
-                    through_water_sound = Sound::play(*flipper_sample,0.1f * glm::length(velocity));
+                    through_water_sound = Sound::play(*flipper_sample,0.3f * glm::length(velocity));
                 }
             }
 
@@ -379,11 +379,11 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
         if(building_up){
             if(!blow_up_sound.get() || blow_up_sound.get()->stopped || blow_up_sound.get()->stopping){
-                blow_up_sound = Sound::loop(*blow_up_sample,0.5f);
+                blow_up_sound = Sound::loop(*blow_up_sample,1.0f);
                 whoosh_sound_played = false;
             }
             if(whoosh_sound.get()){
-                whoosh_sound.get()->stop(0.5f);
+                whoosh_sound.get()->stop(0.1f);
             }
 
         } else {
@@ -396,7 +396,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
         if(!building_up && !recovered && !whoosh_sound_played && !above_water){
             //whooshing
             if(!whoosh_sound.get() || whoosh_sound.get()->stopped || whoosh_sound.get()->stopping){
-                whoosh_sound = Sound::play(*whoosh_sample,0.2f * glm::length(velocity));
+                whoosh_sound = Sound::play(*whoosh_sample,glm::length(velocity));
                 whoosh_sound_played = true;
             }
         }
@@ -477,7 +477,7 @@ void Puffer::update_build_up_animations(float t)
 //swim direction -1 for left, 1 for right
 void Puffer::swim(int8_t swim_direction)
 {
-    flipper_sound = Sound::play(*flipper_sample, 0.5f);
+    flipper_sound = Sound::play(*flipper_sample, 1.0f);
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
     velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
@@ -543,6 +543,70 @@ void Puffer::assign_mesh_parts(std::vector< Scene::Transform * > transform_vecto
     }
     
 }
+
+/*void Puffer::see_through_meshes(std::vector<Scene::Transform *> transforms,std::vector<std::string> meshnames,  MeshBuffer* meshes)
+{
+    glm::vec4 transvec = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec3 origin = camera->make_local_to_world() * transvec;
+    glm::vec3 ray = glm::normalize(mesh->position - (origin));
+
+
+    glm::vec3 point; //start at origin
+    float step = 0.1f;
+    float t = 0.0f;
+    bool inbetween = false;
+
+
+    auto inside = [](glm::vec3 point,  glm::vec3 bboxmin, glm::vec3 bboxmax)
+    {
+        
+        glm::vec3 cent = (bboxmin + bboxmax)/2.0f; //get the center of bbox
+        glm::vec3 dx = glm::normalize(bboxmax - glm::vec3(bboxmin.x,bboxmax.y,bboxmax.z)); //unit vectors in direction of bbox sides for 
+        glm::vec3 dy = glm::normalize(bboxmax - glm::vec3(bboxmax.x,bboxmin.y,bboxmax.z)); //x, y, & z
+        glm::vec3 dz = glm::normalize(bboxmax - glm::vec3(bboxmax.x,bboxmax.y,bboxmin.z));
+        glm::vec3 half = glm::vec3(glm::length(bboxmin.x-cent.x), glm::length(bboxmin.y-cent.y), glm::length(bboxmin.z-cent.z));
+
+        return(abs(dot(point - cent,dx)) <= half.x && abs(dot(point - cent,dy)) <= half.y && abs(dot(point - cent,dz)) <= half.z );
+
+    };
+
+
+    for (int i = 0; i <transforms.size(); i++) //loop through the vector of transforms, check if the ray intersects them
+	{
+        inbetween = false;
+        t = 0.0f;
+        point  = origin;
+        while (abs(point - origin).x  < abs(mesh->position - origin).x &&
+			   abs(point - origin).y  < abs(mesh->position - origin).y && 
+			   abs(point - origin).z  < abs(mesh->position - origin).z && !inbetween)  
+        {
+            
+            point = origin + t * ray;
+
+            if (inside(point, meshes->lookup(meshnames[i]).min + transforms[i]->position, 
+                meshes->lookup(meshnames[i]).max + transforms[i]->position))
+            {
+                //set mesh render flag 
+                inbetween = true;
+                
+            }
+            t += step;
+
+        }
+
+        if(inbetween)
+        {
+            transforms[i]->scale = glm::vec3(0.0f);
+            //std::cout << "wall name " << wallpos[i] ->name << std::endl;
+        }
+        else
+        {
+            transforms[i]->scale = glm::vec3(1.0f);
+            //std::cout << "wall name " << wallpos[i] ->name << std::endl;
+        }
+    }
+
+} */
 
 glm::vec3 Puffer::calculate_jitter(float elapsed)
 {

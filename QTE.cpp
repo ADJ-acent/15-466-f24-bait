@@ -8,6 +8,11 @@ std::mt19937 gen(rd());
 std::uniform_int_distribution<int> dist_index(0, 3);
 std::uniform_int_distribution<int> dist_trap_index(0, 2);
 
+extern Load< Sound::Sample > timer_sample;
+extern Load< Sound::Sample > flicker_sample;
+extern Load< Sound::Sample > correct_sample;
+extern Load< Sound::Sample > wrong_sample;
+
 void QTE::start() {
     active = true;
     success = false;
@@ -28,17 +33,34 @@ void QTE::start() {
 }
 
 void QTE::update(float elapsed) {
-    if (!active) return;
+    if (!active){
+        if(timer_sound){
+            timer_sound.get()->stop();
+        }
+        
+        return;
+    }
+    
 
     timer += elapsed;
     red_percentage = timer/time_limit;
 
     if(failure){
+        if(timer_sound){
+            timer_sound.get()->stop();
+        }
+        if((!wrong_sound || wrong_sound.get()->stopped || wrong_sound.get()->stopping) && !wrong_correct_played){
+            wrong_sound = Sound::play(*wrong_sample,0.5f);
+            wrong_correct_played = true;
+        }
         bait_hook_up(elapsed);
         return;
     }
 
     if(success){
+        if(timer_sound){
+            timer_sound.get()->stop();
+        }
         if(timer >= time_limit) {
             end();
             return;
@@ -63,7 +85,7 @@ void QTE::update(float elapsed) {
             else{
                 key_flash_reset_timer = 0.28f;
             }
-        }
+        } 
         return;
     }
     else if(input_delay <= 0.0f && !key_reset){
@@ -72,6 +94,9 @@ void QTE::update(float elapsed) {
     }
 
     if(!correct_key_pressed) {
+        if(!timer_sound || timer_sound.get()->stopped || timer_sound.get()->stopping){
+		    timer_sound = Sound::loop(*timer_sample,0.2f);
+	    }
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         
         if (state[SDL_GetScancodeFromKey(required_key)]) {
@@ -110,6 +135,8 @@ void QTE::update(float elapsed) {
                 std::cout << "QTE Failed! Time's up!" << std::endl;
                 failure = true;
                 return;
+            } else {
+                timer_sound.get()->stop();
             }
 
             input_delay = input_delay_time;
@@ -119,6 +146,11 @@ void QTE::update(float elapsed) {
         }
     }
     else{
+        timer_sound.get()->stop();
+        if((!correct_sound || correct_sound.get()->stopped || correct_sound.get()->stopping) && !wrong_correct_played){
+            correct_sound = Sound::play(*correct_sample,0.5f);
+            wrong_correct_played = true;
+        }
         if(timer >= time_limit && !success){
             input_delay = input_delay_time;
             reset();
@@ -130,6 +162,7 @@ void QTE::update(float elapsed) {
 
 void QTE::reset(){
     correct_key_pressed = false;
+    wrong_correct_played = false;
     timer = 0.0f;
     red_percentage = 0.0f;
     key_flash_reset_timer = 0.046f;
@@ -155,6 +188,7 @@ void QTE::reset(){
 
 void QTE::key_flashing_reset(){
     timer = 0.0f;
+    flicker_sound = Sound::play(*flicker_sample,0.5f);
 
     required_key = possible_keys[flashing_key_index];
     flashing_key_index += 1;

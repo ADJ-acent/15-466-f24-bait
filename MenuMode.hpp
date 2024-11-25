@@ -54,7 +54,10 @@ struct MenuMode : public Mode {
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
 		pause_choices.emplace_back("Restart", [&](){
+			play.get()->bg_music_sound.get()->stop();
 			play = std::make_shared< PlayMode >();
+			QTE::score = 0;
+			QTE::hunger = 100;
 			Mode::set_current(play);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);

@@ -39,4 +39,5 @@ struct QTEMode : public Mode {
 	// float background_time_scale = 1.0f;
 	// float background_fade = 0.5f;
 
+
 };

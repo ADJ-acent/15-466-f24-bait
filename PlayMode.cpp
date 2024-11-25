@@ -22,6 +22,7 @@
 #include <random>
 
 extern std::shared_ptr< MenuMode > menu;
+bool is_game_over = false;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
@@ -163,7 +164,7 @@ Load< Sound::Sample >  through_water_sample(LoadTagDefault, []() -> Sound::Sampl
 });
 
 Load< Sound::Sample >  blow_up_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("sound/blow_up_fish.wav"));
+	return new Sound::Sample(data_path("sound/charge_up.wav"));
 });
 
 Load< Sound::Sample >  whoosh_sample(LoadTagDefault, []() -> Sound::Sample const * {
@@ -180,6 +181,26 @@ Load< Sound::Sample >  button_select_sample(LoadTagDefault, []() -> Sound::Sampl
 
 Load< Sound::Sample >  button_hover_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("sound/button_hover.wav"));
+});
+
+Load< Sound::Sample >  timer_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/timer_tick.wav"));
+});
+
+Load< Sound::Sample >  flicker_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/flicker.wav"));
+});
+
+Load< Sound::Sample >  correct_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/correct.wav"));
+});
+
+Load< Sound::Sample >  wrong_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/wrong.wav"));
+});
+
+Load< Sound::Sample >  bg_music_sample(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("sound/bg_music.wav"));
 });
 
 extern UIElements ui_elements;
@@ -206,6 +227,8 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 	}
+
+	bg_music_sound = Sound::loop(*bg_music_sample,0.2f);
 
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
@@ -391,7 +414,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 	hunger_decrement_counter += elapsed;
-    if(hunger_decrement_counter>5.0f){
+    if(hunger_decrement_counter > 5.0f){
         hunger_decrement_counter = 0.0f;
         QTE::hunger -= 1;
 	}
@@ -417,8 +440,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//set up light type and position for depth_texture_program:
 	// all the shaders
-	{
-		
+
+	{	
 		glUseProgram(depth_texture_program->program);
 		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
@@ -519,7 +542,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(wave_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(wave_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform3fv(wave_texture_program->CAMPOS_vec3, 1, glm::value_ptr( camera->transform->make_local_to_world() * xyzvec));
-		glUniform3fv(wave_texture_program->CAMROT_vec3, 1, glm::value_ptr( camera->transform->rotation));
+		glUniform3fv(wave_texture_program->PLAYER_POS_vec3, 1, glm::value_ptr( puffer.get_position()));
+		glUniform3fv(wave_texture_program->PLAYER_VEL_vec3, 1, glm::value_ptr( puffer.velocity ));
+		glUniform1f(wave_texture_program->PLAYER_SCALE_float, puffer.current_scale);
 		glUniform1f(wave_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0); 
 
@@ -544,18 +569,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
-
 	}
 
-
 	{
-
-
-
-
-
 		//framebuffers.tone_map();
-
 	}
 
 	//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
@@ -569,7 +586,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		if(Mode::current == shared_from_this()){
+		if(Mode::current != menu){
 			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));
@@ -592,7 +609,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	}
 
-	{ //use DrawLines to overlay some text:
+	//draw text for QTE trigger
+	{
 		glDisable(GL_DEPTH_TEST);
 	
 		if(Mode::current == shared_from_this()) {
