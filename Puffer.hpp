@@ -29,7 +29,8 @@ struct Puffer {
 
     //store bools of if collectibles are collected
     struct {
-        bool boat = false;
+        bool floatie = true;
+        bool soda = true;
     } collectibles;
 
     std::vector<LinearAnimation<glm::vec3>> build_up_animations;

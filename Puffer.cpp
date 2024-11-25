@@ -292,6 +292,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
             if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
                 //check collectibles by name here
+                
                 check_collectibles(d.transform);
             }
         }
@@ -463,12 +464,21 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
 }
 void Puffer::check_collectibles(Scene::Transform* collided_object){
-    if (collided_object->name == "boat1_obs"){
+    if (collided_object->name == "cooler1"){
         //move it to end scene
-        collided_object->scale = glm::vec3(2.0f);
+        for (Scene::Drawable &d : scene->drawables){
+            if(d.transform->name == "can2"){
+                collided_object = d.transform;
+            }
+        }
+        collided_object->scale = glm::vec3(5.0f);
         collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
-        collided_object->rotation = glm::vec3(0.5f,0.5f,0.5f);
-        collectibles.boat = true;
+        collectibles.soda = true;
+        collected.emplace_back(collided_object);
+    } else if (collided_object->name == "duckyfloatie"){
+        collided_object->scale = glm::vec3(5.0f);
+        collided_object->position = glm::vec3(20.0f, 20.0f, 200.0f);
+        collectibles.floatie = true;
         collected.emplace_back(collided_object);
     }
 }

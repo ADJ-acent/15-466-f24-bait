@@ -480,6 +480,8 @@ void PlayMode::update(float elapsed) {
 				glm::vec3(0.0f, 0.2f, 0.0f)
 			);
 		}
+
+		//for debug
 		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
