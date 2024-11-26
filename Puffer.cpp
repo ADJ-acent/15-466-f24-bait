@@ -496,7 +496,7 @@ void Puffer::check_collectibles(Scene::Transform* collided_object){
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "anchor_collectible"){
         collided_object->scale = glm::vec3(0.0f);
-        collided_object->position = glm::vec3(-12.0f, 20.0f, 215.0f);
+        collided_object->position = glm::vec3(-17.0f, 20.0f, 215.0f);
         collectibles.anchor = true;
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "treasurechest_collectible"){
@@ -505,6 +505,7 @@ void Puffer::check_collectibles(Scene::Transform* collided_object){
         collectibles.treasure = true;
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "bucket_collectible"){
+        collided_object->parent = nullptr;
         collided_object->scale = glm::vec3(0.0f);
         collided_object->position = glm::vec3(5.0f, 20.0f, 215.0f);
         collectibles.bucket = true;
