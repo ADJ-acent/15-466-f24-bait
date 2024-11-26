@@ -56,6 +56,7 @@ struct Puffer {
     float oxygen_level = 100.0f;
     float bubble_spawn_cooldown = 0.0f;
     uint8_t swimming_side = 0; // 0 is left, 1 is right
+    uint8_t last_swimming_size = 2;
 
     bool building_up = false;
     bool recovered = true;
