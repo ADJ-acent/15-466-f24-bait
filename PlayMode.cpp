@@ -334,6 +334,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			puffer.pause_velocity = puffer.velocity;
 			menu->background = shared_from_this();
 			Mode::set_current(menu);
 			return true;
@@ -457,6 +458,10 @@ void PlayMode::update(float elapsed) {
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
+	
+	if(Mode::current == menu && menu->menu_state == MenuMode::IN_GAME){
+		puffer.velocity = glm::vec3(0.0f);
+	}
 
 	hunger_decrement_counter += elapsed;
     if(hunger_decrement_counter > 5.0f){
@@ -484,6 +489,8 @@ void PlayMode::update(float elapsed) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}
+
+	
 
 	//reset button press counters:
 	left.downs = 0;

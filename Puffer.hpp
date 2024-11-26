@@ -73,6 +73,7 @@ struct Puffer {
     glm::quat original_rotation = glm::quat();
     glm::quat base_rotation = glm::quat();
     glm::vec3 velocity = glm::vec3(0);
+    glm::vec3 pause_velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
     Scene *scene;
 
