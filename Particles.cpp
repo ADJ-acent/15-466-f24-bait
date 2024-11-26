@@ -1,7 +1,7 @@
 #include "Particles.hpp"
 #include "ParticleProgram.hpp"
 #include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/string_cast.hpp>
+// #include <glm/gtx/string_cast.hpp>
 #include <algorithm>
 
 
