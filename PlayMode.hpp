@@ -9,6 +9,7 @@
 #include "Bait.hpp"
 #include "BaitManager.hpp"
 #include "Button.hpp"
+#include "Particles.hpp"
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -47,6 +48,8 @@ struct PlayMode : Mode {
 	//camera:
 	Scene::Camera *camera = nullptr;
 	
+	//particle system
+	ParticleSystem particle_system;
 
 	float waterheight = 0;
 

@@ -240,27 +240,10 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
+extern ParticleTextures particle_textures;
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
-	{
-		//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-		//replace nullptr with function name to get a callback when the button is pressed and released
-		//search up all use cases of example buttons when seeing usage and removing, there are references to it in draw, update, and handle events in this file
-		//I also removed the ability to enter relative mouse mode by commenting it out in the handle events function, feel free to uncomment when you
-		//understand how to set up buttons. We probably would like to directly enter relative mouse mode when entering playmode, and exit when
-		// we switch to menu and setting modes
-
-		// auto example_function = []() {
-		// 	// you can set boolean here, or do other operations, but the function should return type void and take no parameters
-		// 	// you can also use capture & in lambdas or have static functions of the mode passed into the button constructor
-		// 	std::cout<<"button pressed, function triggered!\n"<<std::endl;
-		// };
-
-		// example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,example_function));
-		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
-		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
-	}
 
 	bg_music_sound = Sound::loop(*bg_music_sample,0.2f);
 
@@ -295,20 +278,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 			chopping_board_main_mesh->scale = glm::vec3(0.0f);
         }
 	}
-	
-
-
-	// for(Bait b : bait_manager.baits_in_use){
-    	
-	// 	if(b.type_of_bait == 0){
-	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
-	// 	} else {
-	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
-	// 	}
-
-	// }
 
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
@@ -317,6 +286,10 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
+	particle_system.active_camera = &camera;
+	particle_system.add_particle(particle_textures.bubbles[0], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(0), glm::vec3(0), glm::vec3(1)));
+	particle_system.add_particle(particle_textures.bubbles[1], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(1), glm::vec3(0), glm::vec3(1)));
+	particle_system.add_particle(particle_textures.bubbles[2], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(-3), glm::vec3(0), glm::vec3(1)));
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
@@ -423,7 +396,7 @@ void PlayMode::update(float elapsed) {
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
-
+	particle_system.update(elapsed);
 	bait_manager.update_bait_lifetime(elapsed);
 	{		
 		//check if there is bait in range
@@ -636,6 +609,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
 	}
+
+	//draw the particles
+	particle_system.draw();
 
 	{
 		//framebuffers.tone_map();
