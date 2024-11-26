@@ -70,9 +70,9 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		
-		if(mesh_name.find("invisible") == -1)
+		if(mesh_name.find("invisible") == std::string::npos)
 		{
-			if(mesh_name.find("seaweed") != -1)
+			if(mesh_name.find("seaweed") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -83,7 +83,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.count = mesh.count;
 						
 			}
-			else if(mesh_name.find("wall") != -1)
+			else if(mesh_name.find("wall") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -93,7 +93,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
 			}
-			else if(mesh_name.find("sand") != -1)
+			else if(mesh_name.find("sand") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -103,7 +103,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
 			}
-			else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
+			else if(mesh_name.find("waterplane") != std::string::npos || mesh_name.find("puddle") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();

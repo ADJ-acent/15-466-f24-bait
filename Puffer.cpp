@@ -467,7 +467,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             // update mesh rotation to return to normal (if we rotated camera recently)
             mesh->position.y = original_mesh_position.y + sin(idletime * 2.0f);
             rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(glm::radians(15.0f) * sin(idletime * 2.0f) ,glm::vec3(1.0f,0.0f,0.0f)) *  original_mesh_rotation, rotation_amt);
+            mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(float((glm::radians(15.0f)) * sin(idletime * 2.0f)),glm::vec3(1.0f,0.0f,0.0f)) *  original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
             if (swim_cooldown == 0.0f) {
                 base_rotation = mesh->rotation;
