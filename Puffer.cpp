@@ -538,10 +538,19 @@ void Puffer::swim(int8_t swim_direction)
     flipper_sound = Sound::play(*flipper_sample, 1.0f);
     float build_up_penaulty = 1.0f / current_scale;
     swimming_side = (-swim_direction + 1) / 2;
-    velocity += get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
+    glm::vec3 boost = get_forward() * (0.15f * build_up_penaulty) + (float(swim_direction) * 0.05f * build_up_penaulty) * get_right();
+    //get a bonus for alternating left and right
+    if (last_swimming_size != 2 && last_swimming_size != swimming_side) {
+        boost *= 3.0f;
+    }
+    if (above_water) {
+        boost *= 0.5f;
+    }
+    velocity += boost;
     if (building_up) {
         base_rotation = mesh->rotation;
     }
+    last_swimming_size = swimming_side;
 }
 
 void Puffer::switch_to_main_menu_camera()
