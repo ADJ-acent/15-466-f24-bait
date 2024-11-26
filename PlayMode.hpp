@@ -47,6 +47,9 @@ struct PlayMode : Mode {
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
+
+	//transforms
+	Scene::Transform *rotate_duck = nullptr;
 	
 	//particle system
 	ParticleSystem particle_system;

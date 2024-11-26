@@ -65,59 +65,61 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		
+		if(mesh_name.find("invisible") == -1)
+		{
+			if(mesh_name.find("seaweed") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = wiggle_texture_program_pipeline;
+				drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+						
+			}
+			else if(mesh_name.find("sand") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = depth_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+			}
+			else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				//drawable.hidden = true;
+				//waterplane_drawable = &scene.drawables.back();
+				drawable.pipeline = wave_texture_program_pipeline;
+				drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+				
+				
+			}
+			else
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = lit_color_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+			}
 
-		if(mesh_name.find("seaweed") != -1)
-		{
-			scene.drawables.emplace_back(transform);
 			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = wiggle_texture_program_pipeline;
-			drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
 			drawable.pipeline.type = mesh.type;
 			drawable.pipeline.start = mesh.start;
 			drawable.pipeline.count = mesh.count;
-					
+			drawable.mesh = &mesh;
+			drawable.meshbuffer = &(*main_meshes);
 		}
-		else if(mesh_name.find("sand") != -1)
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = depth_texture_program_pipeline;
-			drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-		}
-		else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			//drawable.hidden = true;
-			//waterplane_drawable = &scene.drawables.back();
-			drawable.pipeline = wave_texture_program_pipeline;
-			drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-			
-			
-		}
-		else
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = lit_color_texture_program_pipeline;
-			drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-		}
-
-		Scene::Drawable &drawable = scene.drawables.back();
-		drawable.pipeline.type = mesh.type;
-		drawable.pipeline.start = mesh.start;
-		drawable.pipeline.count = mesh.count;
-		drawable.mesh = &mesh;
-		drawable.meshbuffer = &(*main_meshes);
 		//NOTE: add this to other scenes
 
 	});
@@ -298,6 +300,12 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
+	for (auto &transform: scene.transforms)
+	{
+		if(transform.name.find("invisible") != -1)
+		{rotate_duck = &transform;}
+	}
+
 }
 
 PlayMode::~PlayMode() {
@@ -393,6 +401,8 @@ void PlayMode::update(float elapsed) {
 	}
 	
 	elapsedtime += elapsed;
+
+	rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
