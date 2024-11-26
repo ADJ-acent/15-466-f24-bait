@@ -308,7 +308,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	particle_system.active_camera = &camera;
 	for (auto& transform : scene.transforms) {
-		if (transform.name.find("waterplane") != -1) {
+		if (transform.name.find("waterplane") != std::string::npos) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
@@ -317,9 +317,9 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	for (auto &transform: scene.transforms)
 	{
-		if(transform.name.find("invisible_duck") != -1)
+		if(transform.name.find("invisible_duck") != std::string::npos)
 		{rotate_duck = &transform;}
-		else if(transform.name.find("invisible_boat") != -1)
+		else if(transform.name.find("invisible_boat") != std::string::npos)
 		{rotate_boat = &transform;}
 	}
 
