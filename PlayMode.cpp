@@ -258,7 +258,7 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
-extern ParticleTextures particle_textures;
+
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
@@ -268,7 +268,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
-	puffer.init(puffer_transforms, &scene);
+	puffer.init(puffer_transforms, &scene, &particle_system);
 
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
@@ -305,9 +305,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	}
 
 	particle_system.active_camera = &camera;
-	particle_system.add_particle(particle_textures.bubbles[0], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(0), glm::vec3(0), glm::vec3(1)));
-	particle_system.add_particle(particle_textures.bubbles[1], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(1), glm::vec3(0), glm::vec3(1)));
-	particle_system.add_particle(particle_textures.bubbles[2], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(-3), glm::vec3(0), glm::vec3(1)));
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;

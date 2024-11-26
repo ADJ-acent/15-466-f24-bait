@@ -21,8 +21,8 @@ struct ParticleProgram {
 	//Uniform (per-invocation variable) locations:
 	GLuint PROJECTION_mat4 = -1U;
 	GLuint TexColor_vec3 = -1U;
-	void bind_particle(const uint32_t texture) const;
-	void draw_particle(const glm::mat4& clip_from_local, const glm::vec3& tint) const;
+	void bind_particle() const;
+	void draw_particle(const glm::mat4& clip_from_local, const GLuint texture, const glm::vec3& tint) const;
 	void unbind_particle() const;
 };
 

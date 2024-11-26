@@ -8,6 +8,7 @@
 #include <glm/gtc/random.hpp> 
 #include <glm/gtx/vector_angle.hpp>
 // #include <glm/gtx/string_cast.hpp>
+#include "Particles.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include <iostream>
@@ -19,8 +20,12 @@ extern Load< Sound::Sample > through_water_sample;
 extern Load< Sound::Sample > blow_up_sample;
 extern Load< Sound::Sample > whoosh_sample;
 extern Load< Sound::Sample > bump_1_sample;
+extern ParticleTextures particle_textures;
 
-void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_)
+extern std::mt19937 gen;
+std::uniform_int_distribution<> bubble_spawn(0, 6);
+std::uniform_real_distribution<float> bubble_size(0.8f, 3.0f);
+void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *scene_, ParticleSystem *particle_system_)
 {
     assign_mesh_parts(transform_vector);
     scene = scene_;
@@ -146,6 +151,9 @@ void Puffer::init(std::vector< Scene::Transform * > transform_vector, Scene *sce
             &mesh_parts.puff_tail->rotation)
         );
     }
+
+    //set up particle system
+    particle_system = particle_system_;
 }
 
 void Puffer::rotate_from_mouse(glm::vec2 mouse_motion)
@@ -444,6 +452,12 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                 total_release_angle += elapsed * release_rotate_angle;
                 mesh->rotation = base_rotation * glm::angleAxis(total_release_angle, release_rotate_axis);
                 release_rotate_angle = glm::mix(release_rotate_angle, 0.0f, rotation_amt);
+                float bubble_spawn_needed = 0.3f / release_rotate_angle;
+                bubble_spawn_cooldown += elapsed;
+                if (bubble_spawn_cooldown >= bubble_spawn_needed) {
+                    bubble_spawn_cooldown = 0;
+                    spawn_bubbles(1);
+                }
                 if (release_rotate_angle <= 1.0f) {
                     base_rotation = mesh->rotation;
                 }
@@ -471,6 +485,18 @@ void Puffer::check_collectibles(Scene::Transform* collided_object){
         collectibles.boat = true;
         collected.emplace_back(collided_object);
     }
+}
+
+void Puffer::spawn_bubbles(uint32_t count)
+{
+    glm::vec3 mouth_position = mesh_parts.puff_mouth->make_local_to_world() * glm::vec4(0,0,0,1);
+    glm::vec3 bubble_velocity = (mouth_position - get_position()) * 5.0f;
+    for (uint32_t i = 0; i < count; ++i) {
+        int bubble_texture_index = bubble_spawn(gen);
+        float bubble_scale = bubble_size(gen);
+        particle_system->add_particle(particle_textures.bubbles[bubble_texture_index], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, bubble_scale * 5.0f, glm::vec2(bubble_scale), mouth_position, bubble_velocity, glm::vec3(1)));
+    }
+    
 }
 
 void Puffer::handle_collision(std::array<glm::vec3,2> collision_point,float bounce_factor)
