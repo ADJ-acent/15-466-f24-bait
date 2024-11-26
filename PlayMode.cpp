@@ -322,6 +322,8 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		{rotate_duck = &transform;}
 		else if(transform.name.find("invisible_boat") != -1)
 		{rotate_boat = &transform;}
+		else if(transform.name.find("invisible_guppy") != -1)
+		{rotate_guppy = &transform;}
 	}
 
 }
@@ -423,6 +425,8 @@ void PlayMode::update(float elapsed) {
 	rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	rotate_guppy->rotation = rotate_guppy->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
