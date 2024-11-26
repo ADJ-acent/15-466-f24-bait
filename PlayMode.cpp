@@ -114,8 +114,6 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.type = mesh.type;
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
-				
-				
 			}
 			else
 			{
@@ -166,6 +164,10 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
+
+		if(mesh_name != "carrotbait_base1" && mesh_name != "carrotbait_string1"){
+			drawable.hidden = true;
+		}
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
@@ -459,7 +461,6 @@ void PlayMode::update(float elapsed) {
 	if(Mode::current == shared_from_this()){
 		qte_active = false;
 	}
-
 
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();

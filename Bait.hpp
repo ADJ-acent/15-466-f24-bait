@@ -31,6 +31,10 @@ struct Bait {
         Scene::Transform* bait_string;
     } mesh_parts;
 
+    std::vector <Scene::Transform*> carrot_bait_main_transforms;
+    std::vector <Scene::Transform*> carrot_bait_base_transforms;
+    std::vector <Scene::Transform*> carrot_bait_string_transforms;
+
     static constexpr float eat_distance_threshold_squared = 625.0f; //25.0f
 
     void init(std::vector<Scene::Transform * > transform_vector, BaitType type_of_bait);

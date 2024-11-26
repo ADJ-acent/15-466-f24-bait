@@ -109,10 +109,10 @@ void MenuMode::update(float elapsed) {
 		button.update(elapsed);
 
 	if (background) {
-		background->update(elapsed * (menu_state == BEFORE_START ? 0.7f : 0.1f));
+		if(menu_state != IN_GAME){
+			background->update(elapsed * (menu_state == BEFORE_START ? 0.7f : 0.1f));
+		}
 	}
-
-	std::cout << menu_state << std::endl;
 }
 
 void MenuMode::draw(glm::uvec2 const &drawable_size) {
@@ -123,6 +123,10 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
     float y = (menu_state == IN_GAME ? 0.7f : 0.5f);
 
 	uint32_t index = 0;
+
+	if(menu_state == IN_GAME) {
+		ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));
+	}
 
 	for (auto const &choice : current_choices) {
 		y -= choice.height;
@@ -156,4 +160,6 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 			ui_render_program->draw_ui(*font->get_text(std::string(choice.label)), glm::vec2(0.5f, y), drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0),true);
 		}
 	}
+
+
 }

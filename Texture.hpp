@@ -26,6 +26,7 @@ struct UIElements {
 	Texture hunger_bar_symbol;
 	Texture bubble;
 	Texture end_screen;
+	Texture instructions;
 };
 
 struct ParticleTextures {
