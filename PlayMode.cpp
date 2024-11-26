@@ -440,6 +440,12 @@ void PlayMode::update(float elapsed) {
 				eat.pressed = false;
 				qte_active = true;
 
+				// reset keys to prevent sticking (remain pressed during qte)
+				left.pressed = false;
+				right.pressed = false;
+				up.pressed = false;
+				down.pressed = false;
+
 				QTEMode qte_mode = QTEMode(&puffer, &bait_manager.baits_in_use[bait_manager.best_bait_index]);
 				qte_mode.background = shared_from_this();
 				Mode::set_current(std::make_shared< QTEMode >(qte_mode));
