@@ -114,8 +114,6 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.type = mesh.type;
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
-				
-				
 			}
 			else
 			{
@@ -166,6 +164,10 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
+
+		if(mesh_name != "carrotbait_base1" && mesh_name != "carrotbait_string1"){
+			drawable.hidden = true;
+		}
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
@@ -418,9 +420,12 @@ void PlayMode::update(float elapsed) {
 	
 	elapsedtime += elapsed;
 
-	rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
+	if(rotatemesh)
+	{
+		rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
 
-	rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+		rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+	}
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
@@ -460,7 +465,6 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
-
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
@@ -476,8 +480,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 	if(is_game_over){
-		rotate_boat->rotation = glm::vec3(0.0f);
-
+		rotatemesh = false;
 		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
 		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);

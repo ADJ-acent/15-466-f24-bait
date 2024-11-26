@@ -53,6 +53,7 @@ Load< void > load_textures(LoadTagDefault, []() -> void {
 	ui_elements.hunger_bar_symbol = load_tex_to_GL(data_path("ui/uihungerbar_symbol.png"));
 	ui_elements.bubble = load_tex_to_GL(data_path("ui/bubble.png"));
 	ui_elements.end_screen = load_tex_to_GL(data_path("ui/pufferfish_endscreen.jpg"));
+	ui_elements.instructions = load_tex_to_GL(data_path("ui/instructions.png"));
 	
 	{//load qte timer textures
 		uint32_t cur_index = 0;

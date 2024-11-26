@@ -51,6 +51,8 @@ struct PlayMode : Mode {
 	//transforms
 	Scene::Transform *rotate_duck = nullptr;
 	Scene::Transform *rotate_boat = nullptr;
+
+	bool rotatemesh = true;
 	
 	//particle system
 	ParticleSystem particle_system;
