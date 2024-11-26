@@ -9,6 +9,7 @@
 #include <array>
 
 struct Bait;
+struct ParticleSystem;
 
 struct Puffer {
     Scene::Transform* main_transform = nullptr;
@@ -53,7 +54,9 @@ struct Puffer {
     float total_release_angle = 0.0f;
     float default_spring_arm_length;
     float oxygen_level = 100.0f;
+    float bubble_spawn_cooldown = 0.0f;
     uint8_t swimming_side = 0; // 0 is left, 1 is right
+    uint8_t last_swimming_size = 2;
 
     bool building_up = false;
     bool recovered = true;
@@ -71,10 +74,12 @@ struct Puffer {
     glm::quat original_rotation = glm::quat();
     glm::quat base_rotation = glm::quat();
     glm::vec3 velocity = glm::vec3(0);
+    glm::vec3 pause_velocity = glm::vec3(0);
     glm::vec3 release_rotate_axis = glm::vec3(0);
     Scene *scene;
 
     CollisionDetector puffer_collider;
+    ParticleSystem *particle_system = nullptr;
 
     inline static constexpr float puffer_scale_decay_halflife = .02f;
     inline static constexpr float puffer_scale_recover_halflife = .1f;
@@ -90,7 +95,7 @@ struct Puffer {
     std::vector<std::string> names = {"PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush", "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
     std::vector<Scene::Transform *> collected = {};
 
-    void init(std::vector<Scene::Transform * > transform_vector, Scene *scene);
+    void init(std::vector<Scene::Transform * > transform_vector, Scene *scene, ParticleSystem *particle_system);
     void rotate_from_mouse(glm::vec2 mouse_motion);
     void recalibrate_rotation();
     void start_build_up();
@@ -102,6 +107,7 @@ struct Puffer {
     void switch_to_main_menu_camera();
     void switch_to_default_camera();
     void check_collectibles(Scene::Transform* collided_object);
+    void spawn_bubbles(uint32_t count);
 
 
     void assign_mesh_parts(std::vector< Scene::Transform * > transform_vector);

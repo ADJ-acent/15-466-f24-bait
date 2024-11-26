@@ -55,6 +55,7 @@ struct MenuMode : public Mode {
 
 		pause_choices.emplace_back("Resume", [&](){
 			SDL_SetRelativeMouseMode(SDL_TRUE);
+			play->puffer.velocity = play->puffer.pause_velocity;
 			Mode::set_current(background);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);

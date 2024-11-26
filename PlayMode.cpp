@@ -258,7 +258,7 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
-extern ParticleTextures particle_textures;
+
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
@@ -268,7 +268,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
-	puffer.init(puffer_transforms, &scene);
+	puffer.init(puffer_transforms, &scene, &particle_system);
 
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
@@ -305,9 +305,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 	}
 
 	particle_system.active_camera = &camera;
-	particle_system.add_particle(particle_textures.bubbles[0], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(0), glm::vec3(0), glm::vec3(1)));
-	particle_system.add_particle(particle_textures.bubbles[1], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(1), glm::vec3(0), glm::vec3(1)));
-	particle_system.add_particle(particle_textures.bubbles[2], ParticleSystem::Particle::create(ParticleSystem::Particle::Type::Bubble, glm::vec3(-3), glm::vec3(0), glm::vec3(1)));
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
@@ -339,6 +336,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			puffer.pause_velocity = puffer.velocity;
 			menu->background = shared_from_this();
 			Mode::set_current(menu);
 			return true;
@@ -446,6 +444,12 @@ void PlayMode::update(float elapsed) {
 				eat.pressed = false;
 				qte_active = true;
 
+				// reset keys to prevent sticking (remain pressed during qte)
+				left.pressed = false;
+				right.pressed = false;
+				up.pressed = false;
+				down.pressed = false;
+
 				QTEMode qte_mode = QTEMode(&puffer, &bait_manager.baits_in_use[bait_manager.best_bait_index]);
 				qte_mode.background = shared_from_this();
 				Mode::set_current(std::make_shared< QTEMode >(qte_mode));
@@ -463,6 +467,10 @@ void PlayMode::update(float elapsed) {
 
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
+	}
+	
+	if(Mode::current == menu && menu->menu_state == MenuMode::IN_GAME){
+		puffer.velocity = glm::vec3(0.0f);
 	}
 
 	hunger_decrement_counter += elapsed;
@@ -491,6 +499,8 @@ void PlayMode::update(float elapsed) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}
+
+	
 
 	//reset button press counters:
 	left.downs = 0;

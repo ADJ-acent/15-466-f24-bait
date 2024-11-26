@@ -85,7 +85,7 @@ ParticleProgram::~ParticleProgram() {
 	program = 0;
 }
 
-void ParticleProgram::bind_particle(const uint32_t texture) const
+void ParticleProgram::bind_particle() const
 {
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -96,23 +96,25 @@ void ParticleProgram::bind_particle(const uint32_t texture) const
     glUseProgram(particle_program->program);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    
 	GL_ERRORS();
 }
 
-void ParticleProgram::draw_particle(const glm::mat4& clip_from_local, const glm::vec3& tint) const {
+void ParticleProgram::draw_particle(const glm::mat4& clip_from_local, const GLuint texture, const glm::vec3& tint) const {
+	glBindTexture(GL_TEXTURE_2D, texture);
     glUniformMatrix4fv(particle_program->PROJECTION_mat4, 1, GL_FALSE, glm::value_ptr(clip_from_local));
 
     glUniform3f(particle_program->TexColor_vec3, tint.x, tint.y, tint.z);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_ERRORS();
 }
 
 void ParticleProgram::unbind_particle() const
 {
 	glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    
     glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
     glUseProgram(0);
