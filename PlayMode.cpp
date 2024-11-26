@@ -5,6 +5,7 @@
 #include "LitColorTextureProgram.hpp"
 #include "WaveTextureProgram.hpp"
 #include "WiggleTextureProgram.hpp"
+#include "TransTextureProgram.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -30,6 +31,9 @@ GLuint bait_scene_for_depth_texture_program = 0;
 GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
+GLuint wall_objs_for_trans_texture_program = 0;
+
+
 
 Scene::Drawable *waterplane_drawable = nullptr;
 
@@ -38,6 +42,7 @@ Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	main_scene_for_depth_texture_program = ret->make_vao_for_program(depth_texture_program->program);
 	seaweed_objs_for_wiggle_texture_program = ret->make_vao_for_program(wiggle_texture_program->program);
 	waterplane_scene_for_wave_texture_program = ret->make_vao_for_program(wave_texture_program->program);
+	wall_objs_for_trans_texture_program = ret->make_vao_for_program(trans_texture_program->program);
 	return ret;
 });
 
@@ -65,52 +70,63 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		
-
-		if(mesh_name.find("seaweed") != -1)
+		if(mesh_name.find("invisible") == -1)
 		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = wiggle_texture_program_pipeline;
-			drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-					
-		}
-		else if(mesh_name.find("sand") != -1)
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = depth_texture_program_pipeline;
-			drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-		}
-		else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			//drawable.hidden = true;
-			//waterplane_drawable = &scene.drawables.back();
-			drawable.pipeline = wave_texture_program_pipeline;
-			drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-			
-			
-		}
-		else
-		{
-			scene.drawables.emplace_back(transform);
-			Scene::Drawable &drawable = scene.drawables.back();
-			drawable.pipeline = lit_color_texture_program_pipeline;
-			drawable.pipeline.vao = main_scene_for_depth_texture_program;
-			drawable.pipeline.type = mesh.type;
-			drawable.pipeline.start = mesh.start;
-			drawable.pipeline.count = mesh.count;
-		}
+			if(mesh_name.find("seaweed") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = wiggle_texture_program_pipeline;
+				drawable.pipeline.vao = seaweed_objs_for_wiggle_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+						
+			}
+			else if(mesh_name.find("wall") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = trans_texture_program_pipeline;
+				drawable.pipeline.vao = wall_objs_for_trans_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+			}
+			else if(mesh_name.find("sand") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = depth_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+			}
+			else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				//drawable.hidden = true;
+				//waterplane_drawable = &scene.drawables.back();
+				drawable.pipeline = wave_texture_program_pipeline;
+				drawable.pipeline.vao = waterplane_scene_for_wave_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+				
+				
+			}
+			else
+			{
+				scene.drawables.emplace_back(transform);
+				Scene::Drawable &drawable = scene.drawables.back();
+				drawable.pipeline = lit_color_texture_program_pipeline;
+				drawable.pipeline.vao = main_scene_for_depth_texture_program;
+				drawable.pipeline.type = mesh.type;
+				drawable.pipeline.start = mesh.start;
+				drawable.pipeline.count = mesh.count;
+			}
 
 		Scene::Drawable &drawable = scene.drawables.back();
 		drawable.pipeline.type = mesh.type;
@@ -118,6 +134,8 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		drawable.pipeline.count = mesh.count;
 		drawable.mesh = &mesh;
 		drawable.meshbuffer = &(*main_meshes);
+		
+		}
 		//NOTE: add this to other scenes
 
 	});
@@ -240,34 +258,17 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
+
 GameConfig game_config;
 
 PlayMode::PlayMode() : scene(*main_scene) {
-	{
-		//example of setting up a button in the center of the screen, please remove when needed along with example_buttons field in playmode.hpp
-		//replace nullptr with function name to get a callback when the button is pressed and released
-		//search up all use cases of example buttons when seeing usage and removing, there are references to it in draw, update, and handle events in this file
-		//I also removed the ability to enter relative mouse mode by commenting it out in the handle events function, feel free to uncomment when you
-		//understand how to set up buttons. We probably would like to directly enter relative mouse mode when entering playmode, and exit when
-		// we switch to menu and setting modes
-
-		// auto example_function = []() {
-		// 	// you can set boolean here, or do other operations, but the function should return type void and take no parameters
-		// 	// you can also use capture & in lambdas or have static functions of the mode passed into the button constructor
-		// 	std::cout<<"button pressed, function triggered!\n"<<std::endl;
-		// };
-
-		// example_buttons.push_back(Button(font->get_text(std::string("this is a test, do not panic")),glm::uvec2(20,20), glm::vec2(0.5f), glm::vec2(1.0f), UIRenderProgram::AlignMode::Center, glm::vec3(0),true,example_function));
-		// example_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
-		// example_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
-	}
 
 	bg_music_sound = Sound::loop(*bg_music_sample,0.2f);
 
 
 	std::vector<Scene::Transform *> puffer_transforms = scene.spawn(*puffer_scene,PUFFER);
 
-	puffer.init(puffer_transforms, &scene);
+	puffer.init(puffer_transforms, &scene, &particle_system);
 
 	for(int i = 0; i < 4; i++){
 		Bait new_bait = Bait();
@@ -295,20 +296,6 @@ PlayMode::PlayMode() : scene(*main_scene) {
 			chopping_board_main_mesh->scale = glm::vec3(0.0f);
         }
 	}
-	
-
-
-	// for(Bait b : bait_manager.baits_in_use){
-    	
-	// 	if(b.type_of_bait == 0){
-	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("carrotbait_string"));
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("carrotbait_base"));
-	// 	} else {
-	// 		b.string_collider = calculate_collider(b.mesh_parts.bait_string, bait_meshes->lookup("fishbait_string"));
-	// 		b.bait_collider = calculate_collider(b.mesh_parts.bait_base, bait_meshes->lookup("fishbait_base"));
-	// 	}
-
-	// }
 
 	//get pointer to camera for convenience:
 	for (auto& cam : scene.cameras) {
@@ -317,12 +304,21 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		}
 	}
 
+	particle_system.active_camera = &camera;
 	for (auto& transform : scene.transforms) {
 		if (transform.name.find("waterplane") != -1) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
 		}
+	}
+
+	for (auto &transform: scene.transforms)
+	{
+		if(transform.name.find("invisible_duck") != -1)
+		{rotate_duck = &transform;}
+		else if(transform.name.find("invisible_boat") != -1)
+		{rotate_boat = &transform;}
 	}
 
 }
@@ -338,6 +334,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
+			puffer.pause_velocity = puffer.velocity;
 			menu->background = shared_from_this();
 			Mode::set_current(menu);
 			return true;
@@ -421,9 +418,13 @@ void PlayMode::update(float elapsed) {
 	
 	elapsedtime += elapsed;
 
+	rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
+
+	rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
-
+	particle_system.update(elapsed);
 	bait_manager.update_bait_lifetime(elapsed);
 	{		
 		//check if there is bait in range
@@ -438,6 +439,12 @@ void PlayMode::update(float elapsed) {
 			if(eat.pressed) {
 				eat.pressed = false;
 				qte_active = true;
+
+				// reset keys to prevent sticking (remain pressed during qte)
+				left.pressed = false;
+				right.pressed = false;
+				up.pressed = false;
+				down.pressed = false;
 
 				QTEMode qte_mode = QTEMode(&puffer, &bait_manager.baits_in_use[bait_manager.best_bait_index]);
 				qte_mode.background = shared_from_this();
@@ -457,6 +464,10 @@ void PlayMode::update(float elapsed) {
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
+	
+	if(Mode::current == menu && menu->menu_state == MenuMode::IN_GAME){
+		puffer.velocity = glm::vec3(0.0f);
+	}
 
 	hunger_decrement_counter += elapsed;
     if(hunger_decrement_counter > 5.0f){
@@ -465,6 +476,8 @@ void PlayMode::update(float elapsed) {
 	}
 
 	if(is_game_over){
+		rotate_boat->rotation = glm::vec3(0.0f);
+
 		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
 		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
@@ -475,16 +488,23 @@ void PlayMode::update(float elapsed) {
 		wobble -= std::floor(wobble);
 		for(Scene::Transform* collectible : puffer.collected){
 			
-			collectible->rotation = collectible->rotation * glm::angleAxis(
-				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
-				glm::vec3(0.0f, 0.2f, 0.0f)
-			);
+			// collectible->rotation = collectible->rotation * glm::angleAxis(
+			// 	glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+			// 	glm::vec3(0.0f, 0.2f, 0.0f)
+			// );
 
-			if(collectible->name == "beachballl"){
-				collectible->scale = glm::vec3(3.0f);
-			} else if (collectible->name == "duckyfloatie"){
+			if(collectible->name == "beachball_collectible"){
 				collectible->scale = glm::vec3(5.0f);
+			} else if (collectible->name == "bucket_collectible"){
+				collectible->scale = glm::vec3(0.5f);
+			} else if (collectible->name == "anchor_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+			} else if (collectible->name == "treasurechest_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+			} else if (collectible->name == "popsicle_collectible"){
+				collectible->scale = glm::vec3(3.0f);
 			}
+			
 
 		}
 
@@ -493,6 +513,8 @@ void PlayMode::update(float elapsed) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}
+
+	
 
 	//reset button press counters:
 	left.downs = 0;
@@ -522,6 +544,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(depth_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUniform1f(depth_texture_program->TIME_float, elapsedtime);
+		glUseProgram(0);
+
+		glUseProgram(trans_texture_program->program);
+		glUniform1i(trans_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(trans_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(trans_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 		glUseProgram(0);
 		
 
@@ -645,6 +673,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 		scene.draw(*camera);
 	}
+
+	//draw the particles
+	particle_system.draw();
 
 	{
 		//framebuffers.tone_map();

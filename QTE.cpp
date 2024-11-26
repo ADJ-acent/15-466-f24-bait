@@ -227,6 +227,7 @@ void QTE::bait_hook_up(float elapsed){
 
 void QTE::end() {
     puffer->qte_exit();
+    timer_sound.get()->stop();
     if (bait->reel_up_timer > 3.0f) {
         bait->to_siberia();
     }

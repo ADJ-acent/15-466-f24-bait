@@ -130,6 +130,7 @@ const game_names = [
 	maek.CPP('PlayMode.cpp'),
 	maek.CPP('main.cpp'),
 	maek.CPP('LitColorTextureProgram.cpp'),
+	maek.CPP('TransTextureProgram.cpp'),
 	maek.CPP('DepthTextureProgram.cpp'),
 	maek.CPP('WaveTextureProgram.cpp'),
 	maek.CPP('WiggleTextureProgram.cpp'),
@@ -149,6 +150,7 @@ const game_names = [
 	maek.CPP('Button.cpp'),
 	maek.CPP('MenuMode.cpp'),
 	maek.CPP("Particles.cpp"),
+	maek.CPP("ParticleProgram.cpp"),
 ];
 
 const common_names = [

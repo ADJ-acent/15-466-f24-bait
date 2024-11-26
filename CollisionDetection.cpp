@@ -202,10 +202,7 @@ bool CollisionDetector::check_over_water(const Scene::Transform *water_transform
 {
     float radius = puffer->current_scale*4.0f;
     glm::vec3 water_level = glm::vec3(water_transform->make_local_to_world() * glm::vec4(water_mesh->max, 1.0f));
-    if(water_level.z < puffer->get_position().z - (radius/2.0f)){
-        return true;
-    }
-    return false;
+    return water_level.z < (puffer->get_position().z - (radius/2.0f));
 }
 
 //referenced https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
