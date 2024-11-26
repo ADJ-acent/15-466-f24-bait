@@ -479,6 +479,13 @@ void PlayMode::update(float elapsed) {
 				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
 				glm::vec3(0.0f, 0.2f, 0.0f)
 			);
+
+			if(collectible->name == "beachballl"){
+				collectible->scale = glm::vec3(3.0f);
+			} else if (collectible->name == "duckyfloatie"){
+				collectible->scale = glm::vec3(5.0f);
+			}
+
 		}
 
 		//for debug

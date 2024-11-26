@@ -270,13 +270,15 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     through_water_sound = Sound::play(*flipper_sample,0.3f * glm::length(velocity));
                 }
             }
-
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){
                 std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_puffer_collision(d.transform,d.mesh,closest_collision_point);
                 if (closest_collision_point != new_collision_point){
                     //it changed, so update bounce factor for new closest mesh
                     bounce_factor = current_bounce_factor;
+                    check_collectibles(d.transform);
+                    
                 }
+                 
                 closest_collision_point = new_collision_point;
                 //camera code:
                 glm::vec3 p0 = get_position();
@@ -288,12 +290,6 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                         best_spring_arm_length = t;
                     }
                 }
-            }
-
-            if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-                //check collectibles by name here
-                
-                check_collectibles(d.transform);
             }
         }
         if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
@@ -464,20 +460,28 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
 }
 void Puffer::check_collectibles(Scene::Transform* collided_object){
-    if (collided_object->name == "cooler1"){
-        //move it to end scene
-        for (Scene::Drawable &d : scene->drawables){
-            if(d.transform->name == "can2"){
-                collided_object = d.transform;
-            }
-        }
-        collided_object->scale = glm::vec3(5.0f);
-        collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
-        collectibles.soda = true;
+    // if (collided_object->name == "cooler1"){
+    //     //move it to end scene
+    //     for (Scene::Drawable &d : scene->drawables){
+    //         if(d.transform->name == "can2"){
+    //             collided_object = d.transform;
+    //         }
+    //     }
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(-20.0f, 20.0f, 215.0f);
+    //     collectibles.soda = true;
+    //     collected.emplace_back(collided_object);
+
+    if(collided_object->name == "beachballl"){
+        collided_object->scale = glm::vec3(3.0f);
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->position = glm::vec3(-20.0f, 20.0f, 215.0f);
+        collectibles.beachball = true;
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "duckyfloatie"){
-        collided_object->scale = glm::vec3(5.0f);
-        collided_object->position = glm::vec3(20.0f, 20.0f, 200.0f);
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->scale = collided_object->scale;
+        collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
         collectibles.floatie = true;
         collected.emplace_back(collided_object);
     }
