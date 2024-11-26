@@ -22,7 +22,6 @@ extern bool is_game_over;
 struct MenuMode : public Mode {
 	enum MenuState {
 		BEFORE_START,
-		INSTRUCTIONS,
 		IN_GAME,
 		END_GAME
 	};
@@ -35,15 +34,6 @@ struct MenuMode : public Mode {
 			menu_state = IN_GAME;
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(background);
-		}, true);
-		start_menu_buttons.push_back(start_choices.back().button);
-
-		start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
-		start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
-
-		start_choices.emplace_back("Instructions", [&](){
-		menu_state = INSTRUCTIONS;
-		Mode::set_current(background);
 		}, true);
 		start_menu_buttons.push_back(start_choices.back().button);
 
