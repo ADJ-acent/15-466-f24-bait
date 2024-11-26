@@ -47,6 +47,13 @@ struct PlayMode : Mode {
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
+<<<<<<< Updated upstream
+=======
+
+	//transforms
+	Scene::Transform *rotate_duck = nullptr;
+	Scene::Transform *rotate_boat = nullptr;
+>>>>>>> Stashed changes
 	
 	//particle system
 	ParticleSystem particle_system;

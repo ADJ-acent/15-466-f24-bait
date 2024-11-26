@@ -118,7 +118,7 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 		background->draw(drawable_size);
     }
 
-    float y = (menu_state == IN_GAME ? 0.7f : 0.5f);
+    float y = (menu_state == IN_GAME ? 0.7f : 0.6f);
 
 	uint32_t index = 0;
 
