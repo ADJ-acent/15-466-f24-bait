@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 
 
 	Uint8 * cursor_image;
-	{// set up custom mouse curser
+	{// set up custom mouse curser, referenced https://github.com/BlastlessAnthony/SDL2-stb_image-Example
 		//upload the cursor
 		int cursor_width, cursor_height, channels;
 		cursor_image = stbi_load(data_path("ui/cursor.png").c_str(), &cursor_width, &cursor_height, &channels, 0);
@@ -127,8 +127,6 @@ int main(int argc, char **argv) {
 		Sint32 alpha_mask;
 
 		// This only works with little endian computer processors,
-		// if you want support for big endian (if you even still use it), implement it
-		// yourself.
 		red_mask = 0x000000FF;
 		green_mask = 0x0000FF00;
 		blue_mask = 0x00FF0000;
