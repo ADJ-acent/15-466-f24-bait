@@ -119,6 +119,7 @@ void Button::update(float elapsed)
                 } else if(current_button_sound_number==3){
                     button_hover_sound = Sound::play(*hover3_sample,2.0f);
                 }
+                // button_select_sound = Sound::play(*button_hover_sample,0.7f);
                 
                 button_sound_played = true;
             }
