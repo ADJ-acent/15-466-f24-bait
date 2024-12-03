@@ -68,8 +68,6 @@ void QTE::update(float elapsed) {
 
     if(success){
         // congrats_sound = Sound::play(*congrats_sample,0.5f);
-        std::random_device rd;  // a seed source for the random number engine
-        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
         std::uniform_int_distribution<> distrib(1, 4); //number 1 2 3
         int congrats_sound_number = distrib(gen);
         if(!congrats_sound || congrats_sound.get()->stopped || congrats_sound.get()->stopping){
@@ -237,8 +235,6 @@ void QTE::key_flashing_reset(){
 void QTE::bait_hook_up(float elapsed){
     if(!fail_sound || fail_sound.get()->stopped || fail_sound.get()->stopping){
         // fail_sound = Sound::play(*fail_sample,0.5f);
-        std::random_device rd;  // a seed source for the random number engine
-        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
         std::uniform_int_distribution<> distrib(1, 3); //number 1 2 3
         int fail_sound_number = distrib(gen);
         if(fail_sound_number==1){

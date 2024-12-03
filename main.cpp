@@ -20,6 +20,9 @@
 //Includes for libSDL:
 #include <SDL.h>
 
+// image loading
+#include "stb_image.h"
+
 //...and for c++ standard library functions:
 #include <chrono>
 #include <iostream>
@@ -109,8 +112,42 @@ int main(int argc, char **argv) {
 	//Set automatic SRGB encoding if framebuffer needs it:
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
-	//Hide mouse cursor (note: showing can be useful for debugging):
-	//SDL_ShowCursor(SDL_DISABLE);
+
+	Uint8 * cursor_image;
+	{// set up custom mouse curser
+		//upload the cursor
+		int cursor_width, cursor_height, channels;
+		cursor_image = stbi_load(data_path("ui/cursor.png").c_str(), &cursor_width, &cursor_height, &channels, 0);
+		Sint32 dot_pitch = cursor_width * channels;
+		dot_pitch = (dot_pitch + 3) & ~3;
+
+		Sint32 red_mask;
+		Sint32 green_mask;
+		Sint32 blue_mask;
+		Sint32 alpha_mask;
+
+		// This only works with little endian computer processors,
+		// if you want support for big endian (if you even still use it), implement it
+		// yourself.
+		red_mask = 0x000000FF;
+		green_mask = 0x0000FF00;
+		blue_mask = 0x00FF0000;
+		alpha_mask = (channels == 4) ? 0xFF000000 : 0;
+
+		SDL_Surface *cursor_surface = SDL_CreateRGBSurfaceFrom(
+			cursor_image, cursor_width, cursor_height, channels * 8, dot_pitch, red_mask, green_mask,
+			blue_mask, alpha_mask);
+		if (!cursor_surface) {
+			stbi_image_free(cursor_image);
+			cursor_image = NULL;
+			std::cerr<< "Error creating custom cursor, using normal cursor instead\n";
+		}
+		else {
+			SDL_Cursor* cursor = SDL_CreateColorCursor(cursor_surface, 4,1);
+			SDL_SetCursor(cursor);
+		}
+	}
+
 
 	//------------ init sound --------------
 	Sound::init();
@@ -229,6 +266,9 @@ int main(int argc, char **argv) {
 
 
 	//------------  teardown ------------
+	if (cursor_image != NULL) {
+		stbi_image_free(cursor_image);
+	}
 	Sound::shutdown();
 
 	SDL_GL_DeleteContext(context);
