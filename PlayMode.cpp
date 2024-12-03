@@ -257,6 +257,58 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 	return new Sound::Sample(data_path("sound/fail.wav"));
 });
 
+Load< Sound::Sample >  click1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click1.wav"));
+});
+
+Load< Sound::Sample >  click2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click2.wav"));
+});
+
+Load< Sound::Sample >  click3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click3.wav"));
+});
+
+Load< Sound::Sample >  correct1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct1.wav"));
+});
+
+Load< Sound::Sample >  correct2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct2.wav"));
+});
+
+Load< Sound::Sample >  correct3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct3.wav"));
+});
+
+Load< Sound::Sample >  correct4_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct4.wav"));
+});
+
+Load< Sound::Sample >  fail1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail1.wav"));
+});
+
+Load< Sound::Sample >  fail2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail2.wav"));
+});
+
+Load< Sound::Sample >  fail3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail3.wav"));
+});
+
+Load< Sound::Sample >  hover1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover1.wav"));
+});
+
+Load< Sound::Sample >  hover2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover2.wav"));
+});
+
+Load< Sound::Sample >  hover3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover3.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
