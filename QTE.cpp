@@ -11,9 +11,16 @@ std::uniform_int_distribution<int> dist_trap_index(0, 2);
 extern Load< Sound::Sample > timer_sample;
 extern Load< Sound::Sample > flicker_sample;
 extern Load< Sound::Sample > correct_sample;
+extern Load< Sound::Sample > congrats1_sample;
+extern Load< Sound::Sample > congrats2_sample;
+extern Load< Sound::Sample > congrats3_sample;
+extern Load< Sound::Sample > congrats4_sample;
 extern Load< Sound::Sample > wrong_sample;
 extern Load< Sound::Sample > congrats_sample;
 extern Load< Sound::Sample > fail_sample;
+extern Load< Sound::Sample > fail1_sample;
+extern Load< Sound::Sample > fail2_sample;
+extern Load< Sound::Sample > fail3_sample;
 
 void QTE::start() {
     active = true;
@@ -60,7 +67,22 @@ void QTE::update(float elapsed) {
     }
 
     if(success){
-        congrats_sound = Sound::play(*congrats_sample,0.5f);
+        // congrats_sound = Sound::play(*congrats_sample,0.5f);
+        std::random_device rd;  // a seed source for the random number engine
+        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> distrib(1, 4); //number 1 2 3
+        int congrats_sound_number = distrib(gen);
+        if(!congrats_sound || congrats_sound.get()->stopped || congrats_sound.get()->stopping){
+            if(congrats_sound_number==1){
+                congrats_sound = Sound::play(*congrats1_sample,1.0f);
+            } else if(congrats_sound_number==2){
+                congrats_sound = Sound::play(*congrats2_sample,1.0f);
+            } else if(congrats_sound_number==3){
+                congrats_sound = Sound::play(*congrats3_sample,1.0f);
+            } else if(congrats_sound_number==4){
+                congrats_sound = Sound::play(*congrats4_sample,1.0f);
+            }
+        }
         if(timer_sound){
             timer_sound.get()->stop();
         }
@@ -145,6 +167,7 @@ void QTE::update(float elapsed) {
                 return;
             } else {
                 if((!correct_sound || correct_sound.get()->stopped || correct_sound.get()->stopping) && !wrong_correct_played){
+                    
                     correct_sound = Sound::play(*correct_sample,0.2f);
                     wrong_correct_played = true;
                 }
@@ -213,7 +236,19 @@ void QTE::key_flashing_reset(){
 
 void QTE::bait_hook_up(float elapsed){
     if(!fail_sound || fail_sound.get()->stopped || fail_sound.get()->stopping){
-        fail_sound = Sound::play(*fail_sample,0.5f);
+        // fail_sound = Sound::play(*fail_sample,0.5f);
+        std::random_device rd;  // a seed source for the random number engine
+        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> distrib(1, 3); //number 1 2 3
+        int fail_sound_number = distrib(gen);
+        if(fail_sound_number==1){
+            fail_sound = Sound::play(*fail1_sample,1.0f);
+        } else if(fail_sound_number==2){
+            fail_sound = Sound::play(*fail2_sample,1.0f);
+        } else if(fail_sound_number==3){
+            fail_sound = Sound::play(*fail3_sample,1.0f);
+        }
+
     }
     bait->reel_up(elapsed);
     puffer->qte_death(bait);

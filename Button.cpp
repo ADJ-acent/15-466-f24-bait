@@ -111,7 +111,6 @@ void Button::update(float elapsed)
                 std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
                 std::uniform_int_distribution<> distrib(1, 3); //number 1 2 3
                 current_button_sound_number = distrib(gen);
-                std::cout<<current_button_sound_number;
                 if(current_button_sound_number == 1){
                     button_hover_sound = Sound::play(*hover1_sample,2.0f);
                 } else if(current_button_sound_number==2){

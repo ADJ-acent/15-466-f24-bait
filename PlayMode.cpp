@@ -269,19 +269,19 @@ Load< Sound::Sample >  click3_sample(LoadTagDefault, []() -> Sound::Sample const
     return new Sound::Sample(data_path("sound/Click3.wav"));
 });
 
-Load< Sound::Sample >  correct1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+Load< Sound::Sample >  congrats1_sample(LoadTagDefault, []() -> Sound::Sample const * {
     return new Sound::Sample(data_path("sound/Correct1.wav"));
 });
 
-Load< Sound::Sample >  correct2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+Load< Sound::Sample >  congrats2_sample(LoadTagDefault, []() -> Sound::Sample const * {
     return new Sound::Sample(data_path("sound/Correct2.wav"));
 });
 
-Load< Sound::Sample >  correct3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+Load< Sound::Sample >  congrats3_sample(LoadTagDefault, []() -> Sound::Sample const * {
     return new Sound::Sample(data_path("sound/Correct3.wav"));
 });
 
-Load< Sound::Sample >  correct4_sample(LoadTagDefault, []() -> Sound::Sample const * {
+Load< Sound::Sample >  congrats4_sample(LoadTagDefault, []() -> Sound::Sample const * {
     return new Sound::Sample(data_path("sound/Correct4.wav"));
 });
 
