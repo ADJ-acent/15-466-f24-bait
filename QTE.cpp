@@ -46,11 +46,9 @@ void QTE::update(float elapsed) {
         if(timer_sound){
             timer_sound.get()->stop();
         }
-        
         return;
     }
     
-
     timer += elapsed;
     red_percentage = timer/time_limit;
 
@@ -129,14 +127,6 @@ void QTE::update(float elapsed) {
                 QTE::score++;
 
                 bait->get_bitten();
-
-                // bait->bait_bites_left--;
-                // if(bait->bait_bites_left > 0)   {
-                //     bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
-                // } 
-                // else{
-                //     bait->mesh_parts.bait_base->scale *= 0;
-                // }
                 
                 std::cout << "scaled down" << std::endl;
                 std::cout << bait->bait_bites_left << std::endl;
@@ -261,7 +251,9 @@ void QTE::bait_hook_up(float elapsed){
 
 void QTE::end() {
     puffer->qte_exit();
-    timer_sound.get()->stop();
+    if(timer_sound != nullptr){
+        timer_sound.get()->stop();
+    }
     if (bait->reel_up_timer > 3.0f) {
         bait->to_siberia();
     }
