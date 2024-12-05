@@ -264,6 +264,10 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             if((d.transform->name.substr(0,7) == "seaweed") || (d.transform->name.substr(0,5)=="water")){
                 checking_non_colliding_object = true;
             }
+            //bait strings have no collision
+            if (d.transform->name.find("string") != std::string::npos) {
+                checking_non_colliding_object = true;
+            }
 
             if(d.transform->name.substr(0,4)=="sand"){
                 current_bounce_factor = 0.1f;
