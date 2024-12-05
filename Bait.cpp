@@ -14,7 +14,7 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
 
     type_of_bait = tob;
 
-    if(type_of_bait == CIRCLE){
+    if(type_of_bait == CARROT){
         bait_bites_left = 5;
     }
     else{
@@ -22,6 +22,7 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
     }
 
     main_transform->scale = glm::vec3(3.0f);
+
     original_bait_scale = mesh_parts.bait_base->scale;
 }
 
@@ -34,7 +35,7 @@ void Bait::reset(){
     total_life_time = dist_lifetime(gen);
     reel_up_timer = 0.0f;
 
-    if(type_of_bait == CIRCLE){
+    if(type_of_bait == CARROT){
         bait_bites_left = 5;
     }
     else{
@@ -49,21 +50,85 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
     for (auto t : transform_vector){
         if (t->name == "carrotbait_main1" || t->name == "fishbait_main") {
             main_transform = t;
+            if(t->name == "carrotbait_main1") {
+                carrot_bait_main_transforms.push_back(t);
+            }
+        }
+        else if (t->name == "carrotbait_main2") {
+            carrot_bait_main_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_main3") {
+            carrot_bait_main_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_main4") {
+            carrot_bait_main_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_main5") {
             carrot_bait_main_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base1" || t->name == "fishbait_base") {
             mesh_parts.bait_base = t;
+            if(t->name == "carrotbait_base1"){
+                carrot_bait_base_transforms.push_back(t);
+            }
+        }
+        else if (t->name == "carrotbait_base2") {
             carrot_bait_base_transforms.push_back(t);
         }
-        else if (t->name == "carrotbait_string1" || t->name == "fishbait_string") {
-            mesh_parts.bait_string = t;
-            carrot_bait_string_transforms.push_back(t);
+        else if (t->name == "carrotbait_base3") {
+            carrot_bait_base_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_base4") {
+            carrot_bait_base_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_base5") {
+            carrot_bait_base_transforms.push_back(t);
         }
 
+        else if (t->name == "carrotbait_string1" || t->name == "fishbait_string") {
+            mesh_parts.bait_string = t;
+            if(t->name == "carrotbait_string1") {
+                carrot_bait_string_transforms.push_back(t);
+            }
+        }
+        else if (t->name == "carrotbait_string2") {
+            carrot_bait_string_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_string3") {
+            carrot_bait_string_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_string4") {
+            carrot_bait_string_transforms.push_back(t);
+        }
+        else if (t->name == "carrotbait_string5") {
+            carrot_bait_string_transforms.push_back(t);
+        }
     }
 }
 
+void Bait::get_bitten(){
+    bait_bites_left--;
+    if(bait_bites_left > 0){
+        if(type_of_bait == CARROT) {
+            main_transform = carrot_bait_main_transforms[5 - bait_bites_left];
+            mesh_parts.bait_base->enabled = false;
+            mesh_parts.bait_base = carrot_bait_base_transforms[5 - bait_bites_left];
+            mesh_parts.bait_base->enabled = true;
 
+            std::cout << mesh_parts.bait_base->enabled << std::endl;
+
+            mesh_parts.bait_string->enabled = false;
+            mesh_parts.bait_string = carrot_bait_string_transforms[5 - bait_bites_left];
+            mesh_parts.bait_string->enabled = true;
+        }
+        else{
+            mesh_parts.bait_base->scale *= 0.8;
+        }
+    }
+    else{
+        mesh_parts.bait_base->scale *= 0;
+    }
+}
 
 void Bait::reel_up(float elapsed, float reel_up_speed)
 {
@@ -104,4 +169,11 @@ void Bait::random_respawn_location(){
 
     is_active = true;
     main_transform->position = glm::vec3(random_x, random_y, random_z);
+
+    if(type_of_bait == CARROT){
+        for(auto t : carrot_bait_main_transforms){
+            t->position = main_transform->position;
+            t->scale = main_transform->scale;
+        }
+    }
 }

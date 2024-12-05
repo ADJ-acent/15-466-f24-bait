@@ -27,7 +27,7 @@
 
 struct Puffer;
 
-enum type_of_spawn {FISH,PUFFER,CARROT_BAIT,FISH_BAIT,CHOPPING_BOARD};
+enum type_of_spawn {PUFFER,CARROT_BAIT,FISH_BAIT,CHOPPING_BOARD};
 // std::vector<std::string> puffer_transform_names =  { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush"
 // , "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
 
@@ -35,6 +35,8 @@ struct Scene {
 	struct Transform {
 		//Transform names are useful for debugging and looking up locations in a loaded scene:
 		std::string name;
+
+		bool enabled = true;
 
 		//The core function of a transform is to store a transformation in the world:
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);

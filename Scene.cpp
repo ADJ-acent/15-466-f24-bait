@@ -104,7 +104,7 @@ void Scene::draw(glm::mat4 const &world_to_clip, glm::mat4x3 const &world_to_lig
 
 		glEnable(GL_DEPTH_TEST);
 
-		if(drawable.hidden)
+		if(!drawable.transform->enabled)
 		{continue;}
 
 		//Set shader program:

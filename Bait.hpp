@@ -8,8 +8,8 @@
 #include <random>
 
 enum BaitType {
-    CIRCLE,
-    SQUARE
+    CARROT,
+    FISH
 };
 
 struct Bait {
@@ -46,6 +46,7 @@ struct Bait {
 
     glm::vec3 get_position();
 
+    void get_bitten();
     void reel_up(float elapsed, float reel_up_speed = 30.0f);
     void to_siberia();
 };
