@@ -161,16 +161,8 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = bait_meshes->lookup(mesh_name);
-
-		// std::cout << mesh_name << std::endl;
-
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
-
-		if(mesh_name != "carrotbait_base1" || mesh_name != "carrotbait_string1" 
-		|| mesh_name != "fishbait_base" || mesh_name != "fishbait_string"){
-			transform->enabled = false;
-		}
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 

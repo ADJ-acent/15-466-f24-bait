@@ -73,15 +73,19 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
             }
         }
         else if (t->name == "carrotbait_base2") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base3") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base4") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base5") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
 
@@ -92,15 +96,19 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
             }
         }
         else if (t->name == "carrotbait_string2") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string3") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string4") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string5") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
     }
