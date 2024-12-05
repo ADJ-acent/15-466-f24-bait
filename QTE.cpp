@@ -107,13 +107,16 @@ void QTE::update(float elapsed) {
                 correct_key_pressed = true;
                 QTE::hunger++; 
                 QTE::score++;
-                bait->bait_bites_left--;
-                if(bait->bait_bites_left > 0)   {
-                    bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
-                } 
-                else{
-                    bait->mesh_parts.bait_base->scale *= 0;
-                }
+
+                bait->get_bitten();
+
+                // bait->bait_bites_left--;
+                // if(bait->bait_bites_left > 0)   {
+                //     bait->mesh_parts.bait_base->scale *= 0.8;   // scale down the bait whenever a QTE succeeds
+                // } 
+                // else{
+                //     bait->mesh_parts.bait_base->scale *= 0;
+                // }
                 
                 std::cout << "scaled down" << std::endl;
                 std::cout << bait->bait_bites_left << std::endl;
