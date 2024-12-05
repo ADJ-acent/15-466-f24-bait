@@ -570,9 +570,10 @@ void PlayMode::update(float elapsed) {
 		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
-	} if(game_over_state == WIN){
+	} 
+	
+	if(game_over_state == WIN){
 		rotatemesh = false;
-		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
 		float puffer_x = 0.0f;
 		float puffer_y = 0.0f;
