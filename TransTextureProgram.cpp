@@ -4,7 +4,7 @@
 #include "gl_errors.hpp"
 
 Scene::Drawable::Pipeline trans_texture_program_pipeline;
-//SOURCE:: CLIPPING PLANE https://www.youtube.com/watch?v=0NH9k4zTAqk&list=PLRIWtICgwaX23jiqVByUs0bqhnalNTNZh&index=3
+
 
 Load< TransTextureProgram > trans_texture_program(LoadTagEarly, []() -> TransTextureProgram const * {
 	TransTextureProgram *ret = new TransTextureProgram();
