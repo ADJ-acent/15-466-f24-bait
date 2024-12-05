@@ -70,9 +70,9 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
 
 		
-		if(mesh_name.find("invisible") == -1)
+		if(mesh_name.find("invisible") == std::string::npos)
 		{
-			if(mesh_name.find("seaweed") != -1)
+			if(mesh_name.find("seaweed") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -83,7 +83,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.count = mesh.count;
 						
 			}
-			else if(mesh_name.find("wall") != -1)
+			else if(mesh_name.find("wall") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -93,7 +93,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
 			}
-			else if(mesh_name.find("sand") != -1)
+			else if(mesh_name.find("sand") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -103,7 +103,7 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
 			}
-			else if(mesh_name.find("waterplane") != -1 || mesh_name.find("puddle") != -1)
+			else if(mesh_name.find("waterplane") != std::string::npos || mesh_name.find("puddle") != std::string::npos)
 			{
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
@@ -114,8 +114,6 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 				drawable.pipeline.type = mesh.type;
 				drawable.pipeline.start = mesh.start;
 				drawable.pipeline.count = mesh.count;
-				
-				
 			}
 			else
 			{
@@ -166,6 +164,10 @@ Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
+
+		if(mesh_name != "carrotbait_base1" && mesh_name != "carrotbait_string1"){
+			drawable.hidden = true;
+		}
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
@@ -255,6 +257,58 @@ Load< Sound::Sample >  fail_sample(LoadTagDefault, []() -> Sound::Sample const *
 	return new Sound::Sample(data_path("sound/fail.wav"));
 });
 
+Load< Sound::Sample >  click1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click1.wav"));
+});
+
+Load< Sound::Sample >  click2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click2.wav"));
+});
+
+Load< Sound::Sample >  click3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Click3.wav"));
+});
+
+Load< Sound::Sample >  congrats1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct1.wav"));
+});
+
+Load< Sound::Sample >  congrats2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct2.wav"));
+});
+
+Load< Sound::Sample >  congrats3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct3.wav"));
+});
+
+Load< Sound::Sample >  congrats4_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Correct4.wav"));
+});
+
+Load< Sound::Sample >  fail1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail1.wav"));
+});
+
+Load< Sound::Sample >  fail2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail2.wav"));
+});
+
+Load< Sound::Sample >  fail3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Fail3.wav"));
+});
+
+Load< Sound::Sample >  hover1_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover1.wav"));
+});
+
+Load< Sound::Sample >  hover2_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover2.wav"));
+});
+
+Load< Sound::Sample >  hover3_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/Hover3.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
@@ -306,7 +360,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	particle_system.active_camera = &camera;
 	for (auto& transform : scene.transforms) {
-		if (transform.name.find("waterplane") != -1) {
+		if (transform.name.find("waterplane") != std::string::npos) {
 			Scene::Transform*temp = &transform;
 			waterplane_size = temp;
 			waterheight = temp->position.z;
@@ -315,9 +369,9 @@ PlayMode::PlayMode() : scene(*main_scene) {
 
 	for (auto &transform: scene.transforms)
 	{
-		if(transform.name.find("invisible_duck") != -1)
+		if(transform.name.find("invisible_duck") != std::string::npos)
 		{rotate_duck = &transform;}
-		else if(transform.name.find("invisible_boat") != -1)
+		else if(transform.name.find("invisible_boat") != std::string::npos)
 		{rotate_boat = &transform;}
 		else if(transform.name.find("invisible_guppy") != -1)
 		{rotate_guppy = &transform;}
@@ -420,9 +474,12 @@ void PlayMode::update(float elapsed) {
 	
 	elapsedtime += elapsed;
 
-	rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
+	if(rotatemesh)
+	{
+		rotate_duck->rotation = rotate_duck->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, -1.0f));
 
-	rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+		rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
+	}
 
 	rotate_guppy->rotation = rotate_guppy->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -464,7 +521,6 @@ void PlayMode::update(float elapsed) {
 		qte_active = false;
 	}
 
-
 	if(Mode::current == menu && menu->menu_state == MenuMode::BEFORE_START){
 		puffer.switch_to_main_menu_camera();
 	}
@@ -480,6 +536,7 @@ void PlayMode::update(float elapsed) {
 	}
 
 	if(is_game_over){
+		rotatemesh = false;
 		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
 		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
@@ -490,11 +547,27 @@ void PlayMode::update(float elapsed) {
 		wobble -= std::floor(wobble);
 		for(Scene::Transform* collectible : puffer.collected){
 			
-			collectible->rotation = collectible->rotation * glm::angleAxis(
-				glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
-				glm::vec3(0.0f, 0.2f, 0.0f)
-			);
+			// collectible->rotation = collectible->rotation * glm::angleAxis(
+			// 	glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+			// 	glm::vec3(0.0f, 0.2f, 0.0f)
+			// );
+
+			if(collectible->name == "beachball_collectible"){
+				collectible->scale = glm::vec3(5.0f);
+			} else if (collectible->name == "bucket_collectible"){
+				collectible->scale = glm::vec3(0.5f);
+			} else if (collectible->name == "anchor_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+			} else if (collectible->name == "treasurechest_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+			} else if (collectible->name == "popsicle_collectible"){
+				collectible->scale = glm::vec3(3.0f);
+			}
+			
+
 		}
+
+		//for debug
 		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);

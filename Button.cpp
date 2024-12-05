@@ -4,6 +4,12 @@
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Sound::Sample > button_hover_sample;
 extern Load< Sound::Sample > button_select_sample;
+extern Load< Sound::Sample > hover1_sample;
+extern Load< Sound::Sample > hover2_sample;
+extern Load< Sound::Sample > hover3_sample;
+extern Load< Sound::Sample > click1_sample;
+extern Load< Sound::Sample > click2_sample;
+extern Load< Sound::Sample > click3_sample;
 
 Button::Button(Texture *texture_, glm::uvec2 padding_, glm::vec2 position_, glm::vec2 scale_, UIRenderProgram::AlignMode align_, glm::vec3 tint_, bool single_channel_,  std::function<void()> on_click_function_) :
 texture(texture_), padding(padding_), position(position_), scale(scale_), align(align_), tint(tint_), single_channel(single_channel_), on_click_function(on_click_function_),
@@ -101,7 +107,19 @@ void Button::update(float elapsed)
                 state_switch_timer = 0.0f;
             }
             if(!button_sound_played){
-                button_hover_sound = Sound::play(*button_hover_sample,0.7f);
+                std::random_device rd;  // a seed source for the random number engine
+                std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+                std::uniform_int_distribution<> distrib(1, 3); //number 1 2 3
+                current_button_sound_number = distrib(gen);
+                if(current_button_sound_number == 1){
+                    button_hover_sound = Sound::play(*hover1_sample,2.0f);
+                } else if(current_button_sound_number==2){
+                    button_hover_sound = Sound::play(*hover2_sample,2.0f);
+                } else if(current_button_sound_number==3){
+                    button_hover_sound = Sound::play(*hover3_sample,2.0f);
+                }
+                // button_select_sound = Sound::play(*button_hover_sample,0.7f);
+                
                 button_sound_played = true;
             }
 
@@ -119,7 +137,14 @@ void Button::update(float elapsed)
                 state_switch_timer = 0.0f;
             }
             if(!button_sound_played){
-                button_select_sound = Sound::play(*button_select_sample,0.5f);
+                if(current_button_sound_number == 1){
+                    button_select_sound = Sound::play(*click1_sample,1.0f);
+                } else if(current_button_sound_number==2){
+                    button_select_sound = Sound::play(*click2_sample,1.0f);
+                } else if(current_button_sound_number==3){
+                    button_select_sound = Sound::play(*click3_sample,1.0f);
+                }
+                // button_select_sound = Sound::play(*button_select_sample,0.5f);
                 button_sound_played = true;
             }
 

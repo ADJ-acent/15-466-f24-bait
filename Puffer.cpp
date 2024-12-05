@@ -280,13 +280,15 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                     through_water_sound = Sound::play(*flipper_sample,0.3f * glm::length(velocity));
                 }
             }
-
             if(!checking_mesh_in_puffer && !checking_non_colliding_object){
                 std::array<glm::vec3, 2> new_collision_point = puffer_collider.check_puffer_collision(d.transform,d.mesh,closest_collision_point);
                 if (closest_collision_point != new_collision_point){
                     //it changed, so update bounce factor for new closest mesh
                     bounce_factor = current_bounce_factor;
+                    check_collectibles(d.transform);
+                    
                 }
+                 
                 closest_collision_point = new_collision_point;
                 //camera code:
                 glm::vec3 p0 = get_position();
@@ -298,11 +300,6 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
                         best_spring_arm_length = t;
                     }
                 }
-            }
-
-            if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
-                //check collectibles by name here
-                check_collectibles(d.transform);
             }
         }
         if(closest_collision_point[0] != glm::vec3(std::numeric_limits<float>::infinity())){
@@ -470,7 +467,7 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             // update mesh rotation to return to normal (if we rotated camera recently)
             mesh->position.y = original_mesh_position.y + sin(idletime * 2.0f);
             rotation_amt = 1.0f - std::pow(0.5f, elapsed / (puffer_rotation_return_halflife * 2.0f));
-            mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(glm::radians(15.0f) * sin(idletime * 2.0f) ,glm::vec3(1.0f,0.0f,0.0f)) *  original_mesh_rotation, rotation_amt);
+            mesh->rotation = glm::slerp(mesh->rotation, glm::angleAxis(float((glm::radians(15.0f)) * sin(idletime * 2.0f)),glm::vec3(1.0f,0.0f,0.0f)) *  original_mesh_rotation, rotation_amt);
             total_release_angle = 0.0f;
             if (swim_cooldown == 0.0f) {
                 base_rotation = mesh->rotation;
@@ -480,14 +477,77 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
 
 }
 void Puffer::check_collectibles(Scene::Transform* collided_object){
-    if (collided_object->name == "boat1_obs"){
-        //move it to end scene
-        collided_object->scale = glm::vec3(2.0f);
-        collided_object->position = glm::vec3(20.0f, 20.0f, 215.0f);
-        collided_object->rotation = glm::vec3(0.5f,0.5f,0.5f);
-        collectibles.boat = true;
+    // if (collided_object->name == "cooler1"){
+    //     //move it to end scene
+    //     for (Scene::Drawable &d : scene->drawables){
+    //         if(d.transform->name == "can2"){
+    //             collided_object = d.transform;
+    //         }
+    //     }
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(-20.0f, 20.0f, 215.0f);
+    //     collectibles.soda = true;
+    //     collected.emplace_back(collided_object);
+
+    if(collided_object->name == "beachball_collectible"){
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->position = glm::vec3(-30.0f, 20.0f, 215.0f);
+        collectibles.beachball = true;
+        collected.emplace_back(collided_object);
+    } else if (collided_object->name == "anchor_collectible"){
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->position = glm::vec3(-17.0f, 20.0f, 215.0f);
+        collectibles.anchor = true;
+        collected.emplace_back(collided_object);
+    } else if (collided_object->name == "treasurechest_collectible"){
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->position = glm::vec3(-10.0f, 20.0f, 215.0f);
+        collectibles.treasure = true;
+        collected.emplace_back(collided_object);
+    } else if (collided_object->name == "bucket_collectible"){
+        collided_object->parent = nullptr;
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->position = glm::vec3(5.0f, 20.0f, 215.0f);
+        collectibles.bucket = true;
+        collected.emplace_back(collided_object);
+    } else if (collided_object->name == "popsicle_collectible"){
+        collided_object->scale = glm::vec3(0.0f);
+        collided_object->rotation = glm::vec3(-0.5f,0.5f,0.0f);
+        collided_object->position = glm::vec3(35.0f, 20.0f, 215.0f);
+        collectibles.popsicle = true;
         collected.emplace_back(collided_object);
     }
+
+    // if(collided_object->name == "beachball_collectible" || collectibles.beachball){
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(-25.0f, 20.0f, 215.0f);
+    //     collectibles.beachball = false;
+    //     collected.emplace_back(collided_object);
+    // } 
+    // if (collided_object->name == "anchor_collectible" || collectibles.anchor){
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(-15.0f, 20.0f, 215.0f);
+    //     collectibles.anchor = false;
+    //     collected.emplace_back(collided_object);
+    // }
+    // if (collided_object->name == "treasurechest_collectible" || collectibles.treasure){
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(-5.0f, 20.0f, 215.0f);
+    //     collectibles.treasure = false;
+    //     collected.emplace_back(collided_object);
+    // }
+    // if (collided_object->name == "bucket_collectible" || collectibles.bucket){
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(5.0f, 20.0f, 215.0f);
+    //     collectibles.bucket = false;
+    //     collected.emplace_back(collided_object);
+    // } 
+    // if (collided_object->name == "popsicle_collectible" || collectibles.popsicle){
+    //     collided_object->scale = glm::vec3(0.0f);
+    //     collided_object->position = glm::vec3(15.0f, 20.0f, 215.0f);
+    //     collectibles.popsicle = false;
+    //     collected.emplace_back(collided_object);
+    // }
 }
 
 void Puffer::spawn_bubbles(uint32_t count)

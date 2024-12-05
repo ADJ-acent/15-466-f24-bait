@@ -30,7 +30,11 @@ struct Puffer {
 
     //store bools of if collectibles are collected
     struct {
-        bool boat = false;
+        bool anchor = false;
+        bool bucket = false;
+        bool beachball = false;
+        bool popsicle = false;
+        bool treasure = false;
     } collectibles;
 
     std::vector<LinearAnimation<glm::vec3>> build_up_animations;

@@ -1,6 +1,8 @@
 #include "Bait.hpp"
 #include <iostream>
 
+extern Load< Scene > bait_scene;
+
 void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
 {
     std::random_device rd;
@@ -16,7 +18,7 @@ void Bait::init(std::vector<Scene::Transform *> transform_vector, BaitType tob)
         bait_bites_left = 5;
     }
     else{
-        bait_bites_left = 5;
+        bait_bites_left = 3;
     }
 
     main_transform->scale = glm::vec3(3.0f);
@@ -33,10 +35,10 @@ void Bait::reset(){
     reel_up_timer = 0.0f;
 
     if(type_of_bait == CIRCLE){
-        bait_bites_left = 3;
+        bait_bites_left = 5;
     }
     else{
-        bait_bites_left = 5;
+        bait_bites_left = 3;
     }
 
     mesh_parts.bait_base->scale = original_bait_scale;
@@ -47,16 +49,21 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
     for (auto t : transform_vector){
         if (t->name == "carrotbait_main1" || t->name == "fishbait_main") {
             main_transform = t;
+            carrot_bait_main_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base1" || t->name == "fishbait_base") {
             mesh_parts.bait_base = t;
+            carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string1" || t->name == "fishbait_string") {
             mesh_parts.bait_string = t;
+            carrot_bait_string_transforms.push_back(t);
         }
 
     }
 }
+
+
 
 void Bait::reel_up(float elapsed, float reel_up_speed)
 {

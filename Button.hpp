@@ -6,6 +6,7 @@
 #include "Sound.hpp"
 #include "GL.hpp"
 #include <SDL.h>
+#include <random>
 #include <glm/glm.hpp>
 #include <functional>
 
@@ -38,6 +39,7 @@ struct Button {
     static constexpr float base_animation_speed = 5.0f;
     static constexpr float hover_animation_speed = 5.0f;
     static constexpr float pressing_animation_speed = 5.0f;
+    int current_button_sound_number = 0;
 
     Button(Texture *texture, glm::uvec2 padding, glm::vec2 position, glm::vec2 scale, UIRenderProgram::AlignMode align, glm::vec3 tint, bool single_channel,  std::function<void()> on_click_function);
     Button(){}
@@ -56,4 +58,7 @@ struct Button {
 
 	std::shared_ptr< Sound::PlayingSample > button_select_sound;
     std::shared_ptr< Sound::PlayingSample > button_hover_sound;
+    std::shared_ptr< Sound::PlayingSample > hover1_sound;
+    std::shared_ptr< Sound::PlayingSample > hover2_sound;
+    std::shared_ptr< Sound::PlayingSample > hover3_sound;
 };
