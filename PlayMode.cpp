@@ -23,7 +23,7 @@
 #include <random>
 
 extern std::shared_ptr< MenuMode > menu;
-bool is_game_over = false;
+GameOverState game_over_state = NOT_OVER;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
@@ -534,7 +534,7 @@ void PlayMode::update(float elapsed) {
         QTE::hunger -= 1;
 	}
 
-	if(is_game_over){
+	if(game_over_state == BAITED){
 		rotatemesh = false;
 		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
@@ -572,6 +572,11 @@ void PlayMode::update(float elapsed) {
 		Mode::set_current(menu);
 	}
 
+	// if(menu->menu_state == MenuMode::MenuState::END_GAME){
+	// 	for(auto bait : bait_manager.baits_in_use){
+	// 		bait.mesh_parts.bait_string->enabled = false;
+	// 	}
+	// }
 	
 
 	//reset button press counters:
@@ -750,7 +755,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//draw hunger bar
 	{
-		if(Mode::current != menu && !is_game_over){
+		if(Mode::current != menu && game_over_state == NOT_OVER){
 			float hunger_bar_scaling = 1.0f * (QTE::hunger / 100.0f);
 			ui_render_program->draw_ui(ui_elements.hunger_bar_outline, glm::vec2(0.03f,0.05f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f));
 			ui_render_program->draw_ui(ui_elements.hunger_bar_fill, glm::vec2(0.0354f,0.06f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.7f,0.7f*hunger_bar_scaling));

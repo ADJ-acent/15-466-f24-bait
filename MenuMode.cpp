@@ -90,7 +90,7 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 }
 
 void MenuMode::update(float elapsed) {
-	if(is_game_over)
+	if(game_over_state)
 		menu_state = END_GAME;
 
 	if(menu_state == IN_GAME && !in_game_menu_set) {

@@ -16,7 +16,7 @@
 
 extern Load< Font > font;
 extern std::shared_ptr< PlayMode > play;
-extern bool is_game_over;
+extern GameOverState game_over_state;
 
 
 struct MenuMode : public Mode {
@@ -68,7 +68,7 @@ struct MenuMode : public Mode {
 			play = std::make_shared< PlayMode >();
 			QTE::score = 0;
 			QTE::hunger = 100;
-			is_game_over = false;
+			game_over_state = NOT_OVER;
 			menu_state = IN_GAME;
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(play);
@@ -94,7 +94,7 @@ struct MenuMode : public Mode {
 			play = std::make_shared< PlayMode >();
 			QTE::score = 0;
 			QTE::hunger = 100;
-			is_game_over = false;
+			game_over_state = NOT_OVER;
 			menu_state = IN_GAME;
 			SDL_SetRelativeMouseMode(SDL_TRUE);
 			Mode::set_current(play);
