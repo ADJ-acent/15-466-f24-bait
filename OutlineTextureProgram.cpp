@@ -1,28 +1,28 @@
-#include "TransTextureProgram.hpp"
+#include "OutlineTextureProgram.hpp"
 
 #include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
 
-Scene::Drawable::Pipeline trans_texture_program_pipeline;
+Scene::Drawable::Pipeline outline_texture_program_pipeline;
 
 
-Load< TransTextureProgram > trans_texture_program(LoadTagEarly, []() -> TransTextureProgram const * {
-	TransTextureProgram *ret = new TransTextureProgram();
+Load< OutlineTextureProgram > outline_texture_program(LoadTagEarly, []() -> OutlineTextureProgram const * {
+	OutlineTextureProgram *ret = new OutlineTextureProgram();
 
 	//----- build the pipeline template -----
-	trans_texture_program_pipeline.program = ret->program;
+	outline_texture_program_pipeline.program = ret->program;
 
-	trans_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
-	trans_texture_program_pipeline.OBJECT_TO_WORLD_mat4 = ret->OBJECT_TO_WORLD_mat4;
-	trans_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
-	trans_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
+	outline_texture_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
+	outline_texture_program_pipeline.OBJECT_TO_WORLD_mat4 = ret->OBJECT_TO_WORLD_mat4;
+	outline_texture_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
+	outline_texture_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
 	/* This will be used later if/when we build a light loop into the Scene:
-	trans_texture_program_pipeline.LIGHT_TYPE_int = ret->LIGHT_TYPE_int;
-	trans_texture_program_pipeline.LIGHT_LOCATION_vec3 = ret->LIGHT_LOCATION_vec3;
-	trans_texture_program_pipeline.LIGHT_DIRECTION_vec3 = ret->LIGHT_DIRECTION_vec3;
-	trans_texture_program_pipeline.LIGHT_ENERGY_vec3 = ret->LIGHT_ENERGY_vec3;
-	trans_texture_program_pipeline.LIGHT_CUTOFF_float = ret->LIGHT_CUTOFF_float;
+	outline_texture_program_pipeline.LIGHT_TYPE_int = ret->LIGHT_TYPE_int;
+	outline_texture_program_pipeline.LIGHT_LOCATION_vec3 = ret->LIGHT_LOCATION_vec3;
+	outline_texture_program_pipeline.LIGHT_DIRECTION_vec3 = ret->LIGHT_DIRECTION_vec3;
+	outline_texture_program_pipeline.LIGHT_ENERGY_vec3 = ret->LIGHT_ENERGY_vec3;
+	outline_texture_program_pipeline.LIGHT_CUTOFF_float = ret->LIGHT_CUTOFF_float;
 	*/
 
 	//make a 1-pixel white texture to bind by default:
@@ -39,13 +39,13 @@ Load< TransTextureProgram > trans_texture_program(LoadTagEarly, []() -> TransTex
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
-	trans_texture_program_pipeline.textures[0].texture = tex;
-	trans_texture_program_pipeline.textures[0].target = GL_TEXTURE_2D;
+	outline_texture_program_pipeline.textures[0].texture = tex;
+	outline_texture_program_pipeline.textures[0].target = GL_TEXTURE_2D;
 
 	return ret;
 });
 
-TransTextureProgram::TransTextureProgram() {
+OutlineTextureProgram::OutlineTextureProgram() {
 	//Compile vertex and fragment shaders using the convenient 'gl_compile_program' helper function:
 	program = gl_compile_program(
 		//vertex shader:
@@ -63,15 +63,14 @@ TransTextureProgram::TransTextureProgram() {
 		"out vec4 color;\n"
 		"out vec2 texCoord;\n"
 		"out mat4 objclip;\n"
-		"out vec4 postrans;\n"
+		"out vec4 posoutline;\n"
 		"void main() {\n"
-		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
-        "   gl_Position.y -= 5000.0f;\n"
+		"	gl_Position = OBJECT_TO_CLIP * (Position + vec4(Normal.xyz,0.0) * 2.0f);\n"
 		"	position =  (OBJECT_TO_WORLD * Position).xyz;\n"
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
 		"	objclip = OBJECT_TO_CLIP;\n"
-		"	postrans = Position;\n"
+		"	posoutline = Position;\n"
 		"	texCoord = TexCoord;\n"
 		"}\n"
 	,
@@ -88,12 +87,12 @@ TransTextureProgram::TransTextureProgram() {
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
 		"in mat4 objclip;\n"
-		"in vec4 postrans;\n"
+		"in vec4 posoutline;\n"
 		"in vec2 texCoord;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"	
-		"	fragColor = albedo;\n"
+		"	fragColor = vec4(1.0);\n"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -127,7 +126,7 @@ TransTextureProgram::TransTextureProgram() {
 	glUseProgram(0); //unbind program -- glUniform* calls refer to ??? now
 }
 
-TransTextureProgram::~TransTextureProgram() {
+OutlineTextureProgram::~OutlineTextureProgram() {
 	glDeleteProgram(program);
 	program = 0;
 }

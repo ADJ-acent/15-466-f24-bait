@@ -106,7 +106,8 @@ void Scene::draw(glm::mat4 const &world_to_clip, glm::mat4x3 const &world_to_lig
 
 		if(drawable.hidden)
 		{continue;}
-
+		if(drawable.outline)
+		{glDisable(GL_DEPTH_TEST);}
 		//Set shader program:
 		glUseProgram(pipeline.program);
 

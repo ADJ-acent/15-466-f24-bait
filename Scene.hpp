@@ -69,6 +69,7 @@ struct Scene {
 
 		bool hidden = false; //hidden bit
 
+		bool outline = false; //outline bit
 		//Contains all the data needed to run the OpenGL pipeline:
 		struct Pipeline {
 			GLuint program = 0; //shader program; passed to glUseProgram
