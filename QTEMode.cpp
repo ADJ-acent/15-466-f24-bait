@@ -14,7 +14,7 @@ extern SpriteAnimation qte_timer_animation;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
 extern std::shared_ptr< MenuMode > menu;
-extern bool is_game_over;
+extern GameOverState game_over_state;
 
 //-------------------------------------
 
@@ -49,7 +49,7 @@ void QTEMode::update(float elapsed) {
 		if(eat_bait_QTE->failure){
 			QTE::hunger = 100;
 			QTE::score = 0;
-			is_game_over = true;
+			game_over_state = BAITED;
 		}
 
         Mode::set_current(background);
