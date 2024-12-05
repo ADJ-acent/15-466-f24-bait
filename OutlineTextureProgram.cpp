@@ -91,7 +91,6 @@ OutlineTextureProgram::OutlineTextureProgram() {
 		"in vec2 texCoord;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
-		"	vec4 albedo = texture(TEX, texCoord) * color;\n"	
 		"	fragColor = vec4(1.0);\n"
 		"}\n"
 	);
