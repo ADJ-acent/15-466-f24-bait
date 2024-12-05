@@ -538,8 +538,12 @@ void PlayMode::update(float elapsed) {
 		rotatemesh = false;
 		chopping_board_main_mesh->scale = glm::vec3(1.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
-		puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
-		puffer.main_transform->position = glm::vec3(0.0f, 0.0f, 205.0f);
+		float puffer_x = 0.0f;
+		float puffer_y = 0.0f;
+		float puffer_z = 205.0f;
+		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
+		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
 
 		
 		wobble += elapsed / 1.0f;
@@ -553,17 +557,65 @@ void PlayMode::update(float elapsed) {
 
 			if(collectible->name == "beachball_collectible"){
 				collectible->scale = glm::vec3(5.0f);
+				collectible->position = glm::vec3(puffer_x-30.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "bucket_collectible"){
 				collectible->scale = glm::vec3(0.5f);
+				collectible->position = glm::vec3(puffer_x-17.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "anchor_collectible"){
 				collectible->scale = glm::vec3(0.15f);
+				collectible->position = glm::vec3(puffer_x-10.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "treasurechest_collectible"){
 				collectible->scale = glm::vec3(0.15f);
+				collectible->position = glm::vec3(puffer_x+5.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "popsicle_collectible"){
 				collectible->scale = glm::vec3(3.0f);
+				collectible->position = glm::vec3(puffer_x+35.0f, puffer_y+20.0f, puffer_z+5.0f);
 			}
 			
+		}
 
+		//for debug
+		
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);
+	} if(game_over_state == WIN){
+		rotatemesh = false;
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		float puffer_x = 0.0f;
+		float puffer_y = 0.0f;
+		float puffer_z = 205.0f;
+		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
+		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
+
+		
+		wobble += elapsed / 1.0f;
+		wobble -= std::floor(wobble);
+		for(Scene::Transform* collectible : puffer.collected){
+			
+			// collectible->rotation = collectible->rotation * glm::angleAxis(
+			// 	glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+			// 	glm::vec3(0.0f, 0.2f, 0.0f)
+			// );
+
+			if(collectible->name == "beachball_collectible"){
+				collectible->scale = glm::vec3(5.0f);
+				collectible->position = glm::vec3(puffer_x-30.0f, puffer_y+20.0f, puffer_z+5.0f);
+			} else if (collectible->name == "bucket_collectible"){
+				collectible->scale = glm::vec3(0.5f);
+				collectible->position = glm::vec3(puffer_x-17.0f, puffer_y+20.0f, puffer_z+5.0f);
+			} else if (collectible->name == "anchor_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+				collectible->position = glm::vec3(puffer_x-10.0f, puffer_y+20.0f, puffer_z+5.0f);
+			} else if (collectible->name == "treasurechest_collectible"){
+				collectible->scale = glm::vec3(0.15f);
+				collectible->position = glm::vec3(puffer_x+5.0f, puffer_y+20.0f, puffer_z+5.0f);
+			} else if (collectible->name == "popsicle_collectible"){
+				collectible->scale = glm::vec3(3.0f);
+				collectible->position = glm::vec3(puffer_x+35.0f, puffer_y+20.0f, puffer_z+5.0f);
+			}
+			
 		}
 
 		//for debug
@@ -571,7 +623,6 @@ void PlayMode::update(float elapsed) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}
-
 	// if(menu->menu_state == MenuMode::MenuState::END_GAME){
 	// 	for(auto bait : bait_manager.baits_in_use){
 	// 		bait.mesh_parts.bait_string->enabled = false;
