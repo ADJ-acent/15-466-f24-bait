@@ -80,7 +80,7 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 			while (selected < current_choices.size() && !current_choices[selected].on_select) --selected;
 			if (selected >= current_choices.size()) selected = old;
 			return true;
-		} else if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE) {
+		} else if (e.key.keysym.sym == SDLK_RETURN) {
 			if (selected < current_choices.size() && current_choices[selected].on_select) {
 				current_choices[selected].on_select();
 			}
@@ -91,8 +91,9 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 }
 
 void MenuMode::update(float elapsed) {
-	if(game_over_state)
+	if(game_over_state != NOT_OVER){
 		menu_state = END_GAME;
+	}
 
 	if(menu_state == IN_GAME && !in_game_menu_set) {
 		end_game_menu_set = false;
@@ -111,7 +112,7 @@ void MenuMode::update(float elapsed) {
 
 	if (background) {
 		if(menu_state != IN_GAME){
-			background->update(elapsed * (menu_state == BEFORE_START ? 0.7f : 0.1f));
+			background->update(elapsed * (menu_state == BEFORE_START ? 0.7f : 0.0f));
 		}
 	}
 }
@@ -127,8 +128,15 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 
 	ui_render_program->draw_ui(ui_elements.logo, glm::vec2(0.5f,0.8f),drawable_size,UIRenderProgram::Center,glm::vec2(0.1f,0.1f));
 
-	if(menu_state == IN_GAME) {
-		ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));
+	// if(menu_state == IN_GAME) {
+	// 	ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));
+	// }
+
+	if(menu_state == END_GAME){
+		if(game_over_state == OUT_OF_FOOD)
+			ui_render_program->draw_ui(*font->get_text(std::string("You Starved to Death!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
+		else if(game_over_state == OUT_OF_AIR)
+			ui_render_program->draw_ui(*font->get_text(std::string("You Can't Breath!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
 	}
 
 	for (auto const &choice : current_choices) {
