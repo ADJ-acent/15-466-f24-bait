@@ -136,8 +136,6 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 					out_drawable.pipeline.count = mesh.count;
 					out_drawable.mesh = &mesh;
 					out_drawable.meshbuffer = &(*main_meshes);
-
-					
 				} 
 
 					scene.drawables.emplace_back(transform);
@@ -503,7 +501,9 @@ void PlayMode::update(float elapsed) {
 	rotate_guppy->rotation = rotate_guppy->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
-	puffer.update(mouse_motion, swim_direction, elapsed);
+	if(game_over_state == NOT_OVER){
+		puffer.update(mouse_motion, swim_direction, elapsed);
+	}
 	particle_system.update(elapsed);
 	bait_manager.update_bait_lifetime(elapsed);
 	{		
@@ -594,11 +594,31 @@ void PlayMode::update(float elapsed) {
 			
 		}
 
-		//for debug
-		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	} 
+
+	if(QTE::hunger <= 0 && game_over_state != OUT_OF_FOOD){
+		game_over_state = OUT_OF_FOOD;
+		rotatemesh = false;
+		puffer.main_transform->rotation = puffer.original_rotation;
+		puffer.main_transform->position.x = 0.0f;
+		puffer.main_transform->position.y = 0.0f;
+		puffer.main_transform->position.z = 9.5f;
+	
+		puffer.mesh->rotation = puffer.original_rotation * glm::angleAxis(glm::radians(60.0f), glm::vec3(1.0f,0.0f,0.0f));
+		puffer.mesh->scale = puffer.original_mesh_scale;
+
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);
+	}
+
+	if(puffer.oxygen_level <= 0.0f && game_over_state != OUT_OF_AIR){
+		game_over_state = OUT_OF_AIR;
+		rotatemesh = false;
+		puffer.main_transform->rotation = puffer.original_rotation;
+		puffer.main_transform->position.z = 250.0f;
+	}
 	
 	if(game_over_state == WIN){
 		rotatemesh = false;

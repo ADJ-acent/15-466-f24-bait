@@ -18,7 +18,6 @@ extern Load< Font > font;
 extern std::shared_ptr< PlayMode > play;
 extern GameOverState game_over_state;
 
-
 struct MenuMode : public Mode {
 	enum MenuState {
 		BEFORE_START,
