@@ -594,9 +594,9 @@ void PlayMode::update(float elapsed) {
         QTE::hunger -= 1;
 	}
 
-	if(puffer.collectibles.anchor){
-		game_over_state = WIN;
-	}
+	// if(puffer.collectibles.anchor){
+	// 	game_over_state = WIN;
+	// }
 
 	if(game_over_state == BAITED){
 		rotatemesh = false;
@@ -608,7 +608,7 @@ void PlayMode::update(float elapsed) {
 		puffer.main_transform->rotation = puffer.original_rotation;
 		
 		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
-		// puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
+		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
 		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
 
 		
@@ -625,11 +625,11 @@ void PlayMode::update(float elapsed) {
 				collectible->scale = glm::vec3(5.0f);
 				collectible->position = glm::vec3(puffer_x-30.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "bucket_collectible"){
-				collectible->scale = glm::vec3(0.5f);
-				collectible->position = glm::vec3(puffer_x-17.0f, puffer_y+20.0f, puffer_z+5.0f);
+				collectible->scale = glm::vec3(1.0f);
+				collectible->position = glm::vec3(puffer_x-20.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "anchor_collectible"){
-				collectible->scale = glm::vec3(0.15f);
-				collectible->position = glm::vec3(puffer_x-10.0f, puffer_y+20.0f, puffer_z+5.0f);
+				collectible->scale = glm::vec3(0.4f);
+				collectible->position = glm::vec3(puffer_x-15.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "treasurechest_collectible"){
 				collectible->scale = glm::vec3(0.15f);
 				collectible->position = glm::vec3(puffer_x+5.0f, puffer_y+20.0f, puffer_z+5.0f);
@@ -704,10 +704,10 @@ void PlayMode::update(float elapsed) {
 				collectible->scale = glm::vec3(5.0f);
 				collectible->position = glm::vec3(puffer_x-30.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "bucket_collectible"){
-				collectible->scale = glm::vec3(0.5f);
+				collectible->scale = glm::vec3(1.0f);
 				collectible->position = glm::vec3(puffer_x-17.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "anchor_collectible"){
-				collectible->scale = glm::vec3(0.15f);
+				collectible->scale = glm::vec3(0.4f);
 				collectible->position = glm::vec3(puffer_x-10.0f, puffer_y+20.0f, puffer_z+5.0f);
 			} else if (collectible->name == "treasurechest_collectible"){
 				collectible->scale = glm::vec3(0.15f);
