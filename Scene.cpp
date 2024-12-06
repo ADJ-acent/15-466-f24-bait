@@ -574,6 +574,8 @@ std::vector<Scene::Transform *> Scene::spawn(Scene const &other, type_of_spawn t
 		transform_names = { "fishbait_main", "fishbait_string", "fishbait_base"};
 	} else if (type_of_spawn == CHOPPING_BOARD){
 		transform_names = { "choppingboard_main", "chopping_board", "kitchen_knife", "handle"};
+	} else if (type_of_spawn == PARTYHAT){
+		transform_names = { "Cone"};
 	}
 
     std::vector< Scene::Transform * > transforms_vector;
