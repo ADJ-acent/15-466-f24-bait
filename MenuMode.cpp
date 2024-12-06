@@ -95,9 +95,6 @@ void MenuMode::update(float elapsed) {
 		menu_state = END_GAME;
 	}
 
-	std::cout << menu_state << std::endl;
-
-
 	if(menu_state == IN_GAME && !in_game_menu_set) {
 		end_game_menu_set = false;
 		instruction_menu_set = false;
