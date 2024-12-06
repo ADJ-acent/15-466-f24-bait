@@ -19,7 +19,7 @@ enum GameOverState {
 	NOT_OVER,
 	BAITED,
 	OUT_OF_FOOD,
-	OUT_OF_AIR,
+	OUT_OF_OXYGEN,
 	WIN
 };
 
