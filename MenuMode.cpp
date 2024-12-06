@@ -134,9 +134,13 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 
 	if(menu_state == END_GAME){
 		if(game_over_state == OUT_OF_FOOD)
-			ui_render_program->draw_ui(*font->get_text(std::string("You Starved to Death!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
-		else if(game_over_state == OUT_OF_AIR)
-			ui_render_program->draw_ui(*font->get_text(std::string("You Can't Breath!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
+			ui_render_program->draw_ui(*font->get_text(std::string("You STARVED to Death!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
+		else if(game_over_state == OUT_OF_OXYGEN)
+			ui_render_program->draw_ui(*font->get_text(std::string("You Can't BREATH!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
+		else if(game_over_state == BAITED)
+			ui_render_program->draw_ui(*font->get_text(std::string("You Are BAITED!")), glm::vec2(0.5f, 0.5f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(1.0f, 0.0f, 0.0f),true);
+		else if(game_over_state == WIN)
+			ui_render_program->draw_ui(*font->get_text(std::string("CONGRADULATIONS!!!")), glm::vec2(0.5f, 0.45f),drawable_size,UIRenderProgram::AlignMode::Center, glm::vec2(1.0f), glm::vec3(0.0f, 1.0f, 0.0f),true);
 	}
 
 	for (auto const &choice : current_choices) {

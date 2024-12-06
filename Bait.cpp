@@ -173,7 +173,7 @@ void Bait::random_respawn_location(){
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dist_x(-120.0f, 120.0f);
     std::uniform_real_distribution<float> dist_y(-120.0f, 120.0f);
-    std::uniform_real_distribution<float> dist_z(-15.0f, 5.0f);
+    std::uniform_real_distribution<float> dist_z(-10.0f, 5.0f);
 
 
     float random_x = dist_x(gen);
