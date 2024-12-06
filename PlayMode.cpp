@@ -663,9 +663,20 @@ void PlayMode::update(float elapsed) {
 		game_over_state = OUT_OF_AIR;
 		rotatemesh = false;
 		puffer.main_transform->rotation = puffer.original_rotation;
-		puffer.main_transform->position.z = 250.0f;
+		puffer.main_transform->rotation *= glm::angleAxis(glm::radians(150.0f), glm::vec3(0.0f,1.0f,0.0f));
+		puffer.main_transform->position.x = -1065.0f;
+		puffer.main_transform->position.y = 90.0f;
+		puffer.main_transform->position.z = 30.0f;
+
+		puffer.camera->position.y += 30.0f;
+		puffer.camera->position.z -= 60.0f;
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		Mode::set_current(menu);	
 	}
 	
+	std::cout << "x: " << puffer.main_transform->position.x
+	<< " y: " << puffer.main_transform->position.y << " z: " << puffer.main_transform->position.z << std::endl;
+
 	if(game_over_state == WIN){
 		rotatemesh = false;
 		puffer.main_transform->rotation = puffer.original_rotation;
@@ -676,7 +687,6 @@ void PlayMode::update(float elapsed) {
 		chopping_board_main_mesh->position = glm::vec3(puffer_x, puffer_y, puffer_z-5.0f);
 		puffer.main_transform->rotation = puffer.original_rotation;
 		
-		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
 		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
 		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
 
