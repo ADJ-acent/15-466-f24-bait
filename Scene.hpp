@@ -27,7 +27,7 @@
 
 struct Puffer;
 
-enum type_of_spawn {PUFFER,CARROT_BAIT,FISH_BAIT,CHOPPING_BOARD};
+enum type_of_spawn {PUFFER,CARROT_BAIT,FISH_BAIT,CHOPPING_BOARD,PARTYHAT};
 // std::vector<std::string> puffer_transform_names =  { "PuffMain", "PuffMesh", "PuffCam", "PuffBody", "PuffLBlush", "PuffLEye", "PuffLFin", "PuffMouth", "PuffRBlush"
 // , "PuffREye", "PuffRFin", "PuffSpikes", "PuffTail"};
 

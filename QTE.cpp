@@ -21,6 +21,7 @@ extern Load< Sound::Sample > fail_sample;
 extern Load< Sound::Sample > fail1_sample;
 extern Load< Sound::Sample > fail2_sample;
 extern Load< Sound::Sample > fail3_sample;
+extern Load< Sound::Sample > munch_sample;
 
 void QTE::start() {
     active = true;
@@ -175,6 +176,10 @@ void QTE::update(float elapsed) {
         timer_sound.get()->stop();
         if((!correct_sound || correct_sound.get()->stopped || correct_sound.get()->stopping) && !wrong_correct_played){
             correct_sound = Sound::play(*correct_sample,0.2f);
+            wrong_correct_played = true;
+        }
+        if((!munch_sound || munch_sound.get()->stopped || munch_sound.get()->stopping)){
+            munch_sound = Sound::play(*munch_sample,0.2f);
             wrong_correct_played = true;
         }
         if(timer >= time_limit && !success){

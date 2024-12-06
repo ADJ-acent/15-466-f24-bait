@@ -28,12 +28,14 @@ GameOverState game_over_state = NOT_OVER;
 
 GLuint main_scene_for_depth_texture_program = 0;
 GLuint puffer_scene_for_depth_texture_program = 0;
+GLuint partyhat_scene_for_depth_texture_program = 0;
 GLuint bait_scene_for_depth_texture_program = 0;
 GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 GLuint wall_objs_for_trans_texture_program = 0;
 GLuint outline_objs_for_collectables_program = 0;
+
 
 
 
@@ -52,6 +54,12 @@ Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 Load< MeshBuffer > pufferfish_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/pufferfish.pnct"));
 	puffer_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	return ret;
+});
+
+Load< MeshBuffer > partyhat_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+	MeshBuffer const *ret = new MeshBuffer(data_path("meshes/partyhat.pnct"));
+	partyhat_scene_for_depth_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
@@ -219,6 +227,25 @@ Load< Scene > chopping_board_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
+Load< Scene > partyhat_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("scenes/partyhat.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+		Mesh const &mesh = partyhat_meshes->lookup(mesh_name);
+
+		scene.drawables.emplace_back(transform);
+		Scene::Drawable &drawable = scene.drawables.back();
+
+		drawable.pipeline = lit_color_texture_program_pipeline;
+
+		drawable.pipeline.vao = partyhat_scene_for_depth_texture_program;
+		drawable.pipeline.type = mesh.type;
+		drawable.pipeline.start = mesh.start;
+		drawable.pipeline.count = mesh.count;
+
+		drawable.mesh = &mesh;
+		drawable.meshbuffer = &(*partyhat_meshes);
+	});
+});
+
 // noise samples
 Load< Sound::Sample >  flipper_sample(LoadTagDefault, []() -> Sound::Sample const * {
 	return new Sound::Sample(data_path("sound/flipper.wav"));
@@ -328,6 +355,10 @@ Load< Sound::Sample >  hover3_sample(LoadTagDefault, []() -> Sound::Sample const
     return new Sound::Sample(data_path("sound/Hover3.wav"));
 });
 
+Load< Sound::Sample >  munch_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/munch.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
@@ -367,6 +398,15 @@ PlayMode::PlayMode() : scene(*main_scene) {
 			chopping_board_main_mesh = t;
 			chopping_board_main_mesh->position = glm::vec3(0.0f, 0.0f, 200.0f);
 			chopping_board_main_mesh->scale = glm::vec3(0.0f);
+        }
+	}
+
+	std::vector<Scene::Transform *> partyhat_transforms = scene.spawn(*partyhat_scene,PARTYHAT);
+	for (auto t : partyhat_transforms){
+        if (t->name == "Cone") {
+			partyhat_main_mesh = t;
+			partyhat_main_mesh->position = glm::vec3(0.0f, 0.0f, 200.0f);
+			partyhat_main_mesh->scale = glm::vec3(0.0f);
         }
 	}
 
@@ -554,15 +594,21 @@ void PlayMode::update(float elapsed) {
         QTE::hunger -= 1;
 	}
 
+	if(puffer.collectibles.anchor){
+		game_over_state = WIN;
+	}
+
 	if(game_over_state == BAITED){
 		rotatemesh = false;
-		chopping_board_main_mesh->scale = glm::vec3(1.0f);
-		puffer.main_transform->rotation = puffer.original_rotation;
 		float puffer_x = 0.0f;
 		float puffer_y = 0.0f;
 		float puffer_z = 205.0f;
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		chopping_board_main_mesh->position = glm::vec3(puffer_x, puffer_y, puffer_z-5.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		
 		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
-		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
+		// puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
 		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
 
 		
@@ -598,14 +644,16 @@ void PlayMode::update(float elapsed) {
 		
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
-	} 
-	
-	if(game_over_state == WIN){
+	} else if(game_over_state == WIN){
 		rotatemesh = false;
 		puffer.main_transform->rotation = puffer.original_rotation;
 		float puffer_x = 0.0f;
 		float puffer_y = 0.0f;
 		float puffer_z = 205.0f;
+		chopping_board_main_mesh->scale = glm::vec3(1.0f);
+		chopping_board_main_mesh->position = glm::vec3(puffer_x, puffer_y, puffer_z-5.0f);
+		puffer.main_transform->rotation = puffer.original_rotation;
+		
 		// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
 		puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
 		puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
@@ -644,6 +692,54 @@ void PlayMode::update(float elapsed) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		Mode::set_current(menu);
 	}
+	// } else if(game_over_state == WIN){
+	// 	rotatemesh = false;
+	// 	float puffer_x = 0.0f;
+	// 	float puffer_y = 0.0f;
+	// 	float puffer_z = 205.0f;
+	// 	partyhat_main_mesh->scale = glm::vec3(1.0f);
+	// 	partyhat_main_mesh->position = glm::vec3(puffer_x, puffer_y, puffer_z-5.0f);
+	// 	puffer.main_transform->rotation = puffer.original_rotation;
+		
+	// 	// puffer.camera->position = glm::vec3(0.0f, -30.0f, 210.0f);
+	// 	puffer.camera->position = glm::vec3(puffer_x, puffer_y-30.0f, puffer_z+5.0f);
+	// 	puffer.main_transform->position = glm::vec3(puffer_x, puffer_y, puffer_z);
+		
+	// 	wobble += elapsed / 1.0f;
+	// 	wobble -= std::floor(wobble);
+	// 	for(Scene::Transform* collectible : puffer.collected){
+			
+	// 		// collectible->rotation = collectible->rotation * glm::angleAxis(
+	// 		// 	glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
+	// 		// 	glm::vec3(0.0f, 0.2f, 0.0f)
+	// 		// );
+
+	// 		if(collectible->name == "beachball_collectible"){
+	// 			collectible->scale = glm::vec3(5.0f);
+	// 			collectible->position = glm::vec3(puffer_x-30.0f, puffer_y+20.0f, puffer_z+5.0f);
+	// 		} else if (collectible->name == "bucket_collectible"){
+	// 			collectible->scale = glm::vec3(0.5f);
+	// 			collectible->position = glm::vec3(puffer_x-17.0f, puffer_y+20.0f, puffer_z+5.0f);
+	// 		} else if (collectible->name == "anchor_collectible"){
+	// 			collectible->scale = glm::vec3(0.15f);
+	// 			collectible->position = glm::vec3(puffer_x-10.0f, puffer_y+20.0f, puffer_z+5.0f);
+	// 		} else if (collectible->name == "treasurechest_collectible"){
+	// 			collectible->scale = glm::vec3(0.15f);
+	// 			collectible->position = glm::vec3(puffer_x+5.0f, puffer_y+20.0f, puffer_z+5.0f);
+	// 		} else if (collectible->name == "popsicle_collectible"){
+	// 			collectible->scale = glm::vec3(3.0f);
+	// 			collectible->position = glm::vec3(puffer_x+35.0f, puffer_y+20.0f, puffer_z+5.0f);
+	// 		}
+			
+	// 	}
+
+	// 	//for debug
+		
+	// 	SDL_SetRelativeMouseMode(SDL_FALSE);
+	// 	Mode::set_current(menu);
+	// }
+
+
 	// if(menu->menu_state == MenuMode::MenuState::END_GAME){
 	// 	for(auto bait : bait_manager.baits_in_use){
 	// 		bait.mesh_parts.bait_string->enabled = false;
