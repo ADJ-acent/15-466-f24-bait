@@ -20,7 +20,8 @@ struct OutlineTextureProgram {
 	//Uniform (per-invocation variable) locations:
 	GLuint OBJECT_TO_CLIP_mat4 = -1U;
 	GLuint OBJECT_TO_LIGHT_mat4x3 = -1U;
-	 GLuint OBJECT_TO_WORLD_mat4 = -1U;
+	GLuint OBJECT_TO_WORLD_mat4 = -1U;
+    GLuint WORLD_TO_CLIP_mat4 = -1U;
 	GLuint NORMAL_TO_LIGHT_mat3 = -1U;
 
 	//lighting:
@@ -29,6 +30,7 @@ struct OutlineTextureProgram {
 	GLuint LIGHT_DIRECTION_vec3 = -1U;
 	GLuint LIGHT_ENERGY_vec3 = -1U;
 	GLuint LIGHT_CUTOFF_float = -1U;
+    GLuint TIME_float = -1U;
 
 	//Textures:
 	//TEXTURE0 - texture that is accessed by TexCoord

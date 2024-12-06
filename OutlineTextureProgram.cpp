@@ -54,6 +54,7 @@ OutlineTextureProgram::OutlineTextureProgram() {
 		"uniform mat4 OBJECT_TO_WORLD;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
 		"uniform mat3 NORMAL_TO_LIGHT;\n"
+        "uniform float TIME;\n"
 		"in vec4 Position;\n"
 		"in vec3 Normal;\n"
 		"in vec4 Color;\n"
@@ -65,7 +66,7 @@ OutlineTextureProgram::OutlineTextureProgram() {
 		"out mat4 objclip;\n"
 		"out vec4 posoutline;\n"
 		"void main() {\n"
-		"	gl_Position = OBJECT_TO_CLIP * (Position + vec4(Normal.xyz,0.0) * 2.0f);\n"
+		"	gl_Position = OBJECT_TO_CLIP * (Position + vec4(Normal.xyz,0.0) * (1.5 * (abs(sin(TIME * 0.5))) + 1.0) );\n"
 		"	position =  (OBJECT_TO_WORLD * Position).xyz;\n"
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
@@ -75,7 +76,7 @@ OutlineTextureProgram::OutlineTextureProgram() {
 		"}\n"
 	,
 		//fragment shader:
-		"#version 330\n"
+        "#version 330\n"
 		"uniform sampler2D TEX;\n"
 		"uniform int LIGHT_TYPE;\n"
 		"uniform vec3 LIGHT_LOCATION;\n"
@@ -87,11 +88,17 @@ OutlineTextureProgram::OutlineTextureProgram() {
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
 		"in mat4 objclip;\n"
-		"in vec4 posoutline;\n"
+		"in vec4 postrans;\n"
 		"in vec2 texCoord;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
-		"	fragColor = vec4(1.0);\n"
+		"	vec3 n = normalize(normal);\n"
+		"   float threshold = 250.0f;\n"
+		"	vec3 oceanshade = vec3(0.0, 1.0, 1.0);\n"
+		"	float fog = min(((objclip * postrans).z/threshold),1.0);\n"
+		"	vec4 albedo = vec4(1.0);\n"
+		//"	vec3 base = mix( albedo.xyz , oceanshade,fog);\n"
+		"	fragColor = albedo;\n"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -114,6 +121,7 @@ OutlineTextureProgram::OutlineTextureProgram() {
 	LIGHT_DIRECTION_vec3 = glGetUniformLocation(program, "LIGHT_DIRECTION");
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
+    TIME_float = glGetUniformLocation(program, "TIME");
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 

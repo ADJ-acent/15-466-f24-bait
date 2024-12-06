@@ -678,6 +678,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniform1i(outline_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(outline_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
 		glUniform3fv(outline_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUniform1f(outline_texture_program->TIME_float, elapsedtime);
 		glUseProgram(0); 
 
 		glUseProgram(depth_texture_program->program);
