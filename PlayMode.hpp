@@ -59,6 +59,7 @@ struct PlayMode : Mode {
 	//transforms
 	Scene::Transform *rotate_duck = nullptr;
 	Scene::Transform *rotate_boat = nullptr;
+	Scene::Transform *rotate_guppy = nullptr;
 
 	bool rotatemesh = true;
 	

@@ -27,6 +27,7 @@ struct UIElements {
 	Texture bubble;
 	Texture end_screen;
 	Texture instructions;
+	Texture logo;
 };
 
 struct ParticleTextures {

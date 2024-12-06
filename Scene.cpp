@@ -8,6 +8,8 @@
 
 #include <fstream>
 
+extern GLuint waterplane_scene_for_wave_texture_program;
+
 //-------------------------
 
 glm::mat4x3 Scene::Transform::make_local_to_parent() const {
@@ -90,6 +92,8 @@ void Scene::draw(Camera const &camera) const {
 
 void Scene::draw(glm::mat4 const &world_to_clip, glm::mat4x3 const &world_to_light) const {
 
+	std::vector<Scene::Drawable> delayed_drawables;
+
 	//Iterate through all drawables, sending each one to OpenGL:
 	for (auto const &drawable : drawables) {
 		//Reference to drawable's pipeline for convenience:
@@ -102,10 +106,103 @@ void Scene::draw(glm::mat4 const &world_to_clip, glm::mat4x3 const &world_to_lig
 		//skip any drawables that don't contain any vertices:
 		if (pipeline.count == 0) continue;
 
+		if (pipeline.vao == waterplane_scene_for_wave_texture_program) {
+			delayed_drawables.push_back(drawable);
+			continue;
+		}
+
 		glEnable(GL_DEPTH_TEST);
 
 		if(!drawable.transform->enabled)
 		{continue;}
+		if(drawable.outline) {
+			glDepthMask(GL_FALSE);
+			// glEnable(GL_CULL_FACE);
+			// glCullFace(GL_FRONT);
+		}
+		else {
+			glDepthMask(GL_TRUE);
+			glDisable(GL_CULL_FACE);
+		}
+		//Set shader program:
+		glUseProgram(pipeline.program);
+
+		//Set attribute sources:
+		glBindVertexArray(pipeline.vao);
+
+		//Configure program uniforms:
+
+		//the object-to-world matrix is used in all three of these uniforms:
+		assert(drawable.transform); //drawables *must* have a transform
+		glm::mat4x3 object_to_world = drawable.transform->make_local_to_world();
+
+		//OBJECT_TO_CLIP takes vertices from object space to clip space:
+		if (pipeline.OBJECT_TO_CLIP_mat4 != -1U) {
+			glm::mat4 object_to_clip = world_to_clip * glm::mat4(object_to_world);
+			glUniformMatrix4fv(pipeline.OBJECT_TO_CLIP_mat4, 1, GL_FALSE, glm::value_ptr(object_to_clip));
+		}
+
+		if (pipeline.OBJECT_TO_WORLD_mat4 != -1U) {
+			glm::mat4 object_to_world_input = glm::mat4(object_to_world);
+			glUniformMatrix4fv(pipeline.OBJECT_TO_WORLD_mat4, 1, GL_FALSE, glm::value_ptr(object_to_world_input));
+		}
+
+		if (pipeline.WORLD_TO_CLIP_mat4 != -1U) {
+			glm::mat4 world_to_clip_input = glm::mat4(world_to_clip);
+			glUniformMatrix4fv(pipeline.WORLD_TO_CLIP_mat4, 1, GL_FALSE, glm::value_ptr(world_to_clip_input));
+		}
+
+
+		//the object-to-light matrix is used in the next two uniforms:
+		glm::mat4x3 object_to_light = world_to_light * glm::mat4(object_to_world);
+
+		//OBJECT_TO_CLIP takes vertices from object space to light space:
+		if (pipeline.OBJECT_TO_LIGHT_mat4x3 != -1U) {
+			glUniformMatrix4x3fv(pipeline.OBJECT_TO_LIGHT_mat4x3, 1, GL_FALSE, glm::value_ptr(object_to_light));
+		}
+
+		//NORMAL_TO_CLIP takes normals from object space to light space:
+		if (pipeline.NORMAL_TO_LIGHT_mat3 != -1U) {
+			glm::mat3 normal_to_light = glm::inverse(glm::transpose(glm::mat3(object_to_light)));
+			glUniformMatrix3fv(pipeline.NORMAL_TO_LIGHT_mat3, 1, GL_FALSE, glm::value_ptr(normal_to_light));
+		}
+
+		//set any requested custom uniforms:
+		if (pipeline.set_uniforms) pipeline.set_uniforms();
+
+		//set up textures:
+		for (uint32_t i = 0; i < Drawable::Pipeline::TextureCount; ++i) {
+			if (pipeline.textures[i].texture != 0) {
+				glActiveTexture(GL_TEXTURE0 + i);
+				glBindTexture(pipeline.textures[i].target, pipeline.textures[i].texture);
+			}
+		}
+
+		//draw the object:
+		glDrawArrays(pipeline.type, pipeline.start, pipeline.count);
+
+		//un-bind textures:
+		for (uint32_t i = 0; i < Drawable::Pipeline::TextureCount; ++i) {
+			if (pipeline.textures[i].texture != 0) {
+				glActiveTexture(GL_TEXTURE0 + i);
+				glBindTexture(pipeline.textures[i].target, 0);
+			}
+		}
+		glActiveTexture(GL_TEXTURE0);
+
+	}
+
+	for (auto const& drawable : delayed_drawables) {
+		Scene::Drawable::Pipeline const &pipeline = drawable.pipeline;
+
+		//skip any drawables without a shader program set:
+		if (pipeline.program == 0) continue;
+		//skip any drawables that don't reference any vertex array:
+		if (pipeline.vao == 0) continue;
+		//skip any drawables that don't contain any vertices:
+		if (pipeline.count == 0) continue;
+
+		glEnable(GL_DEPTH_TEST);
 
 		//Set shader program:
 		glUseProgram(pipeline.program);

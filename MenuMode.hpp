@@ -28,7 +28,7 @@ struct MenuMode : public Mode {
 
 	MenuMode() {
 		//Start Menu set up
-		start_choices.emplace_back("BAIT");
+		start_choices.emplace_back("");
 	
 		start_choices.emplace_back("Play", [&](){
 			menu_state = IN_GAME;
@@ -51,7 +51,7 @@ struct MenuMode : public Mode {
 		selected = 1;
 
 		//Pause Menu set up
-		pause_choices.emplace_back("BAIT");
+		pause_choices.emplace_back("");
 
 		pause_choices.emplace_back("Resume", [&](){
 			SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -87,7 +87,7 @@ struct MenuMode : public Mode {
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
 		//End Menu set up
-		end_choices.emplace_back("BAIT");
+		end_choices.emplace_back("");
 
 		end_choices.emplace_back("Restart", [&](){
 			play.get()->bg_music_sound.get()->stop();

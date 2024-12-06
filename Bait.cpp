@@ -73,15 +73,19 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
             }
         }
         else if (t->name == "carrotbait_base2") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base3") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base4") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_base5") {
+            t->enabled = false;
             carrot_bait_base_transforms.push_back(t);
         }
 
@@ -92,15 +96,19 @@ void Bait::assign_mesh_parts(std::vector<Scene::Transform *> transform_vector)
             }
         }
         else if (t->name == "carrotbait_string2") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string3") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string4") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
         else if (t->name == "carrotbait_string5") {
+            t->enabled = false;
             carrot_bait_string_transforms.push_back(t);
         }
     }
@@ -126,7 +134,12 @@ void Bait::get_bitten(){
         }
     }
     else{
-        mesh_parts.bait_base->scale *= 0;
+        if(type_of_bait == CARROT){
+            mesh_parts.bait_base->enabled = false;
+        }
+        else{
+            mesh_parts.bait_base->scale *= 0;
+        }
     }
 }
 
@@ -175,5 +188,9 @@ void Bait::random_respawn_location(){
             t->position = main_transform->position;
             t->scale = main_transform->scale;
         }
+        carrot_bait_base_transforms[0]->enabled = true;
+        carrot_bait_string_transforms[0]->enabled = true;
+        mesh_parts.bait_base = carrot_bait_base_transforms[0];
+        mesh_parts.bait_string = carrot_bait_string_transforms[0];
     }
 }

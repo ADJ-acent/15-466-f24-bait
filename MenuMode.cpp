@@ -54,14 +54,15 @@ bool MenuMode::handle_event(SDL_Event const &e, glm::uvec2 const &window_size) {
 	for (Button& button : current_menu_buttons)
 		button.handle_event(e, window_size);
 
-
-
 	if (e.type == SDL_KEYDOWN) {
 		if (e.key.keysym.sym == SDLK_ESCAPE) {
 			if (on_escape) {
 				on_escape();
-			} else {
-				Mode::set_current(background);
+			} else{
+				if(menu_state == IN_GAME){
+					SDL_SetRelativeMouseMode(SDL_TRUE);
+					Mode::set_current(background);
+				}
 			}
 			return true;
 		} else if (e.key.keysym.sym == SDLK_UP && !mouse_select_mode_on) {
@@ -123,6 +124,8 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
     float y = (menu_state == IN_GAME ? 0.7f : 0.5f);
 
 	uint32_t index = 0;
+
+	ui_render_program->draw_ui(ui_elements.logo, glm::vec2(0.5f,0.8f),drawable_size,UIRenderProgram::Center,glm::vec2(0.1f,0.1f));
 
 	if(menu_state == IN_GAME) {
 		ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));

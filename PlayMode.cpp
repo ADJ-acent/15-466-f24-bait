@@ -6,6 +6,7 @@
 #include "WaveTextureProgram.hpp"
 #include "WiggleTextureProgram.hpp"
 #include "TransTextureProgram.hpp"
+#include "OutlineTextureProgram.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -33,6 +34,7 @@ GLuint chopping_board_scene_for_depth_texture_program = 0;
 GLuint waterplane_scene_for_wave_texture_program = 0;
 GLuint seaweed_objs_for_wiggle_texture_program = 0;
 GLuint wall_objs_for_trans_texture_program = 0;
+GLuint outline_objs_for_collectables_program = 0;
 
 
 
@@ -45,6 +47,7 @@ Load< MeshBuffer > main_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	seaweed_objs_for_wiggle_texture_program = ret->make_vao_for_program(wiggle_texture_program->program);
 	waterplane_scene_for_wave_texture_program = ret->make_vao_for_program(wave_texture_program->program);
 	wall_objs_for_trans_texture_program = ret->make_vao_for_program(trans_texture_program->program);
+	outline_objs_for_collectables_program = ret->make_vao_for_program(outline_texture_program->program);
 	return ret;
 });
 
@@ -76,8 +79,8 @@ Load<MeshBuffer> chopping_board_meshes(LoadTagDefault, []() -> MeshBuffer const 
 Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 	return new Scene(data_path("scenes/ocean_scene.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = main_meshes->lookup(mesh_name);
-
 		
+
 		if(mesh_name.find("invisible") == std::string::npos)
 		{
 			if(mesh_name.find("seaweed") != std::string::npos)
@@ -125,13 +128,34 @@ Load< Scene > main_scene(LoadTagDefault, []() -> Scene const * {
 			}
 			else
 			{
-				scene.drawables.emplace_back(transform);
-				Scene::Drawable &drawable = scene.drawables.back();
-				drawable.pipeline = lit_color_texture_program_pipeline;
-				drawable.pipeline.vao = main_scene_for_depth_texture_program;
-				drawable.pipeline.type = mesh.type;
-				drawable.pipeline.start = mesh.start;
-				drawable.pipeline.count = mesh.count;
+				if(mesh_name.find("collectible") != std::string::npos)
+				{
+					scene.drawables.emplace_back(transform); //make sure it is drawn first!
+					Scene::Drawable &drawable = scene.drawables.back();
+					drawable.pipeline = outline_texture_program_pipeline;
+					drawable.pipeline.vao = outline_objs_for_collectables_program;
+					drawable.pipeline.type = mesh.type;
+					drawable.pipeline.start = mesh.start;
+					drawable.pipeline.count = mesh.count;
+					drawable.outline = true;
+					Scene::Drawable &out_drawable = scene.drawables.back();
+					out_drawable.pipeline.type = mesh.type;
+					out_drawable.pipeline.start = mesh.start;
+					out_drawable.pipeline.count = mesh.count;
+					out_drawable.mesh = &mesh;
+					out_drawable.meshbuffer = &(*main_meshes);
+
+					
+				} 
+
+					scene.drawables.emplace_back(transform);
+					Scene::Drawable &drawable = scene.drawables.back();
+					drawable.pipeline = lit_color_texture_program_pipeline;
+					drawable.pipeline.vao = main_scene_for_depth_texture_program;
+					drawable.pipeline.type = mesh.type;
+					drawable.pipeline.start = mesh.start;
+					drawable.pipeline.count = mesh.count;
+				
 			}
 
 		Scene::Drawable &drawable = scene.drawables.back();
@@ -169,16 +193,8 @@ Load< Scene > puffer_scene(LoadTagDefault, []() -> Scene const * {
 Load< Scene > bait_scene(LoadTagDefault, []() -> Scene const * {
 	return new Scene(data_path("scenes/bait_objects.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = bait_meshes->lookup(mesh_name);
-
-		// std::cout << mesh_name << std::endl;
-
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
-
-		if(mesh_name != "carrotbait_base1" || mesh_name != "carrotbait_string1" 
-		|| mesh_name != "fishbait_base" || mesh_name != "fishbait_string"){
-			transform->enabled = false;
-		}
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 
@@ -412,6 +428,8 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		{rotate_duck = &transform;}
 		else if(transform.name.find("invisible_boat") != std::string::npos)
 		{rotate_boat = &transform;}
+		else if(transform.name.find("invisible_guppy") != -1)
+		{rotate_guppy = &transform;}
 	}
 
 }
@@ -518,6 +536,8 @@ void PlayMode::update(float elapsed) {
 		rotate_boat->rotation = rotate_boat->rotation * glm::angleAxis(glm::radians(0.05f), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 
+	rotate_guppy->rotation = rotate_guppy->rotation * glm::angleAxis(glm::radians(0.1f), glm::vec3(0.0f, 0.0f, 1.0f));
+
 	int8_t swim_direction = int8_t(right.pressed) - int8_t(left.pressed);
 	puffer.update(mouse_motion, swim_direction, elapsed);
 	particle_system.update(elapsed);
@@ -622,6 +642,7 @@ void PlayMode::update(float elapsed) {
 		Mode::set_current(menu);
 	} else if(game_over_state == WIN){
 		rotatemesh = false;
+		puffer.main_transform->rotation = puffer.original_rotation;
 		float puffer_x = 0.0f;
 		float puffer_y = 0.0f;
 		float puffer_z = 205.0f;
@@ -745,6 +766,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	// all the shaders
 
 	{	
+		glUseProgram(outline_texture_program->program);
+		glUniform1i(outline_texture_program->LIGHT_TYPE_int, 1);
+		glUniform3fv(outline_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
+		glUniform3fv(outline_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+		glUseProgram(0); 
+
 		glUseProgram(depth_texture_program->program);
 		glUniform1i(depth_texture_program->LIGHT_TYPE_int, 1);
 		glUniform3fv(depth_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
