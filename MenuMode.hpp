@@ -21,6 +21,7 @@ extern GameOverState game_over_state;
 struct MenuMode : public Mode {
 	enum MenuState {
 		BEFORE_START,
+		INSTRUCTION,
 		IN_GAME,
 		END_GAME
 	};
@@ -35,7 +36,14 @@ struct MenuMode : public Mode {
 			Mode::set_current(background);
 		}, true);
 		start_menu_buttons.push_back(start_choices.back().button);
+		start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
+		start_choices.emplace_back("Instruction", [&](){
+			previous_menu_state = BEFORE_START;
+			menu_state = INSTRUCTION;
+		}, true);
+		start_menu_buttons.push_back(start_choices.back().button);
 		start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -43,7 +51,6 @@ struct MenuMode : public Mode {
 			Mode::set_current(nullptr);
 		}, true);
 		start_menu_buttons.push_back(start_choices.back().button);
-
 		start_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		start_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -58,7 +65,6 @@ struct MenuMode : public Mode {
 			Mode::set_current(background);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
-
 		pause_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -73,7 +79,14 @@ struct MenuMode : public Mode {
 			Mode::set_current(play);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
+		pause_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
+		pause_choices.emplace_back("Instruction", [&](){
+			previous_menu_state = IN_GAME;
+			menu_state = INSTRUCTION;
+		}, true);
+		pause_menu_buttons.push_back(pause_choices.back().button);
 		pause_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -81,7 +94,6 @@ struct MenuMode : public Mode {
 			Mode::set_current(nullptr);
 		}, true);
 		pause_menu_buttons.push_back(pause_choices.back().button);
-
 		pause_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		pause_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -99,7 +111,6 @@ struct MenuMode : public Mode {
 			Mode::set_current(play);
 		}, true);
 		end_menu_buttons.push_back(end_choices.back().button);
-
 		end_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		end_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
@@ -107,12 +118,20 @@ struct MenuMode : public Mode {
 			Mode::set_current(nullptr);
 		}, true);
 		end_menu_buttons.push_back(end_choices.back().button);
-
 		end_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
 		end_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
 
-		//Current Menu Set up
+		//Instruction Menu set up
+		instruction_choices.emplace_back("");
 
+		instruction_choices.emplace_back("Back", [&](){
+			menu_state = previous_menu_state;
+		}, true);
+		instruction_menu_buttons.push_back(instruction_choices.back().button);
+		instruction_menu_buttons.back().set_hover_state(glm::vec2(1.05f), glm::vec3(0.05f));
+		instruction_menu_buttons.back().set_pressing_state(glm::vec2(0.95f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		//Current Menu Set up
 		current_choices = start_choices;
 		current_menu_buttons = start_menu_buttons;
 	}
@@ -144,8 +163,13 @@ struct MenuMode : public Mode {
 	std::vector< Choice > end_choices;
 	std::vector< Button > end_menu_buttons;
 
+	std::vector< Choice > instruction_choices;
+	std::vector< Button > instruction_menu_buttons;
+
 	std::vector< Choice > current_choices;
 	std::vector< Button > current_menu_buttons;
+
+	MenuState previous_menu_state;
 
 	
 	uint32_t selected = 0;
@@ -154,6 +178,8 @@ struct MenuMode : public Mode {
 	MenuState menu_state = BEFORE_START;
 	bool in_game_menu_set = false;
 	bool end_game_menu_set = false;
+	bool instruction_menu_set = false;
+	bool start_menu_set = true;
 
 	//called when user presses 'escape':
 	// (note: if not defined, menumode will Mode::set_current(background).)

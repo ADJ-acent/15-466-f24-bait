@@ -95,8 +95,12 @@ void MenuMode::update(float elapsed) {
 		menu_state = END_GAME;
 	}
 
+	std::cout << menu_state << std::endl;
+
+
 	if(menu_state == IN_GAME && !in_game_menu_set) {
 		end_game_menu_set = false;
+		instruction_menu_set = false;
 		current_choices = pause_choices;
 		current_menu_buttons = pause_menu_buttons;
 		in_game_menu_set = true;
@@ -105,6 +109,17 @@ void MenuMode::update(float elapsed) {
 		current_choices = end_choices;
 		current_menu_buttons = end_menu_buttons;
 		end_game_menu_set = true;
+	} else if(menu_state == INSTRUCTION && !instruction_menu_set){
+		start_menu_set = false;
+		in_game_menu_set = false;
+		current_choices = instruction_choices;
+		current_menu_buttons = instruction_menu_buttons;
+		instruction_menu_set = true;
+	} else if(menu_state == BEFORE_START && !start_menu_set){
+		instruction_menu_set = false;
+		current_choices = start_choices;
+		current_menu_buttons = start_menu_buttons;
+		start_menu_set = true;
 	}
 
 	for (Button& button : current_menu_buttons)
@@ -122,15 +137,30 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 		background->draw(drawable_size);
     }
 
-    float y = (menu_state == IN_GAME ? 0.7f : 0.5f);
+    float y;
+
+	switch (menu_state) {
+		case BEFORE_START: 
+			y = 0.6f;
+			break;
+		case INSTRUCTION:
+			y = 0.5f;
+			break;
+		case IN_GAME: 
+			y = 0.7f;
+			break;
+		case END_GAME: 
+			y = 0.5f;
+			break;
+	};
 
 	uint32_t index = 0;
 
 	ui_render_program->draw_ui(ui_elements.logo, glm::vec2(0.5f,0.8f),drawable_size,UIRenderProgram::Center,glm::vec2(0.1f,0.1f));
 
-	// if(menu_state == IN_GAME) {
-	// 	ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));
-	// }
+	if(menu_state == INSTRUCTION) {
+		ui_render_program->draw_ui(ui_elements.instructions, glm::vec2(0.0f,0.0f),drawable_size,UIRenderProgram::BottomLeft,glm::vec2(0.667f,0.667f));
+	}
 
 	if(menu_state == END_GAME){
 		if(game_over_state == OUT_OF_FOOD)

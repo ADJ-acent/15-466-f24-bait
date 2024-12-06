@@ -68,6 +68,7 @@ void QTEMode::draw(glm::uvec2 const &drawable_size) {
 			}
 			else if(eat_bait_QTE->trap_key_on){
 				ui_render_program->draw_ui(keys_ui[eat_bait_QTE->trap_key], glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f));
+				ui_render_program->draw_ui(cur_texture, glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(0.0f));
 			}
 			else{
 				ui_render_program->draw_ui(keys_ui[eat_bait_QTE->required_key], glm::vec2(0.5f), drawable_size, UIRenderProgram::AlignMode::Top, glm::vec2(3.0f), glm::vec3(1.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f, 1.0f - eat_bait_QTE->red_percentage * 2.0f));
