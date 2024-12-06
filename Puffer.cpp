@@ -20,6 +20,7 @@ extern Load< Sound::Sample > through_water_sample;
 extern Load< Sound::Sample > blow_up_sample;
 extern Load< Sound::Sample > whoosh_sample;
 extern Load< Sound::Sample > bump_1_sample;
+extern Load< Sound::Sample > congrats_sample;
 extern ParticleTextures particle_textures;
 
 extern std::mt19937 gen;
@@ -497,28 +498,34 @@ void Puffer::check_collectibles(Scene::Transform* collided_object){
         collided_object->scale = glm::vec3(0.0f);
         collided_object->position = glm::vec3(-30.0f, 20.0f, 215.0f);
         collectibles.beachball = true;
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         collected.emplace_back(collided_object);
+
     } else if (collided_object->name == "anchor_collectible"){
         collided_object->scale = glm::vec3(0.0f);
         collided_object->position = glm::vec3(-17.0f, 20.0f, 215.0f);
         collectibles.anchor = true;
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "treasurechest_collectible"){
         collided_object->scale = glm::vec3(0.0f);
         collided_object->position = glm::vec3(-10.0f, 20.0f, 215.0f);
         collectibles.treasure = true;
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "bucket_collectible"){
         collided_object->parent = nullptr;
         collided_object->scale = glm::vec3(0.0f);
         collided_object->position = glm::vec3(5.0f, 20.0f, 215.0f);
         collectibles.bucket = true;
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         collected.emplace_back(collided_object);
     } else if (collided_object->name == "popsicle_collectible"){
         collided_object->scale = glm::vec3(0.0f);
         collided_object->rotation = glm::vec3(-0.5f,0.5f,0.0f);
         collided_object->position = glm::vec3(35.0f, 20.0f, 215.0f);
         collectibles.popsicle = true;
+        congrats_sound = Sound::play(*congrats_sample,0.5f);
         collected.emplace_back(collided_object);
     }
 

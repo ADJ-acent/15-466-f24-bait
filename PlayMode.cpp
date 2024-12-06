@@ -355,6 +355,10 @@ Load< Sound::Sample >  hover3_sample(LoadTagDefault, []() -> Sound::Sample const
     return new Sound::Sample(data_path("sound/Hover3.wav"));
 });
 
+Load< Sound::Sample >  munch_sample(LoadTagDefault, []() -> Sound::Sample const * {
+    return new Sound::Sample(data_path("sound/munch.wav"));
+});
+
 extern UIElements ui_elements;
 extern Load< UIRenderProgram > ui_render_program;
 extern Load< Font > font;
