@@ -430,7 +430,7 @@ PlayMode::PlayMode() : scene(*main_scene) {
 		{rotate_duck = &transform;}
 		else if(transform.name.find("invisible_boat") != std::string::npos)
 		{rotate_boat = &transform;}
-		else if(transform.name.find("invisible_guppy") != -1)
+		else if(transform.name.find("invisible_guppy") != std::string::npos)
 		{rotate_guppy = &transform;}
 	}
 

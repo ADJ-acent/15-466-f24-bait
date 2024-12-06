@@ -137,7 +137,7 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 		background->draw(drawable_size);
     }
 
-    float y;
+    float y = 0.0f;
 
 	switch (menu_state) {
 		case BEFORE_START: 
