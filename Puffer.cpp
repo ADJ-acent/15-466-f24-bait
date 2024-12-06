@@ -348,8 +348,8 @@ void Puffer::update(glm::vec2 mouse_motion, int8_t swim_direction, float elapsed
             oxygen_level -= 1.0f*elapsed*oxygen_down_speed;
         } else {
             velocity = glm::mix(velocity, glm::vec3(0.0f), velocity_amt);
-            if(oxygen_level<100.0f){
-                oxygen_level +=  1.0f*elapsed*oxygen_up_speed;
+            if(oxygen_level<200.0f){
+                oxygen_level +=  oxygen_up_speed;
             }
         }
         
